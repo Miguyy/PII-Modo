@@ -4,7 +4,6 @@ about: Submit branches/repository updates
 title: ""
 labels: ""
 assignees: ""
-path: "app/modo_data-generator"
 ---
 
 ## Summary
