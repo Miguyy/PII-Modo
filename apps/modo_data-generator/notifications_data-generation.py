@@ -5,11 +5,11 @@ from datetime import datetime
 
 fake = Faker() # Initialize Faker
 
-def notification_type(): # Function to randomly select a notification type
-    return random.choice(["nivel", "avatar", "admin", "sistema"])
-
 actions = ["created", "updated", "deleted"]
 entities = ["task", "habit", "avatar", "user"]
+
+def notification_type(): # Function to randomly select a notification type
+    return random.choice(["nivel", "avatar", "admin", "sistema"])
 
 def generate_admin_message():
     action = random.choice(actions)

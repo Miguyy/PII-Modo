@@ -3,27 +3,28 @@ from faker import Faker
 import string
 import random
 import hashlib
+import secrets
 from datetime import datetime
 
 fake = Faker() # Initialize Faker
 
 def generate_password():
-    length = random.randint(12, 15)
-
-    lower = random.choice(string.ascii_lowercase)
-    upper = random.choice(string.ascii_uppercase)
-    digit = random.choice(string.digits)
-    special = random.choice("!@#$%^&*()_+-=")
-
-    others = ''.join(random.choices(
-        string.ascii_letters + string.digits + "!@#$%^&*()_+-=",
-        k=length - 4
-    ))
-
-    password = lower + upper + digit + special + others
-    print(password) # Just to see the generated password before hashing
-
-    return ''.join(random.sample(password, len(password)))
+    length = secrets.choice([12, 13, 14, 15])
+    specials = "!@#$%^&*()-_=+[]{};:,.<>/?"
+    password = [
+        secrets.choice(string.ascii_lowercase),
+        secrets.choice(string.ascii_uppercase),
+        secrets.choice(string.digits),
+        secrets.choice(specials),
+    ]
+    all_chars = string.ascii_letters + string.digits + specials
+    password += [secrets.choice(all_chars) for _ in range(length - 4)]
+    for i in range(len(password) - 1, 0, -1):
+        j = secrets.randbelow(i + 1)
+        password[i], password[j] = password[j], password[i]
+    print(password)
+    return ''.join(password)
+    
 
 def hash_password(password): # Simple hashing function for demonstration purposes
     return hashlib.sha256(password.encode()).hexdigest()
