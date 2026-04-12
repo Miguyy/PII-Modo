@@ -51,7 +51,7 @@ cd apps/modo_back-end
 npm install
 node 'file'.js # replace 'file' with the main server file, e.g., index.js or app.js
 # or use nodemon for auto-restart on changes:
-node install nodemon
+npm install nodemon
 nodemon 'file'.js
 ```
 
