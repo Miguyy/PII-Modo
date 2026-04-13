@@ -24,7 +24,7 @@
         id="login-password-user"
       />
 
-      <button @click.prevent="loginUser">Login</button>
+      <button @click.prevent="loginUser" style="font-weight: bold; font-size: 18px">Login</button>
 
       <p class="login-register">
         Don't have an account?
