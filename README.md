@@ -87,12 +87,20 @@ Notes
 npm run test:unit
 ```
 
-## Project structure (short)
+## Project structure
 
 - `apps/modo_front-end/Modo/src` — Vue app source
 - `apps/modo_back-end` — Node.js + Sequelize server
 - `apps/modo_data-generator` — Python Faker generators
 - `database/schema.sql` — SQL schema used by the project
+
+## Contributors
+
+| Name            | GitHub profile                |
+| --------------- | ----------------------------- |
+| Miguel Machado  | https://github.com/Miguyy     |
+| Manuel Teixeira | https://github.com/Manutex78  |
+| Linda Silva     | https://github.com/LindaGlahy |
 
 ## License
 
