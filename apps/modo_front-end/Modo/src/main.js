@@ -42,6 +42,13 @@ import {
   faCircleQuestion,
   faRightFromBracket,
   faTrophy,
+  faRecycle,
+  faDesktop,
+  faListCheck,
+  faWater,
+  faPersonWalking,
+  faBoltLightning,
+  faSeedling
 } from '@fortawesome/free-solid-svg-icons'
 
 library.add(
@@ -74,7 +81,14 @@ library.add(
   faBars,
   faCircleQuestion,
   faRightFromBracket,
-  faTrophy
+  faTrophy,
+  faRecycle,
+  faDesktop,
+  faListCheck,
+  faWater,
+  faPersonWalking,
+  faBoltLightning,
+  faSeedling
 )
 
 const app = createApp(App)
