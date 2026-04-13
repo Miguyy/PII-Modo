@@ -1,5 +1,5 @@
 /* =============================================== */
-/* GLOBAL VARIABLES                                */
+/* GLOBAL                                          */
 /* =============================================== */
 :root {
   --bg: #f3f3f1;
@@ -230,9 +230,15 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--green-light);
-  box-shadow: 0 4px 12px rgba(53, 93, 76, 0.15);
-  transition: background 0.2s ease, transform 0.12s ease;
+  /* Green-tinted frosted glass */
+  background: linear-gradient(180deg, rgba(53, 93, 76, 0.8), rgba(53, 93, 76, 0.8));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 6px 18px rgba(18, 30, 24, 0.12);
+  transition:
+    background 0.2s ease,
+    transform 0.12s ease;
   position: relative;
 }
 
@@ -240,6 +246,7 @@ body {
   width: 115px;
   height: 30px;
   object-fit: contain;
+  filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.25));
 }
 
 .navbar-center {
@@ -271,7 +278,7 @@ body {
 .nav-link-custom {
   text-decoration: none;
   font-weight: 500;
-  color: var(--green-dark);
+  color: #cbedda;
   transition: color 0.2s ease;
   display: inline-flex;
   align-items: center;
@@ -285,8 +292,10 @@ body {
 
 .custom-navbar .nav-link-custom,
 .custom-navbar .nav-icon {
-  color: var(--green-dark);
-  transition: color 0.16s ease, transform 0.12s ease;
+  color: #cbedda;
+  transition:
+    color 0.16s ease,
+    transform 0.12s ease;
 }
 
 .custom-navbar .nav-link-custom:hover,
@@ -316,15 +325,21 @@ body {
 .login-btn {
   padding: 6px 16px;
   border-radius: 8px;
-  background: #f19640;
+  /* Orange-tinted glass button */
+  background: linear-gradient(180deg, rgba(241, 150, 64, 0.8), rgba(241, 150, 64, 0.8));
   color: #fff;
   font-weight: 600;
   text-decoration: none;
-  transition: background-color 0.3s ease, transform 0.2s ease;
+  border: 1px solid rgba(241, 150, 64, 0.8);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition:
+    background-color 0.3s ease,
+    transform 0.2s ease;
 }
 
 .login-btn:hover {
-  background: #ec7300;
+  background: linear-gradient(180deg, #ec7300, #ec7300);
   transform: translateY(-1px);
 }
 
@@ -450,7 +465,9 @@ body {
   text-decoration: none;
   font-size: 26px;
   text-align: center;
-  transition: background-color 0.3s ease, transform 0.2s ease;
+  transition:
+    background-color 0.3s ease,
+    transform 0.2s ease;
 }
 
 .letsStart-btn:hover {
@@ -562,7 +579,9 @@ body {
   margin-left: 5px;
   margin-right: 5px;
   flex-grow: 1;
-  transition: flex-basis 0.6s ease, filter 0.4s ease;
+  transition:
+    flex-basis 0.6s ease,
+    filter 0.4s ease;
   overflow: hidden;
 }
 
@@ -798,7 +817,10 @@ body {
   gap: 24px;
 }
 
-footer p { font-size: 14px; opacity: 0.85; }
+footer p {
+  font-size: 14px;
+  opacity: 0.85;
+}
 
 /* FOOTER RESPONSIVENESS */
 @media (max-width: 880px) {
@@ -911,7 +933,9 @@ footer p {
   font-weight: 700;
   box-shadow: 0 8px 22px rgba(37, 92, 62, 0.1);
   border: 1px solid rgba(53, 93, 76, 0.06);
-  transition: transform 160ms ease, box-shadow 160ms ease;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .total-badge::before {
@@ -1065,7 +1089,10 @@ footer p {
   border-radius: 10px;
   border: none;
   cursor: pointer;
-  transition: background-color 160ms ease, color 160ms ease, transform 120ms ease;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    transform 120ms ease;
   background: rgba(53, 93, 76, 0.06);
   color: #355d4c;
 }
