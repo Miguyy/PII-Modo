@@ -80,13 +80,17 @@ body {
 .register-form button {
   height: 50px;
   border-radius: 12px;
-  border: 1px solid rgba(177, 228, 199, 0.3);
-  background: rgba(177, 228, 199, 0.58);
+  border: 1px solid rgba(177, 228, 199, 0.2);
+  background: rgba(177, 228, 199, 0.2);
   color: #182620;
   backdrop-filter: blur(4.9px);
   -webkit-backdrop-filter: blur(4.9px);
   font-size: 16px;
   cursor: pointer;
+}
+
+.register-form button:hover {
+  background: rgba(177, 228, 199, 0.58);
 }
 
 .register-login {
@@ -164,13 +168,17 @@ body {
 .login-form button {
   height: 50px;
   border-radius: 12px;
-  border: 1px solid rgba(177, 228, 199, 0.3);
-  background: rgba(177, 228, 199, 0.58);
+  border: 1px solid rgba(177, 228, 199, 0.2);
+  background: rgba(177, 228, 199, 0.2);
   color: #182620;
   backdrop-filter: blur(4.9px);
   -webkit-backdrop-filter: blur(4.9px);
   font-size: 16px;
   cursor: pointer;
+}
+
+.login-form button:hover {
+  background: rgba(177, 228, 199, 0.58);
 }
 
 .login-register {
