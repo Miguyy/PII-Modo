@@ -1,13 +1,17 @@
+/* Import Stores */
 import { createRouter, createWebHistory } from 'vue-router'
 import { useUserStore } from '@/stores/userStore.js'
 
+/* Import Views */
 import RegisterView from '../Views/RegisterView.vue'
 import LoginView from '../Views/LoginView.vue'
 import LandingPageView from '../Views/LandingPageView.vue'
 import HabitManagerView from '../Views/HabitManagerView.vue'
+import ExploreHabitsView from '../Views/ExploreHabitsView.vue'
 import SettingsView from '@/Views/SettingsView.vue'
 import AdminPanelView from '@/Views/AdminPanelView.vue'
 
+/* Routes */
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -35,6 +39,12 @@ const router = createRouter({
       component: HabitManagerView,
       meta: { requiresLogin: true },
     },
+    {
+      path: '/explorehabits',
+      name: 'explorehabits',
+      component: ExploreHabitsView,
+      meta: { requiresLogin: true },
+    },
 
     {
       path: '/settings',
@@ -51,6 +61,7 @@ const router = createRouter({
   ],
 })
 
+/* Navigation Guards */
 router.beforeEach((to, from, next) => {
   const userStore = useUserStore()
   if (to.meta.requiresLogin && !userStore.loggedUserId) {
