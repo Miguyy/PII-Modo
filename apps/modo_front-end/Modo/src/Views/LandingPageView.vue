@@ -172,7 +172,7 @@ onUnmounted(() => {
         </div>
 
         <div class="appear-content">
-          <div class="appear-text">
+          <div class="appear-text"> <!-- max 1024 -->
             <h2 :class="{ active: titleActive }">Why we built Modo.</h2>
 
             <p :class="{ active: textActive }">
@@ -338,21 +338,6 @@ onUnmounted(() => {
             </div>
           </div>
         </div>
-      </div>
-
-      <div class="wave-back-3">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="1028"
-          height="323"
-          viewBox="0 0 1028 323"
-          fill="none"
-        >
-          <path
-            d="M404.728 63.1583C201 80.6583 175.5 145.158 0 145.158V322.658H1027.5V0.15901C905.5 -4.34081 832 88.158 700 88.1582C615 88.1583 558.163 49.9784 404.728 63.1583Z"
-            fill="#97DBB4"
-          />
-        </svg>
       </div>
     </section>
   </div>
