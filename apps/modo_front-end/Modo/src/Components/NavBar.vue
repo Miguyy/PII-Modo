@@ -1,8 +1,10 @@
 <script setup>
+/* Imports */
 import { useUserStore } from '../stores/userStore'
-import { useRouter, useRoute } from 'vue-router' // Importa useRoute também
+import { useRouter, useRoute } from 'vue-router'
 import { computed } from 'vue'
 
+/* Logic */
 const userStore = useUserStore()
 const router = useRouter()
 const route = useRoute()
@@ -12,37 +14,45 @@ const isAdmin = computed(() => user.value && user.value.priority === 2)
 
 const scrollToSection = (hash) => {
   if (route.path === '/') {
-    const el = document.querySelector(hash);
+    const el = document.querySelector(hash)
     if (el) {
-      const offset = 85; 
-      const elementPosition = el.getBoundingClientRect().top + window.scrollY;
-      const offsetPosition = elementPosition - offset;
+      const offset = 85
+      const elementPosition = el.getBoundingClientRect().top + window.scrollY
+      const offsetPosition = elementPosition - offset
 
       window.scrollTo({
         top: offsetPosition,
-        behavior: 'smooth'
-      });
+        behavior: 'smooth',
+      })
     }
   } else {
-    router.push({ path: '/', hash: hash });
+    router.push({ path: '/', hash: hash })
   }
-};
+}
 
-const logout = () => {
+/* Logout function, just if we want to test it */
+/* const logout = () => {
   userStore.logout()
   router.push('/login')
-}
+} */
 </script>
 
 <template>
+  <!-- Navbar component with conditional links based on user authentication and role. 
+  Displays user name and avatar when logged in, and a login link when not authenticated. 
+  Includes smooth scrolling to sections on the homepage. -->
   <div class="navbar-wrapper">
     <nav class="navbar navbar-expand-lg custom-navbar px-3">
       <a class="navbar-brand" href="/">
-        <img src="../images/modoIcon.png" alt="Logo" class="navbar-logo" />
+        <img src="../images/modoLogoNavbar.png" alt="Logo" class="navbar-logo" />
       </a>
 
       <div class="navbar-center" v-if="!user">
-        <a href="#case_studies" @click.prevent="scrollToSection('#case_studies')" class="nav-link-custom">
+        <a
+          href="#case_studies"
+          @click.prevent="scrollToSection('#case_studies')"
+          class="nav-link-custom"
+        >
           Case Studies
         </a>
         <a href="#about" @click.prevent="scrollToSection('#about')" class="nav-link-custom">
@@ -78,15 +88,33 @@ const logout = () => {
                 d="M337.066667 430.933333l-59.733334 59.733334L469.333333 682.666667 896 256l-59.733333-59.733333-366.933334 366.933333-132.266666-132.266667zM810.666667 810.666667H213.333333V213.333333h426.666667V128H213.333333c-46.933333 0-85.333333 38.4-85.333333 85.333333v597.333334c0 46.933333 38.4 85.333333 85.333333 85.333333h597.333334c46.933333 0 85.333333-38.4 85.333333-85.333333v-341.333334h-85.333333v341.333334z"
               />
             </svg>
-            <!-- <svg
-              class="nav-icon"
-              viewBox="0 0 20 20"
+          </RouterLink>
+
+          <RouterLink
+            to="/explorehabits"
+            class="nav-link-custom me-3"
+            title="Explore Habits"
+            aria-label="Explore Habits"
+          >
+            <svg
               xmlns="http://www.w3.org/2000/svg"
-              aria-hidden="true"
+              class="nav-icon"
+              style="
+                width: 1.5em;
+                height: 1.5em;
+                vertical-align: middle;
+                fill: currentColor;
+                overflow: hidden;
+              "
+              viewBox="0 0 36 36"
               role="img"
+              aria-hidden="true"
             >
-              <path fill="currentColor" d="M9 16.2L4.8 12 3.4 13.4 9 19l12-12-1.4-1.4z" />
-            </svg> -->
+              <path
+                d="M12.5625 24.375L20.1375 22.2C20.6375 22.05 21.069 21.7935 21.432 21.4305C21.795 21.0675 22.051 20.6365 22.2 20.1375L24.375 12.5625C24.45 12.2875 24.3815 12.0435 24.1695 11.8305C23.9575 11.6175 23.7135 11.549 23.4375 11.625L15.8625 13.8C15.3625 13.95 14.9315 14.2065 14.5695 14.5695C14.2075 14.9325 13.951 15.3635 13.8 15.8625L11.625 23.4375C11.55 23.7125 11.619 23.9565 11.832 24.1695C12.045 24.3825 12.2885 24.451 12.5625 24.375ZM18 20.25C17.375 20.25 16.844 20.0315 16.407 19.5945C15.97 19.1575 15.751 18.626 15.75 18C15.749 17.374 15.968 16.843 16.407 16.407C16.846 15.971 17.377 15.752 18 15.75C18.623 15.748 19.1545 15.967 19.5945 16.407C20.0345 16.847 20.253 17.378 20.25 18C20.247 18.622 20.0285 19.1535 19.5945 19.5945C19.1605 20.0355 18.629 20.254 18 20.25ZM18 33C15.925 33 13.975 32.606 12.15 31.818C10.325 31.03 8.7375 29.9615 7.3875 28.6125C6.0375 27.2635 4.969 25.676 4.182 23.85C3.395 22.024 3.001 20.074 3 18C2.999 15.926 3.393 13.976 4.182 12.15C4.971 10.324 6.0395 8.7365 7.3875 7.3875C8.7355 6.0385 10.323 4.97 12.15 4.182C13.977 3.394 15.927 3 18 3C20.073 3 22.023 3.394 23.85 4.182C25.677 4.97 27.2645 6.0385 28.6125 7.3875C29.9605 8.7365 31.0295 10.324 31.8195 12.15C32.6095 13.976 33.003 15.926 33 18C32.997 20.074 32.603 22.024 31.818 23.85C31.033 25.676 29.9645 27.2635 28.6125 28.6125C27.2605 29.9615 25.673 31.0305 23.85 31.8195C22.027 32.6085 20.077 33.002 18 33Z"
+                fill="currentColor"
+              />
+            </svg>
           </RouterLink>
 
           <RouterLink
@@ -113,7 +141,7 @@ const logout = () => {
               />
             </svg>
           </RouterLink>
-
+          <!-- If the user is an admin, show the admin panel link -->
           <RouterLink
             v-if="isAdmin"
             class="nav-link-custom me-3"
@@ -142,17 +170,22 @@ const logout = () => {
           </RouterLink>
         </div>
 
-        <span class="me-3 fw-semibold">{{ user.name }}</span>
-        <img
-          v-if="user.avatar"
-          :src="user.avatar"
-          alt="avatar"
-          class="rounded-circle me-2"
-          style="width: 40px; height: 40px; object-fit: cover"
-        />
-        <button class="fa logout-btn" @click="logout">&#xf08b;</button>
+        <span class="me-3 bold" style="color: #ededed">{{ user.name }}</span>
+        <RouterLink to="/settings">
+          <img
+            v-if="user.avatar"
+            :src="user.avatar"
+            alt="avatar"
+            class="rounded-circle me-2"
+            style="width: 40px; height: 40px; object-fit: cover"
+          />
+        </RouterLink>
+
+        <!-- Logout button, currently for testing purposes -->
+        <!-- <button class="fa logout-btn" @click="logout">&#xf08b;</button> -->
       </div>
 
+      <!--Login Button-->
       <div v-else class="ms-auto">
         <RouterLink class="login-btn" to="/login"> Login </RouterLink>
       </div>

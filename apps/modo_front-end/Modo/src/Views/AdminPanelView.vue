@@ -670,4 +670,35 @@ function saveDecoration() {
   decorationModalVisible.value = false
   editingDecoration.value = null
 }
+
+/* 
+Basic structure of habit card to create a habit component in the future, for the id "habit-item".
+  For now, we will keep it simple and static, but in the future we can make it dynamic and reusable.
+
+>> There´s a duplicate on "ExploreHabitsView.vue" that we can also use as a reference to create the habit component.
+
+<div class="habit-item" id="habit-item">
+  <div class="card h-100">
+    <div class="card-header-custom">
+      <div class="habit-title-section">
+        <div class="habit-title">
+          <i class="fa-solid fa-seedling"></i>
+          <h3>Gardening</h3>
+        </div>
+      </div>
+    </div>
+
+    <div class="habit-content">
+      <div class="habit-category-description mt-2">
+        <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quas, suscipit sunt! Distinctio dolore iure aspernatur explicabo tempore amet? Aperiam officia ipsam qui, et iure reprehenderit quod ea fuga repudiandae labore!</p>
+      </div>
+      <hr style="margin: 5px;">
+      <button class="habit-details d-flex align-items-center gap-3">
+        <i class="fa-solid fa-list-check"></i>
+        <p>2 Tasks available</p>
+      </button>
+    </div>
+  </div>
+</div>
+*/
 </script>

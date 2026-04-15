@@ -26,7 +26,7 @@
         id="reg-password-user"
       />
 
-      <button @click="registerUser">Sign Up</button>
+      <button @click="registerUser" style="font-weight: bold; font-size: 18px">Sign In</button>
 
       <p class="register-login">
         Already have an account?
@@ -37,7 +37,7 @@
         >
       </p>
     </div>
-    
+
     <!-- Toast notification -->
     <Transition name="toast-slide">
       <div v-if="toast.visible" class="toast-notification">
@@ -117,15 +117,15 @@ export default {
 
         localStorage.setItem('users', JSON.stringify(this.userStore.users))
 
-        // show toast instead of alert
+        // Show toast instead of alert
         this.showToast('Account created', 'User registered successfully!', 2500)
 
-        // clear inputs
+        // Clear inputs
         this.name = ''
         this.email = ''
         this.password = ''
 
-        // navigate to login after a short delay so the toast is visible briefly
+        // Navigate to login after a short delay so the toast is visible briefly
         setTimeout(() => this.$router.push('/login'), 2000)
       } catch (e) {
         console.error(e)
