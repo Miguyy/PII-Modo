@@ -1,11 +1,10 @@
+# Libraries
 from faker import Faker
 import random
 from datetime import datetime
 
 fake = Faker()
 
-# HABITS mapping (id, name, description, category)
-# Keep IDs 1..25 so tasks can reference them
 HABITS = [
     (1, 'Water plants', 'Take care of houseplants or the garden regularly.', 'Gardening / Watering'),
     (2, 'Spend 5 minutes recycling', 'Sort household waste into the respective recycling bins.', 'Recycling'),
@@ -25,7 +24,7 @@ HABITS = [
     (16, 'Carry a reusable bottle', 'Use a reusable water bottle daily.', 'Waste'),
     (17, 'Donate unused clothes', 'Sort old clothes for donation.', 'Community'),
     (18, 'Take the stairs', 'Avoid the elevator to save electricity and get exercise.', 'Energy'),
-    (19, 'Eat leftovers', 'Consume the previous day\'s leftovers to avoid waste.', 'Food'),
+    (19, 'Eat leftovers', "Consume the previous day's leftovers to avoid waste.", 'Food'),
     (20, 'Switch to LED bulbs', 'Replace old light bulbs with LED technology.', 'Energy'),
     (21, 'Use public transport', 'Travel by bus or subway.', 'Sustainable Mobility'),
     (22, 'Air-dry laundry', 'Dry clothes on a drying rack instead of using a machine.', 'Energy'),
@@ -35,17 +34,21 @@ HABITS = [
 ]
 
 def _pick_points_and_priority():
-    # Points determine priority mapping
     points = random.choice([5, 10, 15])
     priority = 'low' if points == 5 else 'medium' if points == 10 else 'high'
     return points, priority
 
 def generate_tasks(num_tasks=20, num_users=10):
-    tarefas = []  # tasks table rows
-    tarefas_utilizador = []  # user-task association rows
+    tarefas = []
+    tarefas_utilizador = []
 
     for tid in range(1, num_tasks + 1):
         id_habito = random.randint(1, len(HABITS))
+        
+        habit_tuple = next((h for h in HABITS if h[0] == id_habito), None)
+        habit_original_name = habit_tuple[1] if habit_tuple else 'Habit'
+        habit_category = habit_tuple[3] if habit_tuple and len(habit_tuple) > 3 else 'Uncategorized'
+
         pontos_tarefa, prioridade = _pick_points_and_priority()
         tipo_tarefa = random.choice(['check', 'count', 'timer'])
         localizacao_tarefa = random.choice(['inside', 'outside'])
@@ -53,15 +56,15 @@ def generate_tasks(num_tasks=20, num_users=10):
         duracao_temporizador = None
         quantidade_necessaria = None
         if tipo_tarefa == 'timer':
-            # duration in seconds ( e.g., 30s to 3600s )
             duracao_temporizador = random.choice([30, 60, 120, 300, 600])
         elif tipo_tarefa == 'count':
-            # common counters: binary (0/1), small (0/5), medium (0/20), large (0/100)
             quantidade_necessaria = random.choice([1, 5, 10, 20, 50, 100])
 
         tarefa = {
             'id_tarefa': tid,
             'id_habito': id_habito,
+            'habit_name': habit_category,
+            'nome_tarefa': habit_original_name,
             'pontos_tarefa': pontos_tarefa,
             'tipo_tarefa': tipo_tarefa,
             'localizacao_tarefa': localizacao_tarefa,
@@ -71,10 +74,8 @@ def generate_tasks(num_tasks=20, num_users=10):
         }
         tarefas.append(tarefa)
 
-        # Create a user-task entry for a random user
         id_utilizador = random.randint(1, num_users)
         tarefa_ativa = random.choice([0, 1])
-        # completed only if active and random chance
         estado_tarefa = 'completed' if tarefa_ativa == 1 and random.random() < 0.6 else 'pending'
 
         progresso = None
@@ -85,7 +86,6 @@ def generate_tasks(num_tasks=20, num_users=10):
         data_inicio = fake.date_time_between(start_date='-30d', end_date='now')
         data_fim = None
         if estado_tarefa == 'completed':
-            # finished sometime after start
             data_fim = fake.date_time_between(start_date=data_inicio, end_date='+30d')
 
         tarefas_utilizador.append({
