@@ -1,8 +1,16 @@
-# Libraries
+"""
+Module to produce sample user location records for the demo dataset.
+
+Contains a curated mapping of Portuguese cities to their latitude/longitude
+and a helper to create randomized user-location records referencing those
+coordinates. Useful for populating maps or location-based features in the
+frontend mock.
+"""
+
 from faker import Faker
 import random
 
-fake = Faker() # Initialize Faker
+fake = Faker()  # Initialize Faker
 
 country = "Portugal"
 
@@ -13,7 +21,7 @@ city_latitude_longitude = {
     "Faro": (37.0194, -7.9304),
     "Braga": (41.5454, -8.4265),
     "Aveiro": (40.6405, -8.6538),
-    "Viseu": (40.661, -7.909),  
+    "Viseu": (40.661, -7.909),
     "Évora": (38.571, -7.913),
     "Guimarães": (41.444, -8.296),
     "Vila Nova de Gaia": (41.1339, -8.611),
@@ -39,7 +47,15 @@ city_latitude_longitude = {
     "Vila Real": (41.3000, -7.7442)
 }
 
-def generate_location_data(): # Function to generate random location data
+def generate_location_data():
+    """Create a random user location record.
+
+    Picks a random city from the predefined mapping and returns a mapping
+    with `id_utilizador`, `pais`, `cidade`, `latitude` and `longitude`.
+
+    Returns:
+        dict: Location record for a demo user.
+    """
     cidade = random.choice(list(city_latitude_longitude.keys()))
     latitude, longitude = city_latitude_longitude[cidade]
     id_utilizador = random.randint(1, 20)
@@ -50,7 +66,9 @@ def generate_location_data(): # Function to generate random location data
         "latitude": latitude,
         "longitude": longitude
     }
-locations = [generate_location_data() for _ in range(20)] # Generate a list of 20 locations
+
+
+locations = [generate_location_data() for _ in range(20)]  # Generate a list of 20 locations
 for location in locations:
     print(location)
 

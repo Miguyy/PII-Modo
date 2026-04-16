@@ -1,4 +1,18 @@
-# Libraries
+"""
+Module to generate demo task templates and per-user task assignments.
+
+This script defines a catalogue of HABITS and provides utilities to create
+task templates (`tarefas`) and randomized user-task assignments
+(`tarefas_utilizador`). The generated output is printed to stdout which is
+convenient for seeding local JSON/DB fixtures for frontend development.
+
+Main functions:
+- _pick_points_and_priority(): choose points and map to priority label.
+- generate_tasks(num_tasks, num_users): build lists of tasks and user-task
+  relationships.
+- generate_tasks_data(): example runner that prints generated data.
+"""
+
 from faker import Faker
 import random
 from datetime import datetime
@@ -34,17 +48,36 @@ HABITS = [
 ]
 
 def _pick_points_and_priority():
+    """Pick a points value and return the corresponding priority label.
+
+    The helper selects from the set {5,10,15} and maps these to 'low',
+    'medium' and 'high' priority strings respectively.
+
+    Returns:
+        tuple: (points:int, priority:str)
+    """
     points = random.choice([5, 10, 15])
     priority = 'low' if points == 5 else 'medium' if points == 10 else 'high'
     return points, priority
 
 def generate_tasks(num_tasks=20, num_users=10):
+    """Generate task templates and randomized per-user task assignments.
+
+    Args:
+        num_tasks (int): Number of task templates to create.
+        num_users (int): Number of users to randomly assign tasks to.
+
+    Returns:
+        tuple: (tarefas, tarefas_utilizador)
+            - tarefas: list of task template mappings
+            - tarefas_utilizador: list of user-task relationship mappings
+    """
     tarefas = []
     tarefas_utilizador = []
 
     for tid in range(1, num_tasks + 1):
         id_habito = random.randint(1, len(HABITS))
-        
+
         habit_tuple = next((h for h in HABITS if h[0] == id_habito), None)
         habit_original_name = habit_tuple[1] if habit_tuple else 'Habit'
         habit_category = habit_tuple[3] if habit_tuple and len(habit_tuple) > 3 else 'Uncategorized'
@@ -101,6 +134,12 @@ def generate_tasks(num_tasks=20, num_users=10):
     return tarefas, tarefas_utilizador
 
 def generate_tasks_data():
+    """Runner that generates tasks and prints them to stdout.
+
+    This convenience function calls `generate_tasks` with default values
+    (20 tasks, 12 users) and prints the two resulting lists. It is useful
+    for quickly creating fixture output when developing locally.
+    """
     tarefas, tarefas_utilizador = generate_tasks(num_tasks=20, num_users=12)
     print("TAREFAS:")
     for t in tarefas:
@@ -108,5 +147,6 @@ def generate_tasks_data():
     print("\nTAREFAS_UTILIZADOR:")
     for tu in tarefas_utilizador:
         print(tu)
+
 
 generate_tasks_data()
