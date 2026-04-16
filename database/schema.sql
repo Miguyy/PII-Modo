@@ -66,6 +66,7 @@ CREATE TABLE Habitos (
 CREATE TABLE Tarefas (
     id_tarefa INT AUTO_INCREMENT PRIMARY KEY,
     id_habito INT,
+    nome_tarefa VARCHAR(100) NOT NULL,
     pontos_tarefa INT DEFAULT 0,
     tipo_tarefa VARCHAR(50),
     localizacao_tarefa ENUM('Dentro','Fora'),
