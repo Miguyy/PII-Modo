@@ -5,8 +5,8 @@ Modo is a lightweight habit-tracking project with three main parts: a Vue + Vite
 ## What this repo contains
 
 - `apps/modo_front-end/Modo` — Vue 3 front-end (Vite, Pinia, Vitest).
-- `apps/modo_back-end/` — back-end using Node/Express and Sequelize and Postman for testing API endpoints.
-- `apps/modo_data-generator/` — Python data generator scripts (Faker) and helpers that can use SQLAlchemy to write to MySQL for populating Workbench.
+- `apps/modo_back-end/` — back-end using Node/Express and Postman for testing API endpoints. Sequelize is used for MySQL interactions.
+- `apps/modo_data-generator/` — Python data generator scripts (Faker).
 - `database/` — DB schema and image assets used by the project.
 
 ## Quick demo
@@ -19,7 +19,7 @@ Modo is a lightweight habit-tracking project with three main parts: a Vue + Vite
 
 - Front-end: Vue 3, Vite, Pinia, Bootstrap, Font Awesome, Chart.js
 - Back-end: Node.js, Express, Sequelize (MySQL)
-- Data generator: Python, Faker, SQLAlchemy (writes to MySQL)
+- Data generator: Python, Faker
 - Testing: Vitest for front-end unit tests
 
 ## Getting started
