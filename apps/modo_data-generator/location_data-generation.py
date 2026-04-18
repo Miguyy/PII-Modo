@@ -7,69 +7,122 @@ coordinates. Useful for populating maps or location-based features in the
 frontend mock.
 """
 
-from faker import Faker
+import json
 import random
-
-fake = Faker()  # Initialize Faker
+from pathlib import Path
 
 country = "Portugal"
 
-city_latitude_longitude = {
-    "Lisboa": (38.7169, -9.1399),
-    "Porto": (41.1496, -8.611),
-    "Coimbra": (40.2056, -8.419),
-    "Faro": (37.0194, -7.9304),
-    "Braga": (41.5454, -8.4265),
-    "Aveiro": (40.6405, -8.6538),
-    "Viseu": (40.661, -7.909),
-    "Évora": (38.571, -7.913),
-    "Guimarães": (41.444, -8.296),
-    "Vila Nova de Gaia": (41.1339, -8.611),
-    "Vila do Conde": (41.351, -8.743),
-    "Setúbal": (38.5244, -8.8882),
-    "Santarém": (39.2333, -8.6833),
-    "Leiria": (39.7436, -8.8070),
-    "Portimão": (37.1367, -8.5370),
-    "Ponta Delgada": (37.7412, -25.6756),
-    "Funchal": (32.6669, -16.9241),
-    "Olhão": (37.0179, -7.8436),
-    "Viana do Castelo": (41.6934, -8.8292),
-    "Matosinhos": (41.1880, -8.6895),
-    "Amadora": (38.7596, -9.2345),
-    "Seixal": (38.6456, -9.1077),
-    "Almada": (38.6783, -9.1550),
-    "Barcelos": (41.5381, -8.6151),
-    "Tomar": (39.6000, -8.4094),
-    "Sines": (37.9550, -8.8692),
-    "Beja": (38.0151, -7.8636),
-    "Castelo Branco": (39.8222, -7.4903),
-    "Loulé": (37.1376, -8.0251),
-    "Vila Real": (41.3000, -7.7442)
-}
+
+def _point_in_polygon(x, y, poly):
+    """Ray casting algorithm for point-in-polygon.
+
+    poly: list of (x, y) pairs where x=lon, y=lat
+    """
+    inside = False
+    n = len(poly)
+    j = n - 1
+    for i in range(n):
+        xi, yi = poly[i]
+        xj, yj = poly[j]
+        intersect = ((yi > y) != (yj > y)) and (
+            x < (xj - xi) * (y - yi) / (yj - yi + 1e-12) + xi
+        )
+        if intersect:
+            inside = not inside
+        j = i
+    return inside
+
+
+def _bbox(poly):
+    xs = [p[0] for p in poly]
+    ys = [p[1] for p in poly]
+    return min(xs), min(ys), max(xs), max(ys)
+
+
+def _sample_point_in_polygon(poly, attempts=200):
+    minx, miny, maxx, maxy = _bbox(poly)
+    for _ in range(attempts):
+        x = random.uniform(minx, maxx)
+        y = random.uniform(miny, maxy)
+        if _point_in_polygon(x, y, poly):
+            return y, x  # return (lat, lon)
+    # fallback to centroid (avg of vertices)
+    avgx = sum(p[0] for p in poly) / len(poly)
+    avgy = sum(p[1] for p in poly) / len(poly)
+    return avgy, avgx
+
+
+def _load_municipalities(geojson_path: Path):
+    if not geojson_path.exists():
+        return []
+    data = json.loads(geojson_path.read_text(encoding="utf-8"))
+    municipalities = []
+    for feat in data.get("features", []):
+        props = feat.get("properties", {})
+        name = props.get("Concelho") or props.get("MUNICIPIO") or props.get("MUNICIPIO")
+        geom = feat.get("geometry", {})
+        gtype = geom.get("type")
+        coords = geom.get("coordinates") or []
+        polys = []
+        # GeoJSON coords are [lon, lat]
+        if gtype == "Polygon":
+            # take the exterior ring (first)
+            ring = coords[0]
+            poly = [(pt[0], pt[1]) for pt in ring]
+            polys.append(poly)
+        elif gtype == "MultiPolygon":
+            for poly_coords in coords:
+                ring = poly_coords[0]
+                poly = [(pt[0], pt[1]) for pt in ring]
+                polys.append(poly)
+        if name and polys:
+            municipalities.append({"name": name, "polygons": polys})
+    return municipalities
+
+
+# Determine path to bundled GeoJSON
+BASE_DIR = Path(__file__).resolve().parent
+GEOJSON_PATH = BASE_DIR / "portugal_boundary_sampler" / "Portugal_Municipalities.geojson"
+_MUNIS = _load_municipalities(GEOJSON_PATH)
+
 
 def generate_location_data():
     """Create a random user location record.
 
-    Picks a random city from the predefined mapping and returns a mapping
-    with `id_utilizador`, `pais`, `cidade`, `latitude` and `longitude`.
-
-    Returns:
-        dict: Location record for a demo user.
+    If the municipalities GeoJSON is available, pick a random municipality and
+    sample a random point inside one of its polygons. Otherwise fall back to a
+    small set of fixed cities.
     """
-    cidade = random.choice(list(city_latitude_longitude.keys()))
-    latitude, longitude = city_latitude_longitude[cidade]
     id_utilizador = random.randint(1, 20)
+    if _MUNIS:
+        muni = random.choice(_MUNIS)
+        poly = random.choice(muni["polygons"])
+        lat, lon = _sample_point_in_polygon(poly)
+        cidade = muni["name"].title()
+    else:
+        # fallback mapping (kept small)
+        mapping = {
+            "Lisboa": (38.7169, -9.1399),
+            "Porto": (41.1496, -8.611),
+            "Coimbra": (40.2056, -8.419),
+            "Faro": (37.0194, -7.9304),
+            "Braga": (41.5454, -8.4265),
+            "Aveiro": (40.6405, -8.6538),
+            "Évora": (38.5716, -7.9135),
+        }
+        cidade = random.choice(list(mapping.keys()))
+        lat, lon = mapping[cidade]
+
     return {
         "id_utilizador": id_utilizador,
         "pais": country,
         "cidade": cidade,
-        "latitude": latitude,
-        "longitude": longitude
+        "latitude": float(lat),
+        "longitude": float(lon),
     }
 
 
-locations = [generate_location_data() for _ in range(20)]  # Generate a list of 20 locations
-for location in locations:
-    print(location)
-
+for _ in range(20):
+    print(generate_location_data())
 
