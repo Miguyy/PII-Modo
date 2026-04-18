@@ -104,4 +104,12 @@ npm run test:unit
 
 ## License
 
-MIT — see LICENSE file for details.
+This project is reserved for educational purposes and is not licensed for commercial use. For more information, please see the LICENSE file.
+
+## Code of Conduct
+
+Please read our [Code of Conduct](CODE_OF_CONDUCT.md) to understand the standards we expect from all contributors and community members.
+
+## Security Policy
+
+Please read our [Security Policy](SECURITY.md) for guidelines on reporting security vulnerabilities or sensitive disclosures related to the Modo project.
