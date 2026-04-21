@@ -3,7 +3,7 @@
     <NavBar />
     <div class="container">
       <div class="page-title">
-        <h2>ADMIN PANEL</h2>
+        <h4>ADMIN PANEL</h4>
       </div>
     </div>
 
@@ -139,9 +139,7 @@
       </div>
 
       <!-- Avatar Decorations Section -->
-      <div
-        class="d-flex flex-row justify-content-between align-items-center gap-3 mb-3 mt-5"
-      >
+      <div class="d-flex flex-row justify-content-between align-items-center gap-3 mb-3 mt-5">
         <div class="d-flex gap-2 align-items-center flex-nowrap">
           <h5 class="mb-0 decoration-title">Avatar Decorations</h5>
           <div class="total-badge">
@@ -161,11 +159,19 @@
                 <th style="width: 80px">Preview</th>
                 <th class="sortable" @click="toggleDecorationSort('name')">
                   Name
-                  <span class="sort-indicator" v-if="decorationSortKey === 'name'">{{ decorationSortDir === 'asc' ? '▲' : '▼' }}</span>
+                  <span class="sort-indicator" v-if="decorationSortKey === 'name'">{{
+                    decorationSortDir === 'asc' ? '▲' : '▼'
+                  }}</span>
                 </th>
-                <th style="width: 100px" class="sortable" @click="toggleDecorationSort('requiredLevel')">
+                <th
+                  style="width: 100px"
+                  class="sortable"
+                  @click="toggleDecorationSort('requiredLevel')"
+                >
                   Req. Level
-                  <span class="sort-indicator" v-if="decorationSortKey === 'requiredLevel'">{{ decorationSortDir === 'asc' ? '▲' : '▼' }}</span>
+                  <span class="sort-indicator" v-if="decorationSortKey === 'requiredLevel'">{{
+                    decorationSortDir === 'asc' ? '▲' : '▼'
+                  }}</span>
                 </th>
                 <th style="width: 250px">Path</th>
                 <th style="width: 120px">Actions</th>
@@ -174,17 +180,15 @@
             <tbody>
               <tr v-for="decoration in sortedDecorations" :key="decoration.name">
                 <td>
-                  <img 
-                    :src="decoration.src" 
-                    :alt="decoration.name" 
-                    class="decoration-preview"
-                  />
+                  <img :src="decoration.src" :alt="decoration.name" class="decoration-preview" />
                 </td>
                 <td class="fw-medium">{{ decoration.name }}</td>
                 <td>
                   <span class="level-badge">Lv. {{ decoration.requiredLevel ?? 0 }}</span>
                 </td>
-                <td class="text-muted text-truncate" style="max-width: 250px">{{ decoration.src }}</td>
+                <td class="text-muted text-truncate" style="max-width: 250px">
+                  {{ decoration.src }}
+                </td>
                 <td>
                   <button
                     class="action-icon action-edit me-2"
@@ -251,29 +255,31 @@
       <h5 class="mb-3">{{ isNewDecoration ? 'Add Decoration' : 'Edit Decoration' }}</h5>
       <div class="mb-3">
         <label class="form-label">Name</label>
-        <input 
-          v-model="editingDecoration.name" 
-          class="form-control" 
+        <input
+          v-model="editingDecoration.name"
+          class="form-control"
           :disabled="!isNewDecoration"
           placeholder="e.g., rainbow"
         />
       </div>
       <div class="mb-3">
         <label class="form-label">Required Level</label>
-        <input 
-          type="number" 
-          v-model.number="editingDecoration.requiredLevel" 
+        <input
+          type="number"
+          v-model.number="editingDecoration.requiredLevel"
           class="form-control"
           min="0"
           step="5"
           placeholder="0"
         />
-        <small class="text-muted">Users need this level to equip the decoration (recommended: multiples of 5)</small>
+        <small class="text-muted"
+          >Users need this level to equip the decoration (recommended: multiples of 5)</small
+        >
       </div>
       <div class="mb-3">
         <label class="form-label">Choose Image</label>
         <div class="file-input-wrapper">
-          <input 
+          <input
             type="file"
             ref="decorationFileInput"
             accept="image/*"
@@ -281,12 +287,14 @@
             @change="handleDecorationFileUpload"
           />
         </div>
-        <small class="text-muted mt-1 d-block">Current: {{ editingDecoration.src || 'No image selected' }}</small>
+        <small class="text-muted mt-1 d-block"
+          >Current: {{ editingDecoration.src || 'No image selected' }}</small
+        >
       </div>
       <div v-if="editingDecoration.src" class="mb-3 text-center">
         <label class="form-label d-block">Preview</label>
-        <img 
-          :src="editingDecoration.src" 
+        <img
+          :src="editingDecoration.src"
           :alt="editingDecoration.name"
           class="decoration-modal-preview"
         />
@@ -337,7 +345,7 @@ const defaultDecorations = [
   { name: 'olives', src: '/src/images/avatar_decoration/olives.png', requiredLevel: 10 },
   { name: 'cat', src: '/src/images/avatar_decoration/cat.png', requiredLevel: 15 },
   { name: 'summer', src: '/src/images/avatar_decoration/summer.png', requiredLevel: 20 },
-  { name: 'zoo', src: '/src/images/avatar_decoration/zoo.png', requiredLevel: 25 }
+  { name: 'zoo', src: '/src/images/avatar_decoration/zoo.png', requiredLevel: 25 },
 ]
 
 // Load decorations from localStorage or use defaults
@@ -374,7 +382,7 @@ const sortedDecorations = computed(() => {
   const list = [...decorations.value]
   const key = decorationSortKey.value
   const dir = decorationSortDir.value === 'asc' ? 1 : -1
-  
+
   list.sort((a, b) => {
     // Handle numeric sorting for requiredLevel
     if (key === 'requiredLevel') {
@@ -388,7 +396,7 @@ const sortedDecorations = computed(() => {
     if (va > vb) return 1 * dir
     return 0
   })
-  
+
   return list
 })
 
@@ -597,7 +605,7 @@ function editDecoration(decoration) {
 
 function deleteDecoration(name) {
   if (!confirm(`Are you sure you want to delete the "${name}" decoration?`)) return
-  decorations.value = decorations.value.filter(d => d.name !== name)
+  decorations.value = decorations.value.filter((d) => d.name !== name)
   saveDecorations()
   showToast('Decoration deleted', `"${name}" was removed`)
 }
@@ -652,14 +660,14 @@ function saveDecoration() {
 
   if (isNewDecoration.value) {
     // Check for duplicate name
-    if (decorations.value.some(d => d.name === editingDecoration.value.name)) {
+    if (decorations.value.some((d) => d.name === editingDecoration.value.name)) {
       showToast('Error', 'A decoration with this name already exists')
       return
     }
     decorations.value.push({ ...editingDecoration.value })
     showToast('Decoration added', `"${editingDecoration.value.name}" was added`)
   } else {
-    const idx = decorations.value.findIndex(d => d.name === editingDecoration.value.name)
+    const idx = decorations.value.findIndex((d) => d.name === editingDecoration.value.name)
     if (idx !== -1) {
       decorations.value[idx] = { ...editingDecoration.value }
     }

@@ -2,7 +2,7 @@
   <NavBar />
   <main class="page">
     <div class="page-title">
-      <h2>SETTINGS</h2>
+      <h4>SETTINGS</h4>
     </div>
 
     <section v-if="user" class="settings-card">

@@ -108,7 +108,6 @@ body {
   line-height: normal;
 }
 
-
 /* =============================================== */
 /* LOGIN                                           */
 /* =============================================== */
@@ -181,7 +180,6 @@ body {
   font-weight: 400;
   line-height: normal;
 }
-
 
 /* =============================================== */
 /* NAVBAR                                          */
@@ -341,7 +339,6 @@ body {
   transform: translateY(-3px);
   background: rgba(241, 150, 64, 0.06);
 }
-
 
 /* =============================================== */
 /* LANDING PAGE                                    */
@@ -1140,8 +1137,6 @@ footer p {
 /* HABIT COMPONENTS (Shared) */
 /* =============================================== */
 
-
-
 /* =============================================== */
 /* HABIT MANAGER                                   */
 /* =============================================== */
@@ -1152,7 +1147,9 @@ footer p {
 }
 
 .weather-box {
-  background: linear-gradient(135deg, #355d4c 0%, #4f6f5f 100%);
+  background: linear-gradient(180deg, rgba(53, 93, 76, 0.8), rgba(53, 93, 76, 0.8));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   color: #fff;
   border-radius: var(--radius);
   min-height: 200px;
@@ -1228,6 +1225,10 @@ footer p {
   outline: none;
   border-color: var(--green);
   box-shadow: 0 0 8px rgba(79, 111, 95, 0.2);
+}
+
+.pie-color {
+  color: #ebac70;
 }
 
 .profile-card {
@@ -1326,14 +1327,14 @@ footer p {
 }
 
 .bg-success-soft {
-  background: #2f8f5f;
+  background: rgba(53, 93, 76, 0.7);
   color: #ffffff;
   font-weight: 600;
   padding: 6px 12px;
 }
 
 .bg-primary-soft {
-  background: #3a6fd8;
+  background: rgba(241, 150, 64, 0.7);
   color: #ffffff;
   font-weight: 600;
   padding: 6px 12px;
@@ -1353,7 +1354,7 @@ footer p {
 }
 
 /* FORM INPUTS */
-.card.p-3.mb-0 input,
+/* .card.p-3.mb-0 input,
 .card.p-3.mb-0 select {
   border: 2px solid #e0e0e0;
   border-radius: 10px;
@@ -1377,9 +1378,9 @@ footer p {
   align-items: center;
   gap: 6px;
 }
-
+ */
 /* CREATE BUTTON */
-.card.p-3.mb-0 .btn-primary {
+/* .card.p-3.mb-0 .btn-primary {
   background: linear-gradient(135deg, var(--green-dark), var(--green));
   border: none;
   border-radius: 10px;
@@ -1395,7 +1396,7 @@ footer p {
 
 .card.p-3.mb-0 .btn-primary:active {
   transform: translateY(0);
-}
+} */
 
 /* HABIT CARDS - scoped to habits-grid only */
 .habits-grid .card {
@@ -1733,6 +1734,101 @@ footer p {
   border-radius: var(--radius);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   background: #fff;
+}
+
+/* Figma: clean pill-style filters (overrides) */
+.filters-card {
+  background: transparent; /* embed into page */
+  box-shadow: none;
+  padding: 10px 8px;
+}
+
+.filters-card .row {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+}
+
+.filters-card .col-md-2 {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1 1 0;
+  min-width: 140px;
+}
+
+.filters-card .col-md-1 {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 0 0 48px;
+}
+
+.filters-card label {
+  font-size: 15px; /* slightly larger */
+  font-weight: 700;
+  color: rgba(24, 38, 32, 0.8); /* #182620CC */
+  margin: 0 0 4px 0;
+}
+
+.filters-card .form-select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background: rgba(53, 93, 76, 0.302); /* #355D4C4D */
+  color: rgba(24, 38, 32, 0.8); /* #182620CC */
+  border: none;
+  padding: 6px 36px 6px 12px;
+  width: 100%;
+  height: 36px; /* reduced height */
+  border-radius: 18px; /* more rounded */
+  font-size: 14px;
+  font-weight: 700; /* make selected value bold */
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.04);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10' fill='%23ffffff' fill-opacity='0'/><path d='M8 10l4 4 4-4' stroke='%23182620' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' fill='none' stroke-opacity='0.8'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 26px;
+}
+
+/* Make dropdown option values bolder and slightly rounded where supported */
+.filters-card .form-select option {
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 12px;
+}
+
+/* Small vendor tweaks to hide native arrow on IE/Edge and ensure custom arrow shows */
+.filters-card .form-select::-ms-expand {
+  display: none;
+}
+
+.filters-card .form-select:focus {
+  outline: none;
+  box-shadow: 0 6px 18px rgba(53, 93, 76, 0.08);
+}
+
+/* Reset/delete button in filters toolbar */
+.filters-card .btn-reset {
+  background: rgba(197, 116, 109, 0.698); /* #C5746DB2 */
+  color: #ededed; /* white-ish icon */
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 8px;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.filters-card .btn-reset:hover {
+  background: rgba(197, 116, 109, 0.85);
+  transform: translateY(-2px);
+}
+
+.filters-card .btn-reset svg {
+  color: #ededed;
 }
 
 .filters-header strong {
@@ -2899,12 +2995,9 @@ footer p {
   }
 }
 
-
 /* =============================================== */
 /* EXPLORE HABITS                              */
 /* =============================================== */
-
-
 
 /* PAGE TITLE */
 .page-title {
@@ -2938,10 +3031,15 @@ footer p {
 .card.p-3.mb-0:hover {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
-.card.p-3.mb-0 input, .card.p-3.mb-0 select {
+.card.p-3.mb-0 input,
+.card.p-3.mb-0 select {
   border: 2px solid #e0e0e0;
-  border-radius: 10px; transition: all 0.3s ease; font-size: 14px; }
-.card.p-3.mb-0 input:focus, .card.p-3.mb-0 select:focus {
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+.card.p-3.mb-0 input:focus,
+.card.p-3.mb-0 select:focus {
   border-color: var(--green);
   box-shadow: 0 0 8px rgba(79, 111, 95, 0.15);
   outline: none;
@@ -3071,11 +3169,13 @@ footer p {
 }
 .habit-details {
   background-color: #fff;
-  padding: 0; color: #182620ad;
+  padding: 0;
+  color: #182620ad;
   font-weight: 600;
   font-size: 16px;
   border: none;
-  margin-left: 5px;}
+  margin-left: 5px;
+}
 .habit-details p {
   margin: 0;
 }
