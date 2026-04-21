@@ -2,7 +2,7 @@
   <div class="stats-wrapper">
     <div class="stats-header d-flex justify-content-between align-items-center mb-3">
       <h5 class="mb-0">
-        <FontAwesomeIcon icon="chart-pie" class="text-warning me-2" />
+        <FontAwesomeIcon icon="chart-pie" class="pie-color me-2" />
         Habit Statistics
       </h5>
       <div class="btn-group" role="group">
@@ -31,7 +31,7 @@
     </div>
     <div class="stats-summary mt-2 text-center">
       <small class="text-muted">
-        <span class="me-3">🎯 Active: {{ activeHabits }}</span>
+        <span class="me-3">🎯 Active: {{ activeTasks }}</span>
         <span>✅ Completed: {{ completedCount }}</span>
       </small>
     </div>
@@ -60,25 +60,25 @@ function getCompletedCount() {
 
 const completedCount = ref(getCompletedCount())
 
-const activeHabits = computed(() => {
+const activeTasks = computed(() => {
   const user = userStore.currentUser
   if (!user) return 0
   return (habitStore.getHabitsByUser(user.id) || []).length
 })
 
 function counts() {
-  return [activeHabits.value, completedCount.value]
+  return [activeTasks.value, completedCount.value]
 }
 
 function getChartConfig() {
   const data = counts()
   const baseConfig = {
     data: {
-      labels: ['Active Habits', 'Completed'],
+      labels: ['Active Tasks', 'Completed'],
       datasets: [
         {
           data,
-          backgroundColor: ['#FCAB92', '#A4BD84'],
+          backgroundColor: ['#EBAC70', 'rgba(53, 93, 76, 0.70)'],
           borderRadius: 10,
           borderSkipped: false,
         },
@@ -138,7 +138,7 @@ watch(
   { deep: true },
 )
 
-// Also listen for localStorage changes (for completed count updates)
+// also listen for localStorage changes (for completed count updates)
 function handleStorageChange() {
   completedCount.value = getCompletedCount()
   const data = counts()
@@ -151,12 +151,14 @@ function handleStorageChange() {
 onMounted(() => {
   createChart()
   window.addEventListener('storage', handleStorageChange)
-  window.addEventListener('habitCompleted', handleStorageChange)
+  window.addEventListener('taskCompleted', handleStorageChange)
 })
 
 onBeforeUnmount(() => {
   if (chart) chart.destroy()
   window.removeEventListener('storage', handleStorageChange)
-  window.removeEventListener('habitCompleted', handleStorageChange)
+  window.removeEventListener('taskCompleted', handleStorageChange)
 })
 </script>
+
+<style scoped></style>

@@ -2,7 +2,7 @@
   <NavBar />
   <div class="containerBox">
     <div class="page-title">
-      <h2>HABITS MANAGER</h2>
+      <h4>HABITS MANAGER</h4>
     </div>
     <!-- Main Content Container -->
     <div class="content row mt-2 g-4 align-items-stretch">
@@ -47,12 +47,10 @@
         </div>
       </div>
     </div>
-    <div class="row mt-4 add-habit">
+    <!-- <div class="row mt-4 add-habit">
       <div class="col-12">
-        <!-- Add Habit Form -->
         <div class="card p-3 mb-0">
           <form @submit.prevent="handleAdd">
-            <!-- Prevent default form submission -->
             <div class="row g-2">
               <div class="col-md-5">
                 <label>Description</label>
@@ -84,7 +82,6 @@
                 </select>
               </div>
 
-              <!-- COUNT EXTRA FIELDS -->
               <div v-if="form.type === 'count'" class="col-12 mt-2">
                 <div class="row g-2">
                   <div class="col-md-2">
@@ -102,7 +99,6 @@
                 </div>
               </div>
 
-              <!-- TIME EXTRA FIELDS -->
               <div v-if="form.type === 'time'" class="col-12 mt-2">
                 <div class="row g-2">
                   <div class="col-md-6">
@@ -116,7 +112,6 @@
                 </div>
               </div>
 
-              <!-- CREATE BUTTON - Always at the bottom -->
               <div class="col-12 mt-3">
                 <button class="btn btn-primary w-100" type="submit">
                   <FontAwesomeIcon icon="plus" /> Create new habit
@@ -127,7 +122,7 @@
         </div>
       </div>
     </div>
-
+ -->
     <br />
     <div class="row">
       <div class="col-12">
@@ -141,7 +136,7 @@
         <div class="card p-3 mb-0 filters-card">
           <div class="row g-2 align-items-end">
             <div class="col-md-2">
-              <label>Type</label>
+              <label style="font-size: 16px">Type</label>
               <select v-model="filters.type" class="form-select">
                 <option value="all">All</option>
                 <option value="check">Check</option>
@@ -150,7 +145,7 @@
               </select>
             </div>
             <div class="col-md-2">
-              <label>Priority</label>
+              <label style="font-size: 16px">Priority</label>
               <select v-model="filters.priority" class="form-select">
                 <option value="all">All</option>
                 <option value="low">Low</option>
@@ -159,7 +154,7 @@
               </select>
             </div>
             <div class="col-md-2">
-              <label>Location</label>
+              <label style="font-size: 16px">Location</label>
               <select v-model="filters.location" class="form-select">
                 <option value="all">All</option>
                 <option value="inside">Inside</option>
@@ -167,7 +162,7 @@
               </select>
             </div>
             <div class="col-md-2">
-              <label>Sort By</label>
+              <label style="font-size: 16px">Sort By</label>
               <select v-model="filters.sortBy" class="form-select">
                 <option value="priority">Priority</option>
                 <option value="created_at">Created At</option>
@@ -175,14 +170,16 @@
               </select>
             </div>
             <div class="col-md-2">
-              <label>Order</label>
+              <label style="font-size: 16px">Order</label>
               <select v-model="filters.sortOrder" class="form-select">
                 <option value="asc">Ascending</option>
                 <option value="desc">Descending</option>
               </select>
             </div>
             <div class="col-md-1 d-flex justify-content-end">
-              <button class="btn btn-md btn-outline-danger" @click="resetFilters">Reset</button>
+              <button class="btn btn-md btn-reset" @click="resetFilters" aria-label="Reset filters">
+                <FontAwesomeIcon icon="trash" />
+              </button>
             </div>
           </div>
         </div>
@@ -223,10 +220,7 @@
                     :class="{ 'check-completed': habit.current_progress.checked }"
                     @click="toggleCheck(habit.id)"
                   >
-                    <FontAwesomeIcon
-                      icon="check-circle"
-                      class="check-icon"
-                    />
+                    <FontAwesomeIcon icon="check-circle" class="check-icon" />
                   </div>
                   <div class="check-text">
                     <span v-if="habit.current_progress.checked" class="badge bg-success"
@@ -237,26 +231,23 @@
                 </div>
 
                 <div class="check-actions d-flex gap-2 mt-auto">
-                  <button 
-                    v-if="habit.current_progress.checked" 
-                    class="btn btn-sm btn-success flex-fill" 
+                  <button
+                    v-if="habit.current_progress.checked"
+                    class="btn btn-sm btn-success flex-fill"
                     @click="completeAndRemoveHabit(habit.id)"
                   >
                     <FontAwesomeIcon icon="trophy" />
                     Complete & Earn Points
                   </button>
-                  <button 
+                  <button
                     v-else
-                    class="btn btn-sm btn-outline-success flex-fill" 
+                    class="btn btn-sm btn-outline-success flex-fill"
                     @click="toggleCheck(habit.id)"
                   >
                     <FontAwesomeIcon icon="check" />
                     Mark Done
                   </button>
-                  <button
-                    class="btn btn-sm btn-outline-danger"
-                    @click="deleteHabit(habit.id)"
-                  >
+                  <button class="btn btn-sm btn-outline-danger" @click="deleteHabit(habit.id)">
                     <FontAwesomeIcon icon="trash" />
                   </button>
                 </div>
@@ -297,24 +288,21 @@
                 </div>
 
                 <div class="d-flex gap-2 mt-auto">
-                  <button 
+                  <button
                     v-if="countPercent(habit) >= 100"
-                    class="btn btn-sm btn-success flex-fill" 
+                    class="btn btn-sm btn-success flex-fill"
                     @click="completeAndRemoveHabit(habit.id)"
                   >
                     <FontAwesomeIcon icon="trophy" /> Complete & Earn Points
                   </button>
-                  <button 
+                  <button
                     v-else
-                    class="btn btn-sm btn-outline-success flex-fill" 
+                    class="btn btn-sm btn-outline-success flex-fill"
                     @click="complete(habit.id)"
                   >
                     <FontAwesomeIcon icon="check" /> Mark Complete
                   </button>
-                  <button
-                    class="btn btn-sm btn-outline-danger"
-                    @click="deleteHabit(habit.id)"
-                  >
+                  <button class="btn btn-sm btn-outline-danger" @click="deleteHabit(habit.id)">
                     <FontAwesomeIcon icon="trash" />
                   </button>
                 </div>
@@ -345,9 +333,9 @@
 
                 <div class="time-remaining">
                   <span class="time-label">Time Remaining:</span>
-                  <span class="time-value"
-                    >{{ formatSecondsToMinSec(habit.remaining_seconds ?? (habit.target_minutes * 60) ?? 0) }}</span
-                  >
+                  <span class="time-value">{{
+                    formatSecondsToMinSec(habit.remaining_seconds ?? habit.target_minutes * 60 ?? 0)
+                  }}</span>
                 </div>
 
                 <div class="d-flex gap-2 mt-auto">
@@ -357,24 +345,21 @@
                   >
                     <FontAwesomeIcon icon="clock" /> Timer
                   </button>
-                  <button 
+                  <button
                     v-if="timePercent(habit) >= 100"
-                    class="btn btn-sm btn-success flex-fill" 
+                    class="btn btn-sm btn-success flex-fill"
                     @click="completeAndRemoveHabit(habit.id)"
                   >
                     <FontAwesomeIcon icon="trophy" /> Complete & Earn Points
                   </button>
-                  <button 
+                  <button
                     v-else
-                    class="btn btn-sm btn-outline-success flex-fill" 
+                    class="btn btn-sm btn-outline-success flex-fill"
                     @click="complete(habit.id)"
                   >
                     <FontAwesomeIcon icon="check" /> Mark Complete
                   </button>
-                  <button
-                    class="btn btn-sm btn-outline-danger"
-                    @click="deleteHabit(habit.id)"
-                  >
+                  <button class="btn btn-sm btn-outline-danger" @click="deleteHabit(habit.id)">
                     <FontAwesomeIcon icon="trash" />
                   </button>
                 </div>
@@ -395,7 +380,9 @@
           </div>
           <div class="modal-body text-center">
             <div class="timer-display mb-3">
-              <span class="timer-value" :class="{ 'timer-running': timerIsRunning }">{{ formattedTime }}</span>
+              <span class="timer-value" :class="{ 'timer-running': timerIsRunning }">{{
+                formattedTime
+              }}</span>
             </div>
             <p class="text-muted mb-3">
               <span v-if="timerIsRunning" class="badge bg-success">Running</span>
@@ -406,7 +393,11 @@
               <button class="btn btn-primary" @click="startTimerButton" :disabled="timerIsRunning">
                 <FontAwesomeIcon icon="play" /> {{ timerIsRunning ? 'Running...' : 'Start' }}
               </button>
-              <button class="btn btn-secondary" @click="pauseTimerButton" :disabled="!timerIsRunning">
+              <button
+                class="btn btn-secondary"
+                @click="pauseTimerButton"
+                :disabled="!timerIsRunning"
+              >
                 <FontAwesomeIcon icon="pause" /> Pause
               </button>
               <button class="btn btn-success" @click="completeTimerHabit">
@@ -679,11 +670,11 @@ function completeAndRemoveHabit(id) {
     const current = parseInt(localStorage.getItem(key) || '0', 10)
     localStorage.setItem(key, String(current + 1))
   }
-  
+
   habitStore.completeHabit(id)
   habitStore.deleteHabit(id)
   showToast('Success', 'Habit completed! Points awarded.', 'success')
-  
+
   // Dispatch event for chart update
   window.dispatchEvent(new Event('habitCompleted'))
 }
@@ -693,7 +684,7 @@ function completeTimerHabit() {
     const id = activeTimerHabit.value.id
     pauseTimerButton()
     timerInstance.value?.hide()
-    
+
     // Increment completed count in localStorage
     const userId = userStore.currentUser?.id
     if (userId) {
@@ -701,11 +692,11 @@ function completeTimerHabit() {
       const current = parseInt(localStorage.getItem(key) || '0', 10)
       localStorage.setItem(key, String(current + 1))
     }
-    
+
     habitStore.completeHabit(id)
     habitStore.deleteHabit(id)
     showToast('Success', 'Habit completed! Points awarded.', 'success')
-    
+
     // Dispatch event for chart update
     window.dispatchEvent(new Event('habitCompleted'))
   }
@@ -778,23 +769,23 @@ onUnmounted(() => {
 function openTimer(id) {
   const habit = habitStore.getHabitById(id)
   activeTimerHabit.value = habit
-  
+
   // Get remaining seconds from habit (or calculate from target_minutes)
   const targetSeconds = (habit.target_minutes ?? 0) * 60
   remainingSeconds.value = habit.remaining_seconds ?? targetSeconds
   timerIsRunning.value = !!habit.timer_last_started_at
-  
+
   // If timer was already running, calculate current remaining time
   if (habit.timer_last_started_at) {
     const elapsed = Date.now() - habit.timer_last_started_at
     const elapsedSec = Math.floor(elapsed / 1000)
     remainingSeconds.value = Math.max(0, remainingSeconds.value - elapsedSec)
-    
+
     if (remainingSeconds.value > 0) {
       startCountdown()
     }
   }
-  
+
   if (!timerInstance.value && timerModalEl.value) {
     timerInstance.value = new bootstrap.Modal(timerModalEl.value)
   }
@@ -806,7 +797,7 @@ function startCountdown() {
   if (timerIntervalId.value) {
     clearInterval(timerIntervalId.value)
   }
-  
+
   timerIntervalId.value = setInterval(() => {
     if (remainingSeconds.value <= 0) {
       // Timer completed
@@ -814,7 +805,7 @@ function startCountdown() {
       timerIntervalId.value = null
       timerIsRunning.value = false
       remainingSeconds.value = 0
-      
+
       // Auto-complete the habit
       if (activeTimerHabit.value) {
         habitStore.completeHabit(activeTimerHabit.value.id)
@@ -822,16 +813,16 @@ function startCountdown() {
       }
       return
     }
-    
+
     // Decrement by 1 second
     remainingSeconds.value--
-    
+
     // Update habit progress in real-time for the progress bar
     if (activeTimerHabit.value) {
       const habit = habitStore.getHabitById(activeTimerHabit.value.id)
       if (habit) {
         habit.remaining_seconds = remainingSeconds.value
-        habit.current_progress.seconds = (habit.target_minutes * 60) - remainingSeconds.value
+        habit.current_progress.seconds = habit.target_minutes * 60 - remainingSeconds.value
       }
     }
   }, 1000)
@@ -847,14 +838,14 @@ function stopCountdown() {
 function startTimerButton() {
   if (!activeTimerHabit.value) return
   habitStore.startTimer(activeTimerHabit.value.id)
-  
+
   // If remainingSeconds is 0, reset to full time
   if (remainingSeconds.value <= 0) {
     const h = habitStore.getHabitById(activeTimerHabit.value.id)
     const targetSeconds = (h.target_minutes ?? 0) * 60
     remainingSeconds.value = h.remaining_seconds ?? targetSeconds
   }
-  
+
   timerIsRunning.value = true
   startCountdown()
 }
@@ -877,3 +868,4 @@ function onCloseTimerModal() {
   timerIsRunning.value = false
 }
 </script>
+<style></style>
