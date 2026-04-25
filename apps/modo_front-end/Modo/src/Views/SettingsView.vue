@@ -208,24 +208,42 @@
             v-show="activeSection === 'notifications'"
           >
             <h3 class="section-title"><FontAwesomeIcon icon="bell" /> Notifications</h3>
-            <div v-if="notifications.length === 0" class="no-notifications">
-              <p>No notifications yet!</p>
+            <div class="notification-toggle">
+              <label style="font-weight: 700">Enable Notifications</label>
+              <label class="switch">
+                <input
+                  type="checkbox"
+                  v-model="notificationsEnabled"
+                  @change="saveNotificationsEnabled"
+                />
+                <span class="slider"></span>
+              </label>
             </div>
-            <div
-              v-for="(notification, index) in notifications"
-              :key="index"
-              class="notification-card"
-            >
-              <h3 class="notification-title">{{ notification.title }}</h3>
-              <p class="notification-content">
-                {{ notification.message }}
-              </p>
-              <small class="notification-date">{{
-                formatNotificationDate(notification.date)
-              }}</small>
-              <button class="clear-notification-btn" @click="dismissNotification(index)">
-                Dismiss
-              </button>
+
+            <div v-if="!notificationsEnabled" class="no-notifications">
+              <p>Notifications are turned off.</p>
+            </div>
+
+            <div v-else>
+              <div v-if="notifications.length === 0" class="no-notifications">
+                <p>No notifications yet!</p>
+              </div>
+              <div
+                v-for="(notification, index) in notifications"
+                :key="index"
+                class="notification-card"
+              >
+                <h3 class="notification-title">{{ notification.title }}</h3>
+                <p class="notification-content">
+                  {{ notification.message }}
+                </p>
+                <small class="notification-date">{{
+                  formatNotificationDate(notification.date)
+                }}</small>
+                <button class="clear-notification-btn" @click="readNotification(index)">
+                  Read
+                </button>
+              </div>
             </div>
             <button
               v-if="notifications.length > 0"
@@ -243,6 +261,7 @@
               <strong>Getting Started:</strong> Create your first habit by navigating to the Habit
               Manager page. Click "Create new habit" and fill in the details.
             </p>
+
             <p>
               <strong>Tracking Progress:</strong> Mark habits as complete daily to earn points and
               level up. Each completed habit awards you 10 points!
@@ -338,6 +357,7 @@ function toggleSection(section) {
 
 // Notifications system
 const notifications = ref([])
+const notificationsEnabled = ref(true)
 
 function loadNotifications() {
   const userId = user.value?.id
@@ -371,6 +391,26 @@ function dismissNotification(index) {
   notifications.value.splice(index, 1)
   saveNotifications()
   showToast('Notification dismissed', '', 'success')
+}
+
+function readNotification(index) {
+  // Mark as read by removing from the list (keeps existing behavior)
+  notifications.value.splice(index, 1)
+  saveNotifications()
+  showToast('Notification read', '', 'success')
+}
+
+function saveNotificationsEnabled() {
+  const userId = user.value?.id
+  if (!userId) return
+  localStorage.setItem(`notifications_enabled_${userId}`, notificationsEnabled.value ? '1' : '0')
+}
+
+function loadNotificationsEnabled() {
+  const userId = user.value?.id
+  if (!userId) return
+  const val = localStorage.getItem(`notifications_enabled_${userId}`)
+  if (val === '0') notificationsEnabled.value = false
 }
 
 function clearAllNotifications() {
@@ -641,6 +681,7 @@ onMounted(() => {
   }
   // load notifications and check for unlocked decorations on mount
   loadNotifications()
+  loadNotificationsEnabled()
   checkDecorationUnlocks()
 })
 

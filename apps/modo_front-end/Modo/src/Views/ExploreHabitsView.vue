@@ -12,7 +12,7 @@
             id="search_habit"
             class="search_habit"
             type="search"
-            placeholder="Search habits..."
+            placeholder="Search for habits or tasks..."
           />
 
           <div class="row g-2 align-items-end">
