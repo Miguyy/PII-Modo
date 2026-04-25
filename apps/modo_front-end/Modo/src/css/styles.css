@@ -9,8 +9,11 @@
   --card: #466555;
   --text-light: #e9efe9;
   --text-muted: #b9c7bf;
-  --danger: #b4554d;
+  --danger: #c5746db2; /* active red (with alpha) */
+  --danger-hover: #8b423b; /* red on hover */
   --orange: #f19640;
+  --toggle-off: #ededed;
+  --toggle-on: #355d4c;
   --radius: 18px;
 }
 
@@ -1696,7 +1699,7 @@ footer p {
 }
 
 .habits-grid .card .btn-danger:hover {
-  background: #a54640;
+  background: var(--danger-hover);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(180, 85, 77, 0.25);
 }
@@ -1882,7 +1885,7 @@ footer p {
 }
 
 .filters-card .btn-reset:hover {
-  background: rgba(197, 116, 109, 0.85);
+  background: var(--danger-hover);
   transform: translateY(-2px);
 }
 
@@ -2190,7 +2193,7 @@ footer p {
   border: none;
   color: #fff;
   padding: 8px 14px;
-  border-radius: 999px;
+  border-radius: 12px;
   cursor: pointer;
   font-size: 13px;
   transition: all 0.3s ease;
@@ -2369,7 +2372,7 @@ footer p {
 
 .btn-change {
   padding: 10px 16px;
-  border-radius: 999px;
+  border-radius: 12px;
   border: none;
   background: rgba(255, 255, 255, 0.18);
   color: #fff;
@@ -2397,7 +2400,7 @@ footer p {
 .btn-primary {
   padding: 12px 18px;
   border: none;
-  border-radius: 999px;
+  border-radius: 12px;
   background: #2f4f40;
   color: #fff;
   font-size: 14px;
@@ -2612,7 +2615,7 @@ footer p {
   height: 80px;
   padding: 10px 15px 10px 15px;
   position: relative;
-  border: 1px solid var(--green);
+  border: 0.2px solid #18262053; /* requested notification border */
   border-radius: 20px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2631,7 +2634,7 @@ footer p {
   bottom: 4px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(180, 85, 77, 0.9);
+  background: var(--danger);
   color: #fff;
   font-size: 10px;
   font-weight: 700;
@@ -2654,39 +2657,49 @@ footer p {
 }
 
 .btn-locked {
-  background: rgba(180, 85, 77, 0.8) !important;
+  background: var(--danger) !important;
 }
 
 .btn-locked:hover {
-  background: rgba(180, 85, 77, 1) !important;
+  background: var(--danger-hover) !important;
 }
 
 .clear-notification-btn {
-  width: 60px;
-  height: 30px;
-  padding: 5px 10px;
+  width: 76px;
+  height: 34px;
+  padding: 6px 12px;
   position: absolute;
   top: 50%;
   right: 10px;
   transform: translateY(-50%);
   z-index: 2;
   color: #fff;
-  font-size: 12px;
-  font-weight: 600;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.2);
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.18);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.28);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .clear-notification-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
-  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
-  transform: translateY(-50%) scale(1.1);
+  background: rgba(255, 255, 255, 0.32);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.16);
+  transform: translateY(-50%) scale(1.05);
+}
+
+.nav-item danger {
+  background: var(--danger);
+  color: #fff;
+}
+
+.nav-item:hover.danger {
+  background: var(--danger-hover);
+  transform: translateX(4px);
 }
 
 /* Confirmation Modal */
@@ -2769,7 +2782,7 @@ footer p {
 }
 
 .btn-confirm.btn-danger:hover {
-  background: #943f38;
+  background: var(--danger-hover);
 }
 
 /* Modal Animation */
@@ -2795,6 +2808,62 @@ footer p {
   color: var(--text-muted);
 }
 
+.notification-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.switch {
+  position: relative;
+  width: 48px;
+  height: 28px;
+  display: inline-block;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--toggle-off);
+  -webkit-transition: 0.2s;
+  transition: 0.2s;
+  border-radius: 999px;
+  border: 1px solid rgba(24, 38, 32, 0.06);
+}
+
+.slider:before {
+  position: absolute;
+  content: '';
+  height: 22px;
+  width: 22px;
+  left: 3px;
+  top: 3px;
+  background-color: #fff;
+  -webkit-transition: 0.2s;
+  transition: 0.2s;
+  border-radius: 50%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+.switch input:checked + .slider {
+  background-color: var(--toggle-on);
+}
+
+.switch input:checked + .slider:before {
+  transform: translateX(20px);
+}
+
 .btn-clear-all {
   width: 100%;
   margin-top: 12px;
@@ -2809,7 +2878,7 @@ footer p {
 }
 
 .btn-clear-all:hover {
-  background: #943f38;
+  background: var(--danger-hover);
   transform: translateY(-2px);
 }
 
@@ -3170,9 +3239,36 @@ footer p {
   gap: 6px;
 }
 .search_habit {
-  padding: 8px 12px;
   width: 100%;
-  margin-bottom: 20px;
+  height: 48px;
+  padding: 10px 16px 10px 44px;
+  border-radius: 999px;
+  border: 1px solid rgba(24, 38, 32, 0.06);
+  background: linear-gradient(180deg, #ffffff, #fbfffd);
+  box-shadow: 0 6px 18px rgba(15, 40, 30, 0.04);
+  font-size: 15px;
+  color: #182620;
+  margin-bottom: 16px;
+  transition:
+    box-shadow 160ms ease,
+    transform 80ms ease,
+    border-color 120ms ease;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23999'><path d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85zM6.5 11a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: 14px center;
+  background-size: 16px 16px;
+}
+
+.search_habit::placeholder {
+  color: rgba(24, 38, 32, 0.4);
+  font-weight: 600;
+}
+
+.search_habit:focus {
+  border-color: rgba(79, 111, 95, 0.9);
+  box-shadow: 0 14px 40px rgba(79, 111, 95, 0.08);
+  transform: translateY(-1px);
+  outline: none;
 }
 
 /* HABITS CARDS */
@@ -3419,7 +3515,7 @@ footer p {
   color: #fff;
 }
 .habits-grid .card .btn-danger:hover {
-  background: #a54640;
+  background: var(--danger-hover);
   transform: translateY(-2px);
 }
 .habits-grid .card .btn-outline-danger {
@@ -3429,7 +3525,7 @@ footer p {
 }
 
 .habits-grid .card .btn-outline-danger:hover {
-  background: rgba(197, 116, 109, 0.85);
+  background: var(--danger-hover);
   color: #ededed;
   transform: translateY(-2px);
 }
