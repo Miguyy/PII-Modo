@@ -8,11 +8,16 @@
     <div class="row mt-2">
       <div class="col-12">
         <div class="card p-3 mb-0 filters-card">
-          <input id="search_habit" class="search_habit" type="search" placeholder="Search habits...">
+          <input
+            id="search_habit"
+            class="search_habit"
+            type="search"
+            placeholder="Search habits..."
+          />
 
           <div class="row g-2 align-items-end">
             <div class="col-md-2">
-              <label>Type</label>
+              <label style="font-size: 16px">Type</label>
               <select class="form-select">
                 <option value="all">All</option>
                 <option value="check">Check</option>
@@ -21,7 +26,7 @@
               </select>
             </div>
             <div class="col-md-2">
-              <label>Priority</label>
+              <label style="font-size: 16px">Priority</label>
               <select class="form-select">
                 <option value="all">All</option>
                 <option value="low">Low</option>
@@ -30,7 +35,7 @@
               </select>
             </div>
             <div class="col-md-2">
-              <label>Location</label>
+              <label style="font-size: 16px">Location</label>
               <select class="form-select">
                 <option value="all">All</option>
                 <option value="inside">Inside</option>
@@ -38,21 +43,23 @@
               </select>
             </div>
             <div class="col-md-2">
-              <label>Sort By</label>
+              <label style="font-size: 16px">Sort By</label>
               <select class="form-select">
                 <option value="priority">Priority</option>
                 <option value="created_at" selected>Created At</option>
               </select>
             </div>
             <div class="col-md-2">
-              <label>Order</label>
+              <label style="font-size: 16px">Order</label>
               <select class="form-select">
                 <option value="asc">Ascending</option>
                 <option value="desc" selected>Descending</option>
               </select>
             </div>
-            <div class="col-md-2 d-flex justify-content-end">
-              <button class="btn w-100 btn-outline-danger">Reset Filters</button>
+            <div class="col-md-1 d-flex justify-content-end">
+              <button class="btn btn-md btn-reset" @click="resetFilters" aria-label="Reset filters">
+                <FontAwesomeIcon icon="trash" />
+              </button>
             </div>
           </div>
         </div>
@@ -79,9 +86,13 @@
 
               <div class="habit-content">
                 <div class="habit-category-description mt-2">
-                  <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quas, suscipit sunt! Distinctio dolore iure aspernatur explicabo tempore amet? Aperiam officia ipsam qui, et iure reprehenderit quod ea fuga repudiandae labore!</p>
+                  <p>
+                    Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quas, suscipit sunt!
+                    Distinctio dolore iure aspernatur explicabo tempore amet? Aperiam officia ipsam
+                    qui, et iure reprehenderit quod ea fuga repudiandae labore!
+                  </p>
                 </div>
-                <hr style="margin: 5px;">
+                <hr style="margin: 5px" />
                 <button class="habit-details d-flex align-items-center gap-3">
                   <font-awesome-icon icon="fa-solid fa-list-check" />
                   <p>2 Tasks available</p>
@@ -103,9 +114,13 @@
 
               <div class="habit-content">
                 <div class="habit-category-description mt-2">
-                  <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quas, suscipit sunt! Distinctio dolore iure aspernatur explicabo tempore amet? Aperiam officia ipsam qui, et iure reprehenderit quod ea fuga repudiandae labore!</p>
+                  <p>
+                    Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quas, suscipit sunt!
+                    Distinctio dolore iure aspernatur explicabo tempore amet? Aperiam officia ipsam
+                    qui, et iure reprehenderit quod ea fuga repudiandae labore!
+                  </p>
                 </div>
-                <hr style="margin: 5px;">
+                <hr style="margin: 5px" />
                 <button class="habit-details d-flex align-items-center gap-3">
                   <font-awesome-icon icon="fa-solid fa-list-check" />
                   <p>2 Tasks available</p>
@@ -127,9 +142,13 @@
 
               <div class="habit-content">
                 <div class="habit-category-description mt-2">
-                  <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quas, suscipit sunt! Distinctio dolore iure aspernatur explicabo tempore amet? Aperiam officia ipsam qui, et iure reprehenderit quod ea fuga repudiandae labore!</p>
+                  <p>
+                    Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quas, suscipit sunt!
+                    Distinctio dolore iure aspernatur explicabo tempore amet? Aperiam officia ipsam
+                    qui, et iure reprehenderit quod ea fuga repudiandae labore!
+                  </p>
                 </div>
-                <hr style="margin: 5px;">
+                <hr style="margin: 5px" />
                 <button class="habit-details d-flex align-items-center gap-3">
                   <font-awesome-icon icon="fa-solid fa-list-check" />
                   <p>2 Tasks available</p>
@@ -141,13 +160,12 @@
       </div>
     </div>
 
-
     <div class="page-title">
-        <h4>ALL HABITS</h4>
+      <h4>ALL HABITS</h4>
     </div>
 
     <div class="row mt-4 mb-5">
-      <div class="col-12" style="gap: 10px;">
+      <div class="col-12" style="gap: 10px">
         <div class="habits-grid">
           <div class="habit-item">
             <div class="card h-100">
@@ -162,9 +180,13 @@
 
               <div class="habit-content">
                 <div class="habit-category-description mt-2">
-                  <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quas, suscipit sunt! Distinctio dolore iure aspernatur explicabo tempore amet? Aperiam officia ipsam qui, et iure reprehenderit quod ea fuga repudiandae labore!</p>
+                  <p>
+                    Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quas, suscipit sunt!
+                    Distinctio dolore iure aspernatur explicabo tempore amet? Aperiam officia ipsam
+                    qui, et iure reprehenderit quod ea fuga repudiandae labore!
+                  </p>
                 </div>
-                <hr style="margin: 5px;">
+                <hr style="margin: 5px" />
                 <button class="habit-details d-flex align-items-center gap-3">
                   <font-awesome-icon icon="fa-solid fa-list-check" />
                   <p>2 Tasks available</p>
@@ -186,9 +208,13 @@
 
               <div class="habit-content">
                 <div class="habit-category-description mt-2">
-                  <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quas, suscipit sunt! Distinctio dolore iure aspernatur explicabo tempore amet? Aperiam officia ipsam qui, et iure reprehenderit quod ea fuga repudiandae labore!</p>
+                  <p>
+                    Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quas, suscipit sunt!
+                    Distinctio dolore iure aspernatur explicabo tempore amet? Aperiam officia ipsam
+                    qui, et iure reprehenderit quod ea fuga repudiandae labore!
+                  </p>
                 </div>
-                <hr style="margin: 5px;">
+                <hr style="margin: 5px" />
                 <button class="habit-details d-flex align-items-center gap-3">
                   <font-awesome-icon icon="fa-solid fa-list-check" />
                   <p>2 Tasks available</p>
@@ -210,9 +236,13 @@
 
               <div class="habit-content">
                 <div class="habit-category-description mt-2">
-                  <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quas, suscipit sunt! Distinctio dolore iure aspernatur explicabo tempore amet? Aperiam officia ipsam qui, et iure reprehenderit quod ea fuga repudiandae labore!</p>
+                  <p>
+                    Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quas, suscipit sunt!
+                    Distinctio dolore iure aspernatur explicabo tempore amet? Aperiam officia ipsam
+                    qui, et iure reprehenderit quod ea fuga repudiandae labore!
+                  </p>
                 </div>
-                <hr style="margin: 5px;">
+                <hr style="margin: 5px" />
                 <button class="habit-details d-flex align-items-center gap-3">
                   <font-awesome-icon icon="fa-solid fa-list-check" />
                   <p>2 Tasks available</p>
@@ -234,9 +264,13 @@
 
               <div class="habit-content">
                 <div class="habit-category-description mt-2">
-                  <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quas, suscipit sunt! Distinctio dolore iure aspernatur explicabo tempore amet? Aperiam officia ipsam qui, et iure reprehenderit quod ea fuga repudiandae labore!</p>
+                  <p>
+                    Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quas, suscipit sunt!
+                    Distinctio dolore iure aspernatur explicabo tempore amet? Aperiam officia ipsam
+                    qui, et iure reprehenderit quod ea fuga repudiandae labore!
+                  </p>
                 </div>
-                <hr style="margin: 5px;">
+                <hr style="margin: 5px" />
                 <button class="habit-details d-flex align-items-center gap-3">
                   <font-awesome-icon icon="fa-solid fa-list-check" />
                   <p>2 Tasks available</p>
@@ -258,9 +292,13 @@
 
               <div class="habit-content">
                 <div class="habit-category-description mt-2">
-                  <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quas, suscipit sunt! Distinctio dolore iure aspernatur explicabo tempore amet? Aperiam officia ipsam qui, et iure reprehenderit quod ea fuga repudiandae labore!</p>
+                  <p>
+                    Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quas, suscipit sunt!
+                    Distinctio dolore iure aspernatur explicabo tempore amet? Aperiam officia ipsam
+                    qui, et iure reprehenderit quod ea fuga repudiandae labore!
+                  </p>
                 </div>
-                <hr style="margin: 5px;">
+                <hr style="margin: 5px" />
                 <button class="habit-details d-flex align-items-center gap-3">
                   <font-awesome-icon icon="fa-solid fa-list-check" />
                   <p>2 Tasks available</p>
@@ -282,9 +320,13 @@
 
               <div class="habit-content">
                 <div class="habit-category-description mt-2">
-                  <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quas, suscipit sunt! Distinctio dolore iure aspernatur explicabo tempore amet? Aperiam officia ipsam qui, et iure reprehenderit quod ea fuga repudiandae labore!</p>
+                  <p>
+                    Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quas, suscipit sunt!
+                    Distinctio dolore iure aspernatur explicabo tempore amet? Aperiam officia ipsam
+                    qui, et iure reprehenderit quod ea fuga repudiandae labore!
+                  </p>
                 </div>
-                <hr style="margin: 5px;">
+                <hr style="margin: 5px" />
                 <button class="habit-details d-flex align-items-center gap-3">
                   <font-awesome-icon icon="fa-solid fa-list-check" />
                   <p>2 Tasks available</p>

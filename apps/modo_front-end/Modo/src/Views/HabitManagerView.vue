@@ -130,7 +130,7 @@
       </div>
     </div>
 
-    <!-- Filters and Sorting Toolbar (moved below divider) -->
+    <!-- Filters and Sorting Toolbar -->
     <div class="row mt-2">
       <div class="col-12">
         <div class="card p-3 mb-0 filters-card">
@@ -186,7 +186,7 @@
       </div>
     </div>
 
-    <!-- Habits list: CSS Grid to avoid gaps -->
+    <!-- Habits list-->
     <div class="row mt-4">
       <div class="col-12">
         <div class="habits-grid">
@@ -195,19 +195,21 @@
               <div class="card-header-custom">
                 <div class="habit-title-section">
                   <strong class="habit-title">{{ habit.description }}</strong>
-                  <div class="habit-badges">
-                    <span class="badge badge-priority" :class="'priority-' + habit.priority">
-                      {{ habit.priority.toUpperCase() }}
-                    </span>
-                    <span class="badge badge-type" :class="'type-' + habit.type">
-                      <FontAwesomeIcon :icon="getHabitIcon(habit.type)" /> {{ habit.type }}
-                    </span>
+                  <div class="habit-category">{{ habit.category || '' }}</div>
+                </div>
+
+                <!-- NEW ROW -->
+                <div class="habit-meta-row">
+                  <small class="location-info">
+                    <FontAwesomeIcon icon="map-pin" /> {{ habit.location }}
+                  </small>
+
+                  <div class="priority-right">
+                    {{ habit.priority.toUpperCase() }}
                   </div>
                 </div>
-                <small class="location-info">
-                  <FontAwesomeIcon icon="map-pin" /> {{ habit.location }}
-                </small>
               </div>
+              <div class="habit-divider" aria-hidden="true"></div>
 
               <!-- CHECK TYPE -->
               <div
@@ -223,10 +225,17 @@
                     <FontAwesomeIcon icon="check-circle" class="check-icon" />
                   </div>
                   <div class="check-text">
-                    <span v-if="habit.current_progress.checked" class="badge bg-success"
+                    <span v-if="habit.current_progress.checked" class="status-completed"
                       >Completed</span
                     >
-                    <span v-else class="badge bg-secondary">Pending</span>
+                    <span v-else class="status-pending">
+                      <span class="pending-text">Pending</span>
+                      <span class="pending-dots" aria-hidden="true">
+                        <span class="dot">.</span>
+                        <span class="dot">.</span>
+                        <span class="dot">.</span>
+                      </span>
+                    </span>
                   </div>
                 </div>
 
@@ -370,7 +379,7 @@
       </div>
     </div>
 
-    <!-- TIMER MODAL (kept as-is) -->
+    <!-- TIMER MODAL  -->
     <div class="modal fade" id="timerModal" tabindex="-1" ref="timerModalEl">
       <div class="modal-dialog">
         <div class="modal-content">
