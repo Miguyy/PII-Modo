@@ -30,8 +30,8 @@
             <input
               v-model="search"
               class="form-control form-control-sm border-start-0 search-input"
-              placeholder="Search users"
-              aria-label="Search users"
+              placeholder="Search users..."
+              aria-label="Search users..."
             />
           </div>
           <div class="total-badge align-self-center">
@@ -105,7 +105,7 @@
                     @click="deleteUser(user.id)"
                     title="Delete"
                   >
-                    <i class="bi bi-trash" aria-hidden="true"></i>
+                    <i><FontAwesomeIcon icon="trash" class="bi bi-trash" /></i>
                   </button>
                 </td>
               </tr>
@@ -139,13 +139,34 @@
       </div>
 
       <!-- Avatar Decorations Section -->
-      <div class="d-flex flex-row justify-content-between align-items-center gap-3 mb-3 mt-5">
-        <div class="d-flex gap-2 align-items-center flex-nowrap">
-          <h5 class="mb-0 decoration-title">Avatar Decorations</h5>
-          <div class="total-badge">
-            Total: <strong>{{ decorations.length }}</strong>
-          </div>
+      <div class="d-flex flex-row gap-3 align-items-center mb-3 mt-5">
+        <div class="input-group input-group-sm search-group flex-grow-1">
+          <span class="input-group-text bg-white border-end-0 search-icon">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="#355D4C"
+              viewBox="0 0 16 16"
+              aria-hidden="true"
+            >
+              <path
+                d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85zm-5.242 1.156a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"
+              />
+            </svg>
+          </span>
+          <input
+            v-model="search"
+            class="form-control form-control-sm border-start-0 search-input"
+            placeholder="Search decorations..."
+            aria-label="Search decorations..."
+          />
         </div>
+
+        <div class="total-badge flex-shrink-0 align-self-center">
+          Total: <strong>{{ decorations.length }}</strong>
+        </div>
+
         <button class="btn btn-add-decoration flex-shrink-0" @click="openAddDecorationModal">
           <i class="bi bi-plus-lg me-1"></i>Add
         </button>
@@ -202,7 +223,7 @@
                     @click="deleteDecoration(decoration.name)"
                     title="Delete"
                   >
-                    <i class="bi bi-trash" aria-hidden="true"></i>
+                    <i><FontAwesomeIcon icon="trash" class="bi bi-trash" /></i>
                   </button>
                 </td>
               </tr>

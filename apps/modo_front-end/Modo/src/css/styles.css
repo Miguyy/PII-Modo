@@ -819,8 +819,9 @@ footer p {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 12px;
-  border-radius: 999px;
+  padding: 0 12px;
+  height: 48px;
+  border-radius: 12px;
   background: linear-gradient(90deg, #f0fbf5, #e6f7ee);
   color: #2f5b4b;
   font-weight: 700;
@@ -848,10 +849,15 @@ footer p {
 .total-badge strong {
   background: #355d4c;
   color: #fff;
-  padding: 2px 8px;
+  padding: 0 10px;
   border-radius: 8px;
   font-weight: 800;
   margin-left: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
 }
 
 .admin-table thead th {
@@ -897,10 +903,10 @@ footer p {
 }
 
 .page-btn {
-  border-radius: 999px;
+  border-radius: 12px;
   border: 1.5px solid rgba(53, 93, 76, 0.18);
-  color: #2f6b53;
-  background: rgba(47, 107, 83, 0.03);
+  color: #ededed;
+  background-color: #355d4ccc;
   padding: 6px 14px;
   font-weight: 700;
 }
@@ -912,7 +918,7 @@ footer p {
 
 .page-btn:hover:not(:disabled) {
   background: #2f6b53;
-  color: #fff;
+  color: #ededed;
   box-shadow: 0 8px 20px rgba(47, 107, 83, 0.12);
   border-color: #2f6b53;
 }
@@ -941,7 +947,7 @@ footer p {
 
 /* Rounded pill-style search group */
 .search-group {
-  border-radius: 999px;
+  border-radius: 12px;
   overflow: hidden;
   border: 1px solid rgba(53, 93, 76, 0.08);
   background: #ffffff;
@@ -963,13 +969,40 @@ footer p {
   width: 140px;
   color: #355d4c;
   border: 0;
-  padding: 8px 12px;
+  padding: 10px 12px;
   background: transparent;
 }
 
 .search-input:focus {
   outline: none;
   box-shadow: none;
+}
+
+/* Make search input-group match Add button and total badge height */
+.input-group.input-group-sm.search-group,
+.input-group.input-group-sm.search-group .input-group-text,
+.input-group.input-group-sm.search-group .form-control {
+  height: 48px;
+  min-height: 48px;
+}
+
+.input-group.input-group-sm.search-group .input-group-text {
+  display: flex;
+  align-items: center;
+  padding-left: 12px;
+  padding-right: 10px;
+  border-radius: 12px 0 0 12px;
+}
+
+.input-group.input-group-sm.search-group .form-control {
+  border-radius: 0 12px 12px 0;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.admin-panel .search-group {
+  /* ensure full width on small screens */
+  max-width: 100%;
 }
 
 /* Action icon buttons (pencil / trash) */
@@ -999,23 +1032,23 @@ footer p {
 }
 
 .action-edit {
-  background: rgba(53, 93, 76, 0.06);
-  color: #355d4c;
+  background: #688679; /* requested edit bg */
+  color: #ededed; /* icon color */
 }
 
 .action-edit:hover {
-  background: #355d4c;
-  color: #ffffff;
+  background: rgba(104, 134, 121, 0.9);
+  color: #ededed;
 }
 
 .action-delete {
-  background: rgba(182, 43, 43, 0.06);
-  color: #b62b2b;
+  background: #c5746d; /* requested delete bg */
+  color: #ededed;
 }
 
 .action-delete:hover {
-  background: #b62b2b;
-  color: #ffffff;
+  background: #8b423b; /* requested hover */
+  color: #ededed;
 }
 
 /* Slight, subtle rounding override (make table a little rounded) */
@@ -1110,8 +1143,12 @@ footer p {
   background: linear-gradient(135deg, #355d4c, #4f6f5f);
   color: #fff;
   border: none;
-  padding: 8px 16px;
-  border-radius: 10px;
+  padding: 0 18px;
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 12px;
   font-weight: 600;
   transition: all 160ms ease;
 }
