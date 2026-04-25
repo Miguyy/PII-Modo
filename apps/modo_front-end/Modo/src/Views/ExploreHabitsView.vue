@@ -3,6 +3,7 @@
   <div class="containerBox">
     <div class="page-title">
       <h4>EXPLORE HABITS</h4>
+      <h1>&#x2022;</h1>
     </div>
 
     <div class="row mt-2">
@@ -65,9 +66,10 @@
         </div>
       </div>
     </div>
-
+    <br />
     <div class="page-title">
       <h4>MODO RECOMMENDATIONS</h4>
+      <h1>&#x2022;</h1>
     </div>
 
     <div class="row mt-4 mb-5">
@@ -162,6 +164,7 @@
 
     <div class="page-title">
       <h4>ALL HABITS</h4>
+      <h1>&#x2022;</h1>
     </div>
 
     <div class="row mt-4 mb-5">

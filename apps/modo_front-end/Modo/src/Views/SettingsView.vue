@@ -3,6 +3,7 @@
   <main class="page">
     <div class="page-title">
       <h4>SETTINGS</h4>
+      <h1>&#x2022;</h1>
     </div>
 
     <section v-if="user" class="settings-card">

@@ -4,6 +4,7 @@
     <div class="container">
       <div class="page-title">
         <h4>ADMIN PANEL</h4>
+        <h1>&#x2022;</h1>
       </div>
     </div>
 

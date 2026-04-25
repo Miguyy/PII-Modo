@@ -771,10 +771,14 @@ body {
   margin: 10px auto 50px auto;
   padding-top: 10px;
   border-top: 2px dotted #355d4c;
+  display: flex;
+  justify-content: space-between;
+  margin: 20px 0 20px 0;
 }
 
-.page-title h2 {
+.page-title h4 {
   color: #355d4c;
+  padding-top: 20px;
   letter-spacing: 0.3em;
 }
 

@@ -3,6 +3,7 @@
   <div class="containerBox">
     <div class="page-title">
       <h4>HABITS MANAGER</h4>
+      <h1>&#x2022;</h1>
     </div>
     <!-- Main Content Container -->
     <div class="content row mt-2 g-4 align-items-stretch">
