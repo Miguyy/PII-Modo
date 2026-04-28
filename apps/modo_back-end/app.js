@@ -19,9 +19,16 @@ import impactsRouter from "./routes/impacts.routes.js";
 app.use("/users", usersRouter);
 app.use("/habits", habitsRouter);
 app.use("/tasks", tasksRouter);
-// userTasks routes are nested under /users (they start with :userId/...)
 app.use("/users", userTasksRouter);
 app.use("/impacts", impactsRouter); */
+
+app.use((err, req, res, next) => {
+  // console.error(err.stack);
+  res.status(err.status || 500).json({
+    description: err.message || "Internal server error",
+    ...(err.errors && { errors: err.errors }), // include validation errors if present
+  });
+});
 
 app.listen(port, host, () => {
   console.log(`Server is running on http://${host}:${port}`);
