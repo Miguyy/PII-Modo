@@ -1,4 +1,4 @@
-# Code of Conduct — Modo
+# Code of Conduct - <img src="./apps/modo_front-end/Modo/src/images/modoIcon.png" alt="Modo Icon" width="130" height="30"/>
 
 This project adheres to the [Contributor Covenant](https://www.contributor-covenant.org/) (version 2.1). The purpose of this Code of Conduct is to ensure a welcoming, inclusive, and respectful environment for contributors, students, maintainers, and users of the Modo project.
 
