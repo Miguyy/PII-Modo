@@ -1,4 +1,4 @@
-# Security Policy — Modo
+# Security Policy - <img src="./apps/modo_front-end/Modo/src/images/modoIcon.png" alt="Modo Icon" width="130" height="30"/>
 
 Although this repository is primarily educational, we take security and privacy seriously. This document explains how to report security vulnerabilities or sensitive disclosures related to the Modo project.
 
