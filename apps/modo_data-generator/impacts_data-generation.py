@@ -22,9 +22,9 @@ fake = Faker()  # Initialize Faker
 def impact_type():
     """Randomly select an impact category.
 
-    Returns one of: 'agua', 'energia', 'residuos', 'mobilidade', 'emissoes'.
+    Returns one of: 'Water', 'Energy', 'Residuals', 'Mobility', 'Emissions'.
     """
-    types = ["agua", "energia", "residuos", "mobilidade", "emissoes"]
+    types = ["Water", "Energy", "Residuals", "Mobility", "Emissions"]
     return random.choice(types)
 
 
@@ -40,15 +40,15 @@ def value_per_unit(impact_type):
     Returns:
         float: Value per unit for the specified impact type.
     """
-    if impact_type == "agua":
+    if impact_type == "Water":
         return round(random.uniform(0.1, 0.5), 2)
-    elif impact_type == "energia":
+    elif impact_type == "Energy":
         return round(random.uniform(0.2, 0.7), 2)
-    elif impact_type == "residuos":
+    elif impact_type == "Residuals":
         return round(random.uniform(0.05, 0.3), 2)
-    elif impact_type == "mobilidade":
+    elif impact_type == "Mobility":
         return round(random.uniform(0.15, 0.6), 2)
-    elif impact_type == "emissoes":
+    elif impact_type == "Emissions":
         return round(random.uniform(0.25, 0.8), 2)
 
 def unit(impact_type):
@@ -60,15 +60,15 @@ def unit(impact_type):
     Returns:
         str: Unit string (e.g. 'litros', 'kWh', 'kg', 'km', 'kg CO2e').
     """
-    if impact_type == "agua":
+    if impact_type == "Water":
         return "litros"
-    elif impact_type == "energia":
+    elif impact_type == "Energy":
         return "kWh"
-    elif impact_type == "residuos":
+    elif impact_type == "Residuals":
         return "kg"
-    elif impact_type == "mobilidade":
+    elif impact_type == "Mobility":
         return "km"
-    elif impact_type == "emissoes":
+    elif impact_type == "Emissions":
         return "kg CO2e"
 
 def generate_impact_data():
