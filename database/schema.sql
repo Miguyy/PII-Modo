@@ -2,30 +2,31 @@ CREATE TABLE Utilizador (
     id_utilizador INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
     email VARCHAR(150) UNIQUE NOT NULL,
-    hashed_password VARCHAR(255) NOT NULL,
+    hashed_password VARCHAR(60) NOT NULL,
     pontos INT DEFAULT 0,
     nivel INT DEFAULT 1,
+    imagem_utilizador VARCHAR(255),
     data_criacao_conta DATETIME DEFAULT CURRENT_TIMESTAMP,
-    tipo_utilizador ENUM('cliente', 'admin') DEFAULT 'cliente'
+    tipo_utilizador ENUM('Client', 'Admin') DEFAULT 'Client'
 );
 
 CREATE TABLE Notificacao (
     id_notificacao INT AUTO_INCREMENT PRIMARY KEY,
     id_utilizador INT,
-    tipo_notificacao ENUM('nivel','avatar','admin','sistema'),
-    mensagem TEXT,
+    tipo_notificacao ENUM('Level','Avatar','Admin','System'),
+    mensagem TEXT NOT NULL,
     lida BOOLEAN DEFAULT FALSE,
-    data DATETIME,
+    data DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_utilizador) REFERENCES Utilizador(id_utilizador)
 );
 
 CREATE TABLE Relatorio (
     id_relatorio INT AUTO_INCREMENT PRIMARY KEY,
     id_utilizador INT,
-    mes INT,
-    semana INT,
-    data_geracao DATETIME,
-    conteudo VARCHAR(255),
+    mes TINYINT,
+    semana TINYINT,
+    data_geracao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    conteudo TEXT,
     caminho_relatorio VARCHAR(255),
     FOREIGN KEY (id_utilizador) REFERENCES Utilizador(id_utilizador)
 );
@@ -68,9 +69,9 @@ CREATE TABLE Tarefas (
     id_habito INT,
     nome_tarefa VARCHAR(100) NOT NULL,
     pontos_tarefa INT DEFAULT 0,
-    tipo_tarefa VARCHAR(50),
-    localizacao_tarefa ENUM('Dentro','Fora'),
-    prioridade_tarefa INT,
+    tipo_tarefa ENUM('Check','Count','Timer'),
+    localizacao_tarefa ENUM('Inside','Outside'),
+    prioridade_tarefa ENUM('Low','Medium','High'),
     duracao_temporizador INT,
     quantidade_necessaria INT,
     FOREIGN KEY (id_habito) REFERENCES Habitos(id_habito)
@@ -80,7 +81,7 @@ CREATE TABLE Tarefas_Utilizador (
     id_tarefa INT,
     id_utilizador INT,
     tarefa_ativa BOOLEAN DEFAULT TRUE,
-    estado_tarefa ENUM('Pendente','Completa'),
+    estado_tarefa ENUM('Pending','Completed'),
     progresso INT DEFAULT 0,
     data_inicio DATETIME,
     data_conclusao DATETIME,
@@ -92,7 +93,7 @@ CREATE TABLE Tarefas_Utilizador (
 CREATE TABLE Impacto (
     id_impacto INT AUTO_INCREMENT PRIMARY KEY,
     id_tarefa INT,
-    tipo_impacto ENUM('agua','energia','co2'),
+    tipo_impacto ENUM('Water','Energy','Residuals', 'Mobility', 'Emissions'),
     valor_por_unidade DECIMAL(10,2),
     unidade VARCHAR(20),
     FOREIGN KEY (id_tarefa) REFERENCES Tarefas(id_tarefa)

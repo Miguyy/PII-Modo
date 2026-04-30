@@ -50,14 +50,14 @@ HABITS = [
 def _pick_points_and_priority():
     """Pick a points value and return the corresponding priority label.
 
-    The helper selects from the set {5,10,15} and maps these to 'low',
-    'medium' and 'high' priority strings respectively.
+    The helper selects from the set {5,10,15} and maps these to 'Low',
+    'Medium' and 'High' priority strings respectively.
 
     Returns:
         tuple: (points:int, priority:str)
     """
     points = random.choice([5, 10, 15])
-    priority = 'low' if points == 5 else 'medium' if points == 10 else 'high'
+    priority = 'Low' if points == 5 else 'Medium' if points == 10 else 'High'
     return points, priority
 
 def generate_tasks(num_tasks=20, num_users=10):
@@ -83,20 +83,20 @@ def generate_tasks(num_tasks=20, num_users=10):
         habit_category = habit_tuple[3] if habit_tuple and len(habit_tuple) > 3 else 'Uncategorized'
 
         pontos_tarefa, prioridade = _pick_points_and_priority()
-        tipo_tarefa = random.choice(['check', 'count', 'timer'])
-        localizacao_tarefa = random.choice(['inside', 'outside'])
+        tipo_tarefa = random.choice(['Check', 'Count', 'Timer'])
+        localizacao_tarefa = random.choice(['Inside', 'Outside'])
 
         duracao_temporizador = None
         quantidade_necessaria = None
-        if tipo_tarefa == 'timer':
+        if tipo_tarefa == 'Timer':
             duracao_temporizador = random.choice([30, 60, 120, 300, 600])
-        elif tipo_tarefa == 'count':
+        elif tipo_tarefa == 'Count':
             quantidade_necessaria = random.choice([1, 5, 10, 20, 50, 100])
 
         tarefa = {
             'id_tarefa': tid,
             'id_habito': id_habito,
-            'habit_name': habit_category,
+            'nome_habito': habit_category,
             'nome_tarefa': habit_original_name,
             'pontos_tarefa': pontos_tarefa,
             'tipo_tarefa': tipo_tarefa,
@@ -109,16 +109,16 @@ def generate_tasks(num_tasks=20, num_users=10):
 
         id_utilizador = random.randint(1, num_users)
         tarefa_ativa = random.choice([0, 1])
-        estado_tarefa = 'completed' if tarefa_ativa == 1 and random.random() < 0.6 else 'pending'
+        estado_tarefa = 'Completed' if tarefa_ativa == 1 and random.random() < 0.6 else 'Pending'
 
         progresso = None
-        if tipo_tarefa == 'count' and quantidade_necessaria is not None:
+        if tipo_tarefa == 'Count' and quantidade_necessaria is not None:
             current = random.randint(0, quantidade_necessaria)
             progresso = f"{current}/{quantidade_necessaria}"
 
         data_inicio = fake.date_time_between(start_date='-30d', end_date='now')
         data_fim = None
-        if estado_tarefa == 'completed':
+        if estado_tarefa == 'Completed':
             data_fim = fake.date_time_between(start_date=data_inicio, end_date='+30d')
 
         tarefas_utilizador.append({
