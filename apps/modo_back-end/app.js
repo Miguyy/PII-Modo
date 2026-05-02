@@ -14,6 +14,11 @@ import habitsRouter from "./routes/habits.routes.js";
 import tasksRouter from "./routes/tasks.routes.js";
 import userTasksRouter from "./routes/userTasks.routes.js";
 import impactsRouter from "./routes/impacts.routes.js";
+import locationsRouter from "./routes/locations.routes.js";
+import decorationsRouter from "./routes/decorations.routes.js";
+import userDecorationsRouter from "./routes/userDecorations.routes.js";
+import notificationsRouter from "./routes/notifications.routes.js";
+import reportsRouter from "./routes/reports.routes.js";
 
 // Routes
 app.use("/users", usersRouter);
@@ -21,6 +26,11 @@ app.use("/habits", habitsRouter);
 app.use("/tasks", tasksRouter);
 app.use("/users", userTasksRouter);
 app.use("/impacts", impactsRouter);
+app.use("/users", locationsRouter);
+app.use("/avatar-decorations", decorationsRouter);
+app.use("/users", userDecorationsRouter);
+app.use("/", notificationsRouter);
+app.use("/", reportsRouter);
 
 app.use((err, req, res, next) => {
   res.status(err.status || 500).json({
