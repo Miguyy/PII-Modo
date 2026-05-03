@@ -428,10 +428,10 @@ body {
   padding: 6px 30px;
   border-radius: 8px;
   background: #f19640;
-  color: #fff;
+  color: #ededed;
   font-weight: 600;
   text-decoration: none;
-  font-size: 26px;
+  font-size: 22px;
   text-align: center;
   transition:
     background-color 0.3s ease,
@@ -481,14 +481,14 @@ body {
 
 .info-section img {
   position: relative;
-  margin-top: -200px;
+  margin-top: 100px;
   padding: 0;
   filter: invert(100%) sepia(100%) grayscale(100%) brightness(150%) contrast(120%);
 }
 
 .wave-back-2 {
   position: relative;
-  top: 100px;
+  top: 0px;
   left: 0;
   width: 100%;
   height: 500px;
@@ -517,16 +517,21 @@ body {
 
 /* Case studies */
 .carousel-section {
-  width: 70%;
+  width: 50%;
   height: 785px;
-  margin: 1000px auto 100px auto;
-  border-top: 1px dashed #355d4c;
+  margin: 900px auto 100px auto;
 }
 
 .section-titles {
   display: flex;
   justify-content: space-between;
   margin: 20px 0 20px 0;
+}
+
+.section-titles h1 {
+  font-size: 20px;
+  letter-spacing: 0.3em;
+  font-weight: 800;
 }
 
 .carousel-logo {
@@ -536,13 +541,13 @@ body {
 .carousel {
   display: flex;
   width: 100%;
-  height: 700px;
+  height: 650px;
   overflow: hidden;
 }
 
 .carousel .card {
   position: relative;
-  height: 700px;
+  height: 650px;
   max-width: 500px;
   margin-left: 5px;
   margin-right: 5px;
@@ -597,6 +602,8 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-size: 22px;
+  text-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
 }
 
 .carousel .card:hover h2 {
@@ -613,11 +620,11 @@ body {
 }
 
 .appear-section {
-  color: #fff;
-  width: 70%;
+  color: #ededed;
+  width: 50%;
   height: 785px;
   margin: 50px auto 100px auto;
-  border-top: 1px dashed #fff;
+  border-top: 2px dotted #ededed;
 }
 
 .appear-content {
@@ -664,7 +671,7 @@ body {
 /* Sponsors carousel */
 .sponsors-section {
   display: flex;
-  width: 70%;
+  width: 50%;
   height: 200px;
   margin: 100px auto 100px auto;
   flex-direction: column;
@@ -672,9 +679,19 @@ body {
   text-align: center;
 }
 
+.sponsors-section h3 {
+  color: #355d4c;
+  text-align: center;
+  font-family: Heebo;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+}
+
 .sponsors-carousel {
   display: flex;
-  border-top: 2px dashed #355d4c;
+  border-top: 2px dotted #355d4c;
   overflow: hidden;
 }
 
@@ -728,12 +745,115 @@ body {
   pointer-events: auto;
 }
 
-.faq-title h2 {
+/* Custom FAQ design (from Figma) */
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.faq-item {
+  background: #355d4c;
   color: #ffffff;
-  font-size: 2.2rem;
+  border-radius: 8px;
+  padding: 0;
+  overflow: hidden;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08) inset;
+}
+.faq-question {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 18px 20px;
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-size: 18px;
+  text-align: left;
+  cursor: pointer;
+}
+.faq-plus {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
   font-weight: 700;
-  margin-bottom: 2rem;
-  text-align: center;
+}
+.faq-title {
+  flex: 1;
+}
+.faq-badge {
+  background: rgba(255, 255, 255, 0.06);
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 13px;
+}
+.faq-answer {
+  /* initial state is empty; transition will animate padding/height/opacity */
+  padding: 0 20px 0 68px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.02), transparent);
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 15px;
+  line-height: 1.6;
+  overflow: hidden;
+}
+.faq-item .faq-answer p {
+  margin: 12px 0 0 0;
+}
+.faq-item.open .faq-question {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+/* Transition classes for Vue <transition name="faq"> */
+.faq-enter-active,
+.faq-leave-active {
+  transition:
+    max-height 0.36s cubic-bezier(0.2, 0.9, 0.2, 1),
+    opacity 0.28s ease,
+    padding 0.28s ease;
+  overflow: hidden;
+}
+.faq-enter-from,
+.faq-leave-to {
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.faq-enter-to,
+.faq-leave-from {
+  max-height: 400px; /* enough to fit content */
+  opacity: 1;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+/* plus rotation */
+.faq-plus {
+  transition:
+    transform 0.28s ease,
+    background 0.28s ease;
+}
+.faq-item.open .faq-plus {
+  transform: rotate(180deg);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.faq-item.open .faq-question {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.faq-title h2 {
+  color: #ededed;
+  font-family: Mulish;
+  font-size: 28px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: var(--text-light);
 }
 
 .accordion-button {
