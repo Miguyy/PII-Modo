@@ -85,7 +85,7 @@ export const getAllUsers = async (req, res, next) => {
 export const getUserById = async (req, res, next) => {
   try {
     const { userId } = req.params;
-    const user = await User.findByPk(userId);
+    const user = await req.user;
 
     if (!user) {
       return next({
@@ -114,7 +114,7 @@ export const updateUser = async (req, res, next) => {
   try {
     const { userId } = req.params;
     const { email, password } = req.body;
-    const user = await User.findByPk(userId);
+    const user = await req.user;
 
     if (!user) {
       return next({
@@ -150,7 +150,7 @@ export const updateUser = async (req, res, next) => {
 export const deleteUser = async (req, res, next) => {
   try {
     const { userId } = req.params;
-    const user = await User.findByPk(userId);
+    const user = await req.user;
 
     if (!user) {
       return next({
@@ -218,7 +218,7 @@ export const assignTaskToUser = async (req, res, next) => {
   try {
     const { userId } = req.params;
     const { habitId } = req.body;
-    const user = await User.findByPk(userId);
+    const user = await req.user;
 
     if (!user) {
       return next({
