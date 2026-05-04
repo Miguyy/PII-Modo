@@ -1,4 +1,14 @@
 import express from "express";
+
+// Import middlewares for users resources
+import {
+  validateCreateUser,
+  validateLoginUser,
+  validateUserId,
+  authenticateUser,
+  authorizeAdmin,
+} from "../middlewares/users.middlewares.js";
+
 // Import controllers for users resources
 import {
   createUser,
@@ -12,12 +22,24 @@ import {
 
 const router = express.Router();
 
-router.post("/", createUser);
+router.post("/", validateCreateUser, createUser);
 router.post("/login", loginUser);
-router.get("/", getAllUsers);
-router.get("/:userId", getUserById);
-router.patch("/:userId", updateUser);
-router.delete("/:userId", deleteUser);
+
+router.get("/", authenticate, authorizeAdmin, getAllUsers);
+
+router.get("/:userId", authenticate, validateUserId, getUserById);
+
+router.patch("/:userId", authenticate, validateUserId, updateUser);
+
+router.delete(
+  "/:userId",
+  authenticate,
+  authorizeAdmin,
+  validateUserId,
+  deleteUser,
+);
+
+router.post("/:userId/habits", authenticate, validateUserId, assignTaskToUser);
 
 // NOTE: the `/users/:userId/habits` endpoint is mounted under the
 // `users` router as `POST /users/:userId/habits` for API consistency.

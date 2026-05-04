@@ -1,4 +1,5 @@
 // Import users data
+import jwt from "jsonwebtoken";
 import { User, Habit } from "../config/db.config.js";
 
 // Controller to create a new user
@@ -18,59 +19,48 @@ export const createUser = async (req, res, next) => {
     };
     res.status(201).json(response);
   } catch (error) {
-    // Handle specific errors: 400, 401, 403, 409 and 500
+    // Handle specific errors: 400, 409 and 500
     if (error.name === "SequelizeValidationError") {
-      const err = new Error("Validation failed.");
-      err.status = 400;
-      errors = error.errors.map((e) => {
+      const errors = {};
+
+      error.errors.forEach((e) => {
         if (e.path === "email") {
-          return ("Email is mandatory.", "Email must be valid.");
+          errors.email = ["Email is mandatory.", "Email must be valid."];
         }
         if (e.path === "password") {
-          return (
-            "Password is mandatory and must.",
-            "Password must have between 12 and 15 characters. ",
-            "Password must include uppercase, lowercase, numbers and special characters."
-          );
+          errors.password = [
+            "Password must have between 12 and 15 characters.",
+            "Password must include uppercase, lowercase, numbers and special characters.",
+          ];
         }
-        return e.message;
       });
-      err.errors = errors;
-      return next(err);
-    }
-    if (error.name === "UnauthorizedError") {
-      const err = new Error("Missing or invalid authentication token.");
-      err.status = 401;
-      return next(err);
-    }
-    if (error.name === "ForbiddenError") {
-      const err = new Error("You do not have permission to create users.");
-      err.status = 403;
-      return next(err);
-    }
-    if (error.name === "SequelizeUniqueConstraintError") {
-      const err = new Error("Resource conflict.");
-      err.status = 409;
-      errors.errors.map((e) => {
-        if (e.path === "email") {
-          return "A user with this email already exists.";
-        }
-        return e.message;
+
+      return next({
+        status: 400,
+        message: "Validation failed.",
+        errors,
       });
-      err.errors = errors;
-      return next(err);
     }
 
-    const err = new Error("Internal server error.");
-    err.status = 500;
-    return next(err);
+    if (error.name === "SequelizeUniqueConstraintError") {
+      return next({
+        status: 409,
+        message: "Resource conflict.",
+        errors: { email: ["A user with this email already exists."] },
+      });
+    }
+
+    return next({
+      status: 500,
+      message: "Internal server error.",
+    });
   }
 };
 
 // Controller to get all users
 export const getAllUsers = async (req, res, next) => {
   // Extract pagination and filtering parameters from query string
-  const { page = 1, limit = 5, role = "admin" } = req.query;
+  const { page = 1, limit = 5, role } = req.query; // TODO: Implement filtering when the DB/Sequelize are ready
 
   try {
     const users = await User.findAll();
@@ -83,23 +73,11 @@ export const getAllUsers = async (req, res, next) => {
     }));
     res.status(200).json(response);
   } catch (error) {
-    // Handle specific errors: 401, 403 and 500
-    if (error.name === "UnauthorizedError") {
-      const err = new Error("Missing or invalid authentication token.");
-      err.status = 401;
-      return next(err);
-    }
-    if (error.name === "ForbiddenError") {
-      const err = new Error(
-        "You do not have permission to access this resource",
-      );
-      err.status = 403;
-      return next(err);
-    }
-
-    const err = new Error("Internal server error.");
-    err.status = 500;
-    return next(err);
+    // Handle specific errors: 500
+    return next({
+      status: 500,
+      message: "Internal server error.",
+    });
   }
 };
 
@@ -108,46 +86,26 @@ export const getUserById = async (req, res, next) => {
   try {
     const { userId } = req.params;
     const user = await User.findByPk(userId);
+
     if (!user) {
-      const err = new Error("User not found.");
-      err.status = 404;
-      return next(err);
+      return next({
+        status: 404,
+        message: "User not found.",
+      });
     }
+
     // Include HATEOAS links in the response
     const response = {
       ...user.toJSON(),
       links: [{ rel: "self", method: "GET", href: `/users/${user.id}` }],
     };
-    res.status(200).json(user);
+    res.status(200).json(response);
   } catch (error) {
-    // Handle specific errors: 400, 401, 403, 404 and 500
-    if (error.name === "BadRequestError") {
-      const err = new Error("Invalid request.");
-      err.status = 400;
-      errors.errors.map((e) => {
-        if (e.path === userId) {
-          return "Invalid user ID format.";
-        }
-        return e.message;
-      });
-      err.errors = errors;
-      return next(err);
-    }
-    if (error.name === "UnauthorizedError") {
-      const err = new Error("Missing or invalid authentication token.");
-      err.status = 401;
-      return next(err);
-    }
-    if (error.name === "ForbiddenError") {
-      const err = new Error(
-        "You do not have permission to access this resource.",
-      );
-      err.status = 403;
-      return next(err);
-    }
-    const err = new Error("Internal server error.");
-    err.status = 500;
-    return next(err);
+    // Handle specific errors: 500
+    return next({
+      status: 500,
+      message: "Internal server error.",
+    });
   }
 };
 
@@ -157,12 +115,15 @@ export const updateUser = async (req, res, next) => {
     const { userId } = req.params;
     const { email, password } = req.body;
     const user = await User.findByPk(userId);
+
     if (!user) {
-      const err = new Error("User not found.");
-      err.status = 404;
-      return next(err);
+      return next({
+        status: 404,
+        message: "User not found.",
+      });
     }
     await user.update({ email, password });
+
     // Include HATEOAS links in the response
     const response = {
       ...user.toJSON(),
@@ -170,49 +131,18 @@ export const updateUser = async (req, res, next) => {
     };
     res.status(200).json(response);
   } catch (error) {
-    // Handle specific errors: 400, 401, 403, 404, 409 and 500
-    if (error.name === "BadRequestError") {
-      const err = new Error("Invalid request.");
-      err.status = 400;
-      errors.errors.map((e) => {
-        if (e.path === "email") {
-          return "Email must be valid.";
-        }
-        if (e.path === "password") {
-          return "Password does not meet security requirements.";
-        }
-        return e.message;
-      });
-      err.errors = errors;
-      return next(err);
-    }
-    if (error.name === "UnauthorizedError") {
-      const err = new Error("Missing or invalid authentication token.");
-      err.status = 401;
-      return next(err);
-    }
-    if (error.name === "ForbiddenError") {
-      const err = new Error(
-        "You do not have permission to access this resource.",
-      );
-      err.status = 403;
-      return next(err);
-    }
+    // Handle specific errors: 409 and 500
     if (error.name === "SequelizeUniqueConstraintError") {
-      const err = new Error("Resource conflict.");
-      err.status = 409;
-      errors.errors.map((e) => {
-        if (e.path === "email") {
-          return "A user with this email already exists.";
-        }
-        return e.message;
+      return next({
+        status: 409,
+        message: "Resource conflict.",
+        errors: { email: ["A user with this email already exists."] },
       });
-      err.errors = errors;
-      return next(err);
     }
-    const err = new Error("Internal server error.");
-    err.status = 500;
-    return next(err);
+    return next({
+      status: 500,
+      message: "Internal server error.",
+    });
   }
 };
 
@@ -221,40 +151,21 @@ export const deleteUser = async (req, res, next) => {
   try {
     const { userId } = req.params;
     const user = await User.findByPk(userId);
+
     if (!user) {
-      const err = new Error("User not found.");
-      err.status = 404;
-      return next(err);
+      return next({
+        status: 404,
+        message: "User not found.",
+      });
     }
     await user.destroy();
     res.status(204).send();
   } catch (error) {
-    // Handle specific errors: 400, 401, 403, 404 and 500
-    if (error.name === "BadRequestError") {
-      const err = new Error("Invalid request.");
-      err.status = 400;
-      errors.errors.map((e) => {
-        if (e.path === userId) {
-          return "Invalid user ID format.";
-        }
-        return e.message;
-      });
-      err.errors = errors;
-      return next(err);
-    }
-    if (error.name === "UnauthorizedError") {
-      const err = new Error("Missing or invalid authentication token.");
-      err.status = 401;
-      return next(err);
-    }
-    if (error.name === "ForbiddenError") {
-      const err = new Error("You do not have permission to delete this user.");
-      err.status = 403;
-      return next(err);
-    }
-    const err = new Error("Internal server error.");
-    err.status = 500;
-    return next(err);
+    // Handle specific errors: 500
+    return next({
+      status: 500,
+      message: "Internal server error.",
+    });
   }
 };
 
@@ -263,46 +174,42 @@ export const loginUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ where: { email } });
-    if (!user || user.password !== password) {
-      const err = new Error("Invalid email or password.");
-      err.status = 401;
-      return next(err);
-    } else {
-      // Include HATEOAS links in the response
-      const response = {
-        ...user.toJSON(),
-        links: [
-          { rel: "self", method: "GET", href: `/users/${user.id}` },
-          { rel: "logout", method: "POST", href: "/users/logout" },
-        ],
-      };
-      res.status(200).json(response);
-    }
-  } catch (error) {
-    // Handle specific errors: 400, 401, 404 and 500
-    if (error.name === "SequelizeValidationError") {
-      const err = new Error("Validation failed.");
-      err.status = 400;
-      errors.errors.map((e) => {
-        if (e.path === "email") {
-          return ("Email is mandatory", "Email must be valid.");
-        }
-        if (e.path === "password") {
-          return "Password is mandatory.";
-        }
-        return e.message;
+
+    if (!user) {
+      return next({
+        status: 401,
+        message: "Invalid credentials.",
       });
-      err.errors = errors;
-      return next(err);
     }
-    if (error.name === "NotFoundError") {
-      const err = new Error("User not found.");
-      err.status = 404;
-      return next(err);
+
+    if (user.password !== password) {
+      return next({
+        status: 401,
+        message: "Invalid credentials.",
+      });
     }
-    const err = new Error("Internal server error.");
-    err.status = 500;
-    return next(err);
+
+    const token = jwt.sign(
+      { id: user.id, tipo_utilizador: user.tipo_utilizador },
+      process.env.JWT_SECRET,
+    );
+
+    // Include HATEOAS links in the response
+    const response = {
+      token,
+      ...user.toJSON(),
+      links: [
+        { rel: "self", method: "GET", href: `/users/${user.id}` },
+        { rel: "logout", method: "POST", href: "/users/logout" },
+      ],
+    };
+    res.status(200).json(response);
+  } catch (error) {
+    // Handle specific errors: 500
+    return next({
+      status: 500,
+      message: "Internal server error.",
+    });
   }
 };
 
@@ -312,59 +219,45 @@ export const assignTaskToUser = async (req, res, next) => {
     const { userId } = req.params;
     const { habitId } = req.body;
     const user = await User.findByPk(userId);
+
     if (!user) {
-      const err = new Error("User not found.");
-      err.status = 404;
-      return next(err);
+      return next({
+        status: 404,
+        message: "User not found.",
+      });
     }
+
     const habit = await Habit.findByPk(habitId);
     if (!habit) {
-      const err = new Error("Habit not found.");
-      err.status = 404;
-      return next(err);
+      return next({
+        status: 404,
+        message: "Habit not found.",
+      });
     }
     await user.addHabit(habit);
+
     // Include HATEOAS links in the response
     const response = {
       ...user.toJSON(),
-      links = [
-      {
-        rel: "self",
-        method: "POST",
-        href: `/users/${userId}/habits/${habitId}`,
-      },
-      { rel: "user_habits", method: "GET", href: `/users/${userId}/habits` },
-    ]};
+      links: [
+        {
+          rel: "self",
+          method: "POST",
+          href: `/users/${userId}/habits/${habitId}`,
+        },
+        {
+          rel: "user_habits",
+          method: "GET",
+          href: `/users/${userId}/habits`,
+        },
+      ],
+    };
     res.status(200).json(response);
   } catch (error) {
-    // Handle specific errors: 400, 401, 404, 409 and 500
-    if (error.name === "SequelizeValidationError") {
-      const err = new Error("Validation failed.");
-      err.status = 400;
-      errors.errors.map((e) => {
-        if (e.path === "userId") {
-          return "User is mandatory.";
-        }
-        if (e.path === "habitId") {
-          return "Habit is mandatory.";
-        }
-        return e.message;
-      });
-      err.errors = errors;
-      return next(err);
-    }
-    if (error.name === "UnauthorizedError") {
-      const err = new Error("Missing or invalid authentication token.");
-      err.status = 401;
-      return next(err);
-    }
-    if (error.name === "ConflictError") {
-      const err = new Error("This habit is already associated with the user.");
-      err.status = 409;
-      return next(err);
-    }
-    const err = new Error("Internal server error.");
-    err.status = 500;
-    return next(err);
+    // Handle specific errors: 500
+    return next({
+      status: 500,
+      message: "Internal server error.",
+    });
   }
 };
