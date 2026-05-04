@@ -4,7 +4,8 @@ import { Habit } from "../config/db.config.js";
 // Controller to get all habits
 export const getAllHabits = async (req, res, next) => {
   // Extract query parameters for filtering, sorting, and pagination
-  const { nome, sort, page = 1, limit = 10 } = req.query;
+  const { nome, sort, page = 1, limit = 10 } = req.query; // TODO: Implement filtering and sorting when the DB/Sequelize are ready
+
   try {
     const habits = await Habit.findAll();
     console.log(`Found ${habits.length} habits in the database.`);
@@ -12,126 +13,75 @@ export const getAllHabits = async (req, res, next) => {
     // Include HATEOAS links in the response
     const response = habits.map((habit) => ({
       ...habit.toJSON(),
-      links: {
-        self: `/habits/${habit.id}`,
-      },
+      links: [{ rel: "self", method: "GET", href: `/habits/${habit.id}` }],
     }));
     res.status(200).json(response);
   } catch (error) {
-    // Handle specific errors: 400, 401 and 500
-
-    const err = new Error("Internal server error.");
-    err.status = 500;
-    return next(err);
+    // Handle specific errors: 500
+    return next({
+      status: 500,
+      message: "Internal server error.",
+    });
   }
 };
 
 // Controller to create a new habit
 export const createHabit = async (req, res, next) => {
   try {
-    const { nome } = req.body;
+    const { nome, descricao_habito, categoria } = req.body;
     // Validate required fields and create the habit
-    const habit = await Habit.create({ nome });
+    const habit = await Habit.create({ nome, descricao_habito, categoria });
 
     // Include HATEOAS links in the response
     const response = {
       ...habit.toJSON(),
-      links: {
-        self: `/habits/${habit.id}`,
-      },
+      links: [{ rel: "self", method: "GET", href: `/habits/${habit.id}` }],
     };
     res.status(201).json(response);
   } catch (error) {
-    // Handle specific errors: 400, 401, 403, 409 and 500
+    // Handle specific errors: 400, 409 and 500
     if (error.name === "SequelizeValidationError") {
-      const err = new Error("Validation error.");
-      err.status = 400;
-      err.errors = error.errors.map((e) => {
-        if (e.path === "nome") {
-          return "Name is mandatory.";
-        }
-        return e.message;
+      return next({
+        status: 400,
+        message: "Validation error.",
+        errors: { nome: ["Name is mandatory."] },
       });
-      return next(err);
-    }
-    if (error.name === "UnauthorizedError") {
-      const err = new Error("Missing or invalid authentication token.");
-      err.status = 401;
-      return next(err);
-    }
-    if (error.name === "ForbiddenError") {
-      const err = new Error("You do not have permission to create habits.");
-      err.status = 403;
-      return next(err);
     }
     if (error.name === "SequelizeUniqueConstraintError") {
-      const err = new Error("A habit with this name already exists.");
-      err.status = 409;
-      return next(err);
+      return next({
+        status: 409,
+        message: "Resource conflict.",
+        errors: { nome: ["A habit with this name already exists."] },
+      });
     }
-    const err = new Error("Internal server error.");
-    err.status = 500;
-    return next(err);
+    return next({
+      status: 500,
+      message: "Internal server error.",
+    });
   }
 };
 
 // Controller to get a habit by ID
 export const getHabitById = async (req, res, next) => {
   try {
-    const { habitId, userId } = req.params;
-    const habit = await Habit.findByPk(habitId);
-    const user = await User.findByPk(userId);
-    if (!user) {
-      const err = new Error("User not found.");
-      err.status = 404;
-      return next(err);
-    }
+    const { habitId } = req.params;
+
+    const habit = req.habit;
+
     if (!habit) {
-      const err = new Error("Resource not found.");
-      err.status = 404;
-      return next(err);
+      return next({ status: 404, message: "Habit not found." });
     }
+
     // Include HATEOAS links in the response
     const response = {
       ...habit.toJSON(),
-      links: {
-        self: `/users/${userId}/habits/${habit.id}`,
-        user_habits: `/users/${userId}/habits/${habit.id}/habits`,
-      },
+      links: [{ rel: "self", method: "GET", href: `/habits/${habit.id}` }],
     };
+
     res.status(200).json(response);
   } catch (error) {
-    // Handle specific errors: 400, 401, 403, 404 and 500
-    if (error.name === "BadRequestError") {
-      const err = new Error("Invalid request.");
-      err.status = 400;
-      error.errors.map((e) => {
-        if (e.path === "habitId") {
-          return "Invalid habit ID.";
-        }
-        if (e.path === "userId") {
-          return "Invalid user ID.";
-        }
-        return e.message;
-      });
-      err.errors = errors;
-      return next(err);
-    }
-    if (error.name === "UnauthorizedError") {
-      const err = new Error("Missing or invalid authentication token.");
-      err.status = 401;
-      return next(err);
-    }
-    if (error.name === "ForbiddenError") {
-      const err = new Error(
-        "You do not have permission to access this resource.",
-      );
-      err.status = 403;
-      return next(err);
-    }
-    const err = new Error("Internal server error.");
-    err.status = 500;
-    return next(err);
+    // Handle specific errors: 500
+    return next({ status: 500, message: "Internal server error." });
   }
 };
 
@@ -139,73 +89,36 @@ export const getHabitById = async (req, res, next) => {
 export const updateHabit = async (req, res, next) => {
   try {
     const { habitId } = req.params;
-    const { nome, descricao_habito, categoria } = req.body;
-    const habit = await Habit.findByPk(habitId);
+    const { nome } = req.body;
+    const habit = req.habit;
+
     if (!habit) {
-      const err = new Error("Resource not found.");
-      err.status = 404;
-      return next(err);
+      return next({ status: 404, message: "Habit not found." });
     }
-    habit.nome = nome || habit.nome;
-    await habit.save();
+
+    await habit.update({
+      nome: nome ?? habit.nome,
+    });
+
     // Include HATEOAS links in the response
     const response = {
       ...habit.toJSON(),
-      links: {
-        self: `/habits/${habit.id}`,
-      },
+      links: [{ rel: "self", method: "GET", href: `/habits/${habit.id}` }],
     };
     res.status(200).json(response);
   } catch (error) {
-    // Handle specific errors: 400, 401, 403, 404, 409 and 500
-    if (error.name === "SequelizeValidationError") {
-      const err = new Error("Validation error.");
-      err.status = 400;
-      err.errors = error.errors.map((e) => {
-        if (e.path === "categoria") {
-          return "Invalid category value.";
-        }
-        return e.message;
-      });
-      return next(err);
-    }
-    if (error.name === "UnauthorizedError") {
-      const err = new Error("Missing or invalid authentication token.");
-      err.status = 401;
-      return next(err);
-    }
-    if (error.name === "ForbiddenError") {
-      const err = new Error("You do not have permission to update habits.");
-      err.status = 403;
-      return next(err);
-    }
-    if (error.name === "NotFoundError") {
-      const err = new Error("Habit not found.");
-      err.status = 404;
-      error.errors.map((e) => {
-        if (e.path === "habitId") {
-          return "Habit not found.";
-        }
-        return e.message;
-      });
-      err.errors = errors;
-      return next(err);
-    }
+    // Handle specific errors: 409 and 500
     if (error.name === "SequelizeUniqueConstraintError") {
-      const err = new Error("A habit with this name already exists.");
-      err.status = 409;
-      error.errors.map((e) => {
-        if (e.path === "nome") {
-          return "A habit with this name already exists.";
-        }
-        return e.message;
+      return next({
+        status: 409,
+        message: "Resource conflict.",
+        errors: { nome: ["A habit with this name already exists."] },
       });
-      err.errors = errors;
-      return next(err);
     }
-    const err = new Error("Internal server error.");
-    err.status = 500;
-    return next(err);
+    return next({
+      status: 500,
+      message: "Internal server error.",
+    });
   }
 };
 
@@ -213,47 +126,15 @@ export const updateHabit = async (req, res, next) => {
 export const deleteHabit = async (req, res, next) => {
   try {
     const { habitId } = req.params;
-    const habit = await Habit.findByPk(habitId);
+    const habit = req.habit;
+
     if (!habit) {
-      const err = new Error("Resource not found.");
-      err.status = 404;
-      error.errors.map((e) => {
-        if (e.path === "habitId") {
-          return "Habit not found.";
-        }
-        return e.message;
-      });
-      err.errors = errors;
-      return next(err);
+      return next({ status: 404, message: "Habit not found." });
     }
     await habit.destroy();
     res.status(204).send();
   } catch (error) {
-    // Handle specific errors: 400, 401, 403, 404 and 500
-    if (error.name === "BadRequestError") {
-      const err = new Error("Invalid request.");
-      err.status = 400;
-      error.errors.map((e) => {
-        if (e.path === "habitId") {
-          return "Invalid habit ID.";
-        }
-        return e.message;
-      });
-      err.errors = errors;
-      return next(err);
-    }
-    if (error.name === "UnauthorizedError") {
-      const err = new Error("Missing or invalid authentication token.");
-      err.status = 401;
-      return next(err);
-    }
-    if (error.name === "ForbiddenError") {
-      const err = new Error("You do not have permission to delete habits.");
-      err.status = 403;
-      return next(err);
-    }
-    const err = new Error("Internal server error.");
-    err.status = 500;
-    return next(err);
+    // Handle specific errors: 500
+    return next({ status: 500, message: "Internal server error." });
   }
 };

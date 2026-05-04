@@ -1,4 +1,18 @@
 import express from "express";
+
+// Import middlewares for habits resources
+import {
+  validateCreateHabit,
+  validateHabitId,
+  checkHabitExists,
+} from "../middlewares/habits.middlewares.js";
+
+// Import middlewares for users resources
+import {
+  authenticateUser,
+  authorizeAdmin,
+} from "../middlewares/users.middlewares.js";
+
 // Import controllers for habits resources
 import {
   getAllHabits,
@@ -11,9 +25,34 @@ import {
 const router = express.Router();
 
 router.get("/", getAllHabits);
-router.post("/", createHabit);
-router.get("/:habitId", getHabitById);
-router.patch("/:habitId", updateHabit);
-router.delete("/:habitId", deleteHabit);
+
+router.post(
+  "/",
+  authenticateUser,
+  authorizeAdmin,
+  validateCreateHabit,
+  createHabit,
+);
+
+router.get("/:habitId", validateHabitId, checkHabitExists, getHabitById);
+
+router.patch(
+  "/:habitId",
+  authenticateUser,
+  authorizeAdmin,
+  validateHabitId,
+  checkHabitExists,
+  validateCreateHabit,
+  updateHabit,
+);
+
+router.delete(
+  "/:habitId",
+  authenticateUser,
+  authorizeAdmin,
+  validateHabitId,
+  checkHabitExists,
+  deleteHabit,
+);
 
 export default router;
