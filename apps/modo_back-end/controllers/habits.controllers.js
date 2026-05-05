@@ -1,6 +1,19 @@
+/*
+  Purpose: HTTP controller handlers for the Habit resource.
+  Exports functions used by routes to list, create, read, update and
+  delete habit records. Each controller responds with HATEOAS links
+  and calls `next()` with an error object on failure.
+*/
 // Import habits data
 import { Habit } from "../config/db.config.js";
 
+/**
+ * getAllHabits(req, res, next)
+ * Retrieves all habits from the database and returns them as JSON.
+ * Query parameters for filtering/sorting/pagination are accepted but
+ * not implemented yet. Adds a HATEOAS `self` link to each habit.
+ * On error, forwards a 500 error via `next()`.
+ */
 // Controller to get all habits
 export const getAllHabits = async (req, res, next) => {
   // Extract query parameters for filtering, sorting, and pagination
@@ -25,6 +38,13 @@ export const getAllHabits = async (req, res, next) => {
   }
 };
 
+/**
+ * createHabit(req, res, next)
+ * Creates a new Habit using `nome`, `descricao_habito`, and `categoria`
+ * from the request body. Returns the created habit (HTTP 201) with a
+ * HATEOAS `self` link. On validation or unique constraint errors,
+ * forwards 400/409 respectively via `next()`, otherwise 500.
+ */
 // Controller to create a new habit
 export const createHabit = async (req, res, next) => {
   try {
@@ -61,6 +81,12 @@ export const createHabit = async (req, res, next) => {
   }
 };
 
+/**
+ * getHabitById(req, res, next)
+ * Returns the habit attached to `req.habit` by middleware. If the
+ * habit is missing, forwards a 404 error. Adds a HATEOAS `self` link
+ * to the returned object.
+ */
 // Controller to get a habit by ID
 export const getHabitById = async (req, res, next) => {
   try {
@@ -85,6 +111,12 @@ export const getHabitById = async (req, res, next) => {
   }
 };
 
+/**
+ * updateHabit(req, res, next)
+ * Updates fields of the habit instance available at `req.habit` using
+ * values from the request body. Handles unique constraint errors and
+ * returns the updated habit with a `self` link on success.
+ */
 // Controller to update a habit
 export const updateHabit = async (req, res, next) => {
   try {
@@ -122,6 +154,11 @@ export const updateHabit = async (req, res, next) => {
   }
 };
 
+/**
+ * deleteHabit(req, res, next)
+ * Deletes the habit instance attached to `req.habit`. If not found,
+ * forwards a 404. On success responds with HTTP 204 No Content.
+ */
 // Controller to delete a habit
 export const deleteHabit = async (req, res, next) => {
   try {

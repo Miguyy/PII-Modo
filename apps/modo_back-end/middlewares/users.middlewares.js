@@ -1,6 +1,18 @@
+/*
+  Purpose: Validation and authentication middleware for user routes.
+  Exposes payload validators for user creation and login, parameter
+  validators, JWT-based authentication, and an admin authorization
+  guard.
+*/
 import jwt from "jsonwebtoken";
 import { User } from "../config/db.config.js";
 
+/**
+ * validateCreateUser(req, res, next)
+ * Validates the payload when creating a new user. Ensures `nome`,
+ * `email` and `password` meet format and complexity requirements.
+ * Responds with HTTP 400 and error details on failure.
+ */
 export const validateCreateUser = (req, res, next) => {
   const { nome, email, password } = req.body;
   const errors = {};
@@ -56,6 +68,11 @@ export const validateCreateUser = (req, res, next) => {
   next();
 };
 
+/**
+ * validateLoginUser(req, res, next)
+ * Validates that `email` and `password` are present in a login
+ * request. Responds with HTTP 400 with details when missing.
+ */
 export const validateLoginUser = (req, res, next) => {
   const { email, password } = req.body;
   const errors = {};
@@ -77,6 +94,11 @@ export const validateLoginUser = (req, res, next) => {
 
   next();
 };
+/**
+ * validateUserId(req, res, next)
+ * Ensures that the `userId` route parameter is a positive integer.
+ * Responds with HTTP 400 when invalid.
+ */
 export const validateUserId = (req, res, next) => {
   const { userId } = req.params;
 
@@ -89,6 +111,12 @@ export const validateUserId = (req, res, next) => {
   next();
 };
 
+/**
+ * authenticateUser(req, res, next)
+ * Verifies a JWT provided in the `Authorization` header (Bearer or
+ * raw token). On success, attaches the decoded token to `req.user`.
+ * Returns 401 when the token is missing or invalid.
+ */
 export const authenticateUser = (req, res, next) => {
   const authHeader = req.headers.authorization;
 
@@ -115,6 +143,12 @@ export const authenticateUser = (req, res, next) => {
   }
 };
 
+/**
+ * authorizeAdmin(req, res, next)
+ * Authorization middleware that checks `req.user.tipo_utilizador`
+ * and returns 403 if the user is not an admin. Call this after
+ * `authenticateUser`.
+ */
 export const authorizeAdmin = (req, res, next) => {
   if (!req.user || req.user.tipo_utilizador !== "admin") {
     return res.status(403).json({

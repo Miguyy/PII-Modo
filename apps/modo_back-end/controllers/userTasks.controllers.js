@@ -1,6 +1,18 @@
+/*
+  Purpose: Controller functions to list, assign, update, complete and
+  delete tasks assigned to users (UserTask join/resource). Responses
+  include HATEOAS links and validation/conflict errors are forwarded
+  to `next()`.
+*/
 // Import user tasks data
 import { UserTask, User, Task } from "../config/db.config.js";
 
+/**
+ * getAllUserTasks(req, res, next)
+ * Retrieves all UserTask records for a given `userId` (and optional
+ * `habitId`) and returns them with HATEOAS `self` links. Forwards 500
+ * on internal errors.
+ */
 // Controller to get all user tasks
 export const getAllUserTasks = async (req, res, next) => {
   try {
@@ -32,6 +44,13 @@ export const getAllUserTasks = async (req, res, next) => {
   }
 };
 
+/**
+ * assignTaskToUser(req, res, next)
+ * Validates the `taskId` provided in the body, prevents duplicate
+ * assignments, creates a new UserTask (progress 0, completed false)
+ * and returns HTTP 201 with a `self` link. Forwards validation (400)
+ * or conflict (409) errors via `next()`.
+ */
 // Controller to assign a task to a user
 export const assignTaskToUser = async (req, res, next) => {
   try {
@@ -82,6 +101,11 @@ export const assignTaskToUser = async (req, res, next) => {
   }
 };
 
+/**
+ * deleteUserTask(req, res, next)
+ * Deletes the UserTask identified by `userId` and `taskId`. Returns
+ * HTTP 204 on success. If no record was deleted, forwards 404.
+ */
 // Controller to delete a user task
 export const deleteUserTask = async (req, res, next) => {
   try {
@@ -101,6 +125,11 @@ export const deleteUserTask = async (req, res, next) => {
   }
 };
 
+/**
+ * getUserTaskById(req, res, next)
+ * Returns the `req.userTask` record (attached by middleware) with a
+ * `self` HATEOAS link. Forwards 500 on internal failures.
+ */
 // Controller to get a user task by ID
 export const getUserTaskById = async (req, res, next) => {
   try {
@@ -123,6 +152,12 @@ export const getUserTaskById = async (req, res, next) => {
   }
 };
 
+/**
+ * updateUserTask(req, res, next)
+ * Updates the `progress` value of the `req.userTask`. Returns the
+ * updated resource with a `self` link. Forwards 500 on internal
+ * failures.
+ */
 // Controller to update a user task
 export const updateUserTask = async (req, res, next) => {
   try {
@@ -150,6 +185,11 @@ export const updateUserTask = async (req, res, next) => {
   }
 };
 
+/**
+ * completeUserTask(req, res, next)
+ * Marks `req.userTask` as completed and sets progress to 100. Returns
+ * the updated record with a `self` link. Forwards 500 on error.
+ */
 // Controller to complete a user task
 export const completeUserTask = async (req, res, next) => {
   try {

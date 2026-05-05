@@ -1,5 +1,17 @@
+/*
+  Purpose: Validation and existence-check middleware for Habit
+  endpoints. Exports middleware to validate input payloads, validate
+  habit ID params, and attach habit instances to `req` when found.
+*/
 import { Habit } from "../config/db.config.js";
 
+/**
+ * validateCreateHabit(req, res, next)
+ * Validates the request body when creating a Habit. Checks that
+ * `nome` is a non-empty string and optional fields, if provided,
+ * have valid types. Returns 400 with error details on validation
+ * failure; otherwise calls `next()`.
+ */
 export const validateCreateHabit = (req, res, next) => {
   const { nome, descricao_habito, categoria } = req.body;
   const errors = {};
@@ -25,6 +37,12 @@ export const validateCreateHabit = (req, res, next) => {
   next();
 };
 
+/**
+ * validateHabitId(req, res, next)
+ * Validates that the `habitId` route parameter is a positive integer.
+ * Returns HTTP 400 with details when invalid, otherwise calls
+ * `next()`.
+ */
 export const validateHabitId = async (req, res, next) => {
   const { habitId } = req.params;
 
@@ -37,6 +55,11 @@ export const validateHabitId = async (req, res, next) => {
   next();
 };
 
+/**
+ * checkHabitExists(req, res, next)
+ * Middleware that loads the Habit by `habitId` and attaches it to
+ * `req.habit`. If not found, responds with 404 and an error object.
+ */
 export const checkHabitExists = async (req, res, next) => {
   const { habitId } = req.params;
   const habit = await Habit.findByPk(habitId);

@@ -1,3 +1,8 @@
+/*
+	Purpose: Express router for Impact-related endpoints. Declares
+	routes used to retrieve impacts and attaches authentication/validation
+	middleware where required.
+*/
 import express from "express";
 
 // Import middlewares for impacts resources
@@ -11,6 +16,11 @@ import { getAllImpacts } from "../controllers/impacts.controllers.js";
 
 const router = express.Router();
 
+/**
+ * GET /
+ * Purpose: Return a list of all impacts. Requires authentication.
+ * Handler: `getAllImpacts`
+ */
 router.get("/", authenticateUser, getAllImpacts);
 
 export default router;
