@@ -1,5 +1,16 @@
+/*
+  Purpose: Validation and existence-check middleware for Task
+  endpoints. Provides payload validation, `taskId` validation and a
+  middleware that attaches a Task instance to `req.task` when present.
+*/
 import { Task } from "../config/db.config.js";
 
+/**
+ * validateCreateTask(req, res, next)
+ * Validates request body fields when creating a Task. Ensures required
+ * `nome` is present and that optional fields are of the correct type.
+ * Returns HTTP 400 with error details on validation failure.
+ */
 export const validateCreateTask = (req, res, next) => {
   const { nome, tipo_tarefa, localizacao_tarefa, prioridade_tarefa } = req.body;
   const errors = {};
@@ -30,6 +41,11 @@ export const validateCreateTask = (req, res, next) => {
   next();
 };
 
+/**
+ * validateTaskId(req, res, next)
+ * Validates that `taskId` route parameter is a positive integer and
+ * returns HTTP 400 on invalid values.
+ */
 export const validateTaskId = (req, res, next) => {
   const { taskId } = req.params;
 
@@ -43,6 +59,11 @@ export const validateTaskId = (req, res, next) => {
   next();
 };
 
+/**
+ * checkTaskExists(req, res, next)
+ * Loads a Task by `taskId` and attaches it to `req.task`. If the
+ * task does not exist responds with 404 and an error object.
+ */
 export const checkTaskExists = async (req, res, next) => {
   const { taskId } = req.params;
   const task = await Task.findByPk(taskId);

@@ -1,3 +1,9 @@
+/*
+  Purpose: Express router that defines user management endpoints
+  including registration, login, listing users, reading/updating/
+  deleting a user and assigning habits to a user. Applies validation
+  and authentication middleware where appropriate.
+*/
 import express from "express";
 
 // Import middlewares for users resources
@@ -22,27 +28,61 @@ import {
 
 const router = express.Router();
 
+/**
+ * POST /
+ * Purpose: Register a new user. Validates payload via
+ * `validateCreateUser` then calls `createUser`.
+ */
 router.post("/", validateCreateUser, createUser);
+
+/**
+ * POST /login
+ * Purpose: Authenticate a user and return a JWT. Handler: `loginUser`.
+ */
 router.post("/login", loginUser);
 
-router.get("/", authenticate, authorizeAdmin, getAllUsers);
+/**
+ * GET /
+ * Purpose: List users. Requires authentication and admin
+ * authorization.
+ */
+router.get("/", authenticateUser, authorizeAdmin, getAllUsers);
 
-router.get("/:userId", authenticate, validateUserId, getUserById);
+/**
+ * GET /:userId
+ * Purpose: Retrieve a single user. Requires authentication and
+ * validates `userId`.
+ */
+router.get("/:userId", authenticateUser, validateUserId, getUserById);
 
-router.patch("/:userId", authenticate, validateUserId, updateUser);
+/**
+ * PATCH /:userId
+ * Purpose: Update a user. Requires authentication and validates id.
+ */
+router.patch("/:userId", authenticateUser, validateUserId, updateUser);
 
+/**
+ * DELETE /:userId
+ * Purpose: Delete a user. Requires admin auth and validates id.
+ */
 router.delete(
   "/:userId",
-  authenticate,
+  authenticateUser,
   authorizeAdmin,
   validateUserId,
   deleteUser,
 );
 
-router.post("/:userId/habits", authenticate, validateUserId, assignTaskToUser);
-
-// NOTE: the `/users/:userId/habits` endpoint is mounted under the
-// `users` router as `POST /users/:userId/habits` for API consistency.
-router.post("/:userId/habits", assignTaskToUser);
+/**
+ * POST /:userId/habits
+ * Purpose: Assign a habit to a user. Requires authentication and
+ * validates `userId`.
+ */
+router.post(
+  "/:userId/habits",
+  authenticateUser,
+  validateUserId,
+  assignTaskToUser,
+);
 
 export default router;

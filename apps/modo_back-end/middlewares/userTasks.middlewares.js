@@ -1,12 +1,23 @@
+/*
+  Purpose: Validation and existence-check middleware for endpoints
+  managing tasks assigned to users. Provides parameter validators and
+  a loader middleware that attaches a `UserTask` instance to `req`.
+*/
+/**
+ * validateUserTaskIds(req, res, next)
+ * Validates `userId` and optional `taskId` route parameters. Ensures
+ * they are positive integers and responds with HTTP 400 and details
+ * when validation fails.
+ */
 export const validateUserTaskIds = (req, res, next) => {
   const { userId, taskId } = req.params;
   const errors = {};
 
-  if (!/^\d+$/.test(userId)) {
+  if (!/^[0-9]+$/.test(userId)) {
     errors.userId = ["Invalid user ID."];
   }
 
-  if (taskId && !/^\d+$/.test(taskId)) {
+  if (taskId && !/^[0-9]+$/.test(taskId)) {
     errors.taskId = ["Invalid task ID."];
   }
 
@@ -24,6 +35,11 @@ export const validateUserTaskIds = (req, res, next) => {
   next();
 };
 
+/**
+ * checkUserTaskExists(req, res, next)
+ * Loads a UserTask by `userId` and `taskId`. If not found responds with
+ * HTTP 404; otherwise attaches the found instance to `req.userTask`.
+ */
 export const checkUserTaskExists = async (req, res, next) => {
   const { userId, taskId } = req.params;
 

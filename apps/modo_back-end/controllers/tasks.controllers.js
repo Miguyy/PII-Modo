@@ -1,6 +1,18 @@
+/*
+  Purpose: HTTP controller handlers for the Task resource.
+  Exports functions used by routes to list, create, read, update and
+  delete tasks. Responses include HATEOAS `self` links and errors are
+  forwarded to `next()` with appropriate status objects.
+*/
 // Import tasks data
 import { Task } from "../config/db.config.js";
 
+/**
+ * getAllTasks(req, res, next)
+ * Retrieves tasks from the database and returns them as JSON. Query
+ * parameters for filtering and pagination are accepted but not yet
+ * implemented. Adds HATEOAS `self` links to each task.
+ */
 // Controller to get all tasks
 export const getAllTasks = async (req, res, next) => {
   const {
@@ -28,6 +40,12 @@ export const getAllTasks = async (req, res, next) => {
   }
 };
 
+/**
+ * createTask(req, res, next)
+ * Creates a Task using fields from the request body. Returns HTTP 201
+ * with the created resource and a `self` HATEOAS link. Validation and
+ * unique constraint errors are forwarded with 400/409 codes.
+ */
 // Controller to create a new task
 export const createTask = async (req, res, next) => {
   try {
@@ -68,6 +86,12 @@ export const createTask = async (req, res, next) => {
   }
 };
 
+/**
+ * getTaskById(req, res, next)
+ * Returns the task attached to `req.task` by middleware. Adds a
+ * HATEOAS `self` link to the response. Forwards 500 on internal
+ * failures.
+ */
 // Controller to get a task by ID
 export const getTaskById = async (req, res, next) => {
   try {
@@ -87,6 +111,12 @@ export const getTaskById = async (req, res, next) => {
   }
 };
 
+/**
+ * updateTask(req, res, next)
+ * Updates the task instance available at `req.task` using the request
+ * body. Returns the updated resource with a `self` link. Handles
+ * unique constraint conflicts and internal errors.
+ */
 // Controller to update a task
 export const updateTask = async (req, res, next) => {
   try {
@@ -116,6 +146,11 @@ export const updateTask = async (req, res, next) => {
   }
 };
 
+/**
+ * deleteTask(req, res, next)
+ * Deletes the task instance attached to `req.task` and returns HTTP
+ * 204 on success. Forwards internal errors to `next()`.
+ */
 // Controller to delete a task
 export const deleteTask = async (req, res, next) => {
   try {

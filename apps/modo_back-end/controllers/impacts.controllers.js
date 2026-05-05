@@ -1,6 +1,17 @@
+/*
+  Purpose: Controllers for the Impact resource. Provides handlers to
+  list all impacts and list impacts associated with a specific task.
+  Responses include HATEOAS `self` links and errors are forwarded to
+  `next()`.
+*/
 // Import impacts data
 import { Impact } from "../config/db.config.js";
 
+/**
+ * getAllImpacts(req, res, next)
+ * Retrieves all Impact records and returns them as JSON with HATEOAS
+ * `self` links. Forwards internal errors (500) via `next()`.
+ */
 // Controller to get all impacts
 export const getAllImpacts = async (req, res, next) => {
   try {
@@ -21,6 +32,12 @@ export const getAllImpacts = async (req, res, next) => {
   }
 };
 
+/**
+ * getTaskImpacts(req, res, next)
+ * Retrieves Impact records filtered by `taskId` (from params). If no
+ * impacts are found, forwards a 404. Returns a list of impacts with
+ * `self` HATEOAS links on success.
+ */
 // Controller to get impacts for a specific task
 export const getTaskImpacts = async (req, res, next) => {
   try {

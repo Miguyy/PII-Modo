@@ -1,3 +1,10 @@
+/*
+  Purpose: Router for endpoints that manage tasks assigned to users
+  (UserTask resource). Defines routes for listing assigned tasks,
+  assigning tasks to users, updating progress, completing tasks and
+  deleting assignments. Middleware validates parameters and loads
+  resources.
+*/
 import express from "express";
 
 // Import middlewares for users tasks resources
@@ -21,6 +28,12 @@ import {
 
 const router = express.Router();
 
+/**
+ * GET /:userId/habits/:habitId/tasks
+ * Purpose: List tasks assigned to a user for a given habit.
+ * Requires authentication and parameter validation.
+ * Handler: `getAllUserTasks`
+ */
 router.get(
   "/:userId/habits/:habitId/tasks",
   authenticateUser,
@@ -28,6 +41,12 @@ router.get(
   getAllUserTasks,
 );
 
+/**
+ * POST /:userId/habits/:habitId/tasks
+ * Purpose: Assign a task to a user (creates a UserTask). Requires
+ * authentication and parameter validation.
+ * Handler: `assignTaskToUser`
+ */
 router.post(
   "/:userId/habits/:habitId/tasks",
   authenticateUser,
@@ -35,6 +54,12 @@ router.post(
   assignTaskToUser,
 );
 
+/**
+ * GET /:userId/tasks/:taskId
+ * Purpose: Retrieve a specific UserTask. Requires authentication,
+ * validation and existence check.
+ * Handler: `getUserTaskById`
+ */
 router.get(
   "/:userId/tasks/:taskId",
   authenticateUser,
@@ -43,6 +68,12 @@ router.get(
   getUserTaskById,
 );
 
+/**
+ * PATCH /:userId/tasks/:taskId/progress
+ * Purpose: Update progress for an assigned task. Requires auth,
+ * validation and existence check.
+ * Handler: `updateUserTask`
+ */
 router.patch(
   "/:userId/tasks/:taskId/progress",
   authenticateUser,
@@ -51,6 +82,12 @@ router.patch(
   updateUserTask,
 );
 
+/**
+ * DELETE /:userId/habits/:habitId/tasks
+ * Purpose: Remove an assigned task from a user. Requires auth and
+ * validation.
+ * Handler: `deleteUserTask`
+ */
 router.delete(
   "/:userId/habits/:habitId/tasks",
   authenticateUser,
@@ -58,6 +95,12 @@ router.delete(
   deleteUserTask,
 );
 
+/**
+ * POST /:userId/tasks/:taskId/complete
+ * Purpose: Mark an assigned task as complete. Requires auth,
+ * validation and existence check.
+ * Handler: `completeUserTask`
+ */
 router.post(
   "/:userId/tasks/:taskId/complete",
   authenticateUser,
