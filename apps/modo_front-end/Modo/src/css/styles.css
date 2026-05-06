@@ -3726,3 +3726,19 @@ footer p {
   color: var(--green-dark);
   letter-spacing: 4px;
 }
+
+/* ONLY affects button while downloading */
+.btn-preparing,
+.btn-preparing:focus,
+.btn-preparing:active,
+.btn-preparing[disabled] {
+  background: #f19640 !important;
+  color: #ededed !important;
+  border: none !important;
+  transition: none !important;
+  box-shadow: none !important;
+}
+
+.btn-preparing:hover {
+  background: #ec7300 !important;
+}
