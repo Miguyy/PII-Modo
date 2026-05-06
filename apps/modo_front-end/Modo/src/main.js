@@ -48,7 +48,9 @@ import {
   faWater,
   faPersonWalking,
   faBoltLightning,
-  faSeedling
+  faSeedling,
+  faDownload,
+  faFilePdf,
 } from '@fortawesome/free-solid-svg-icons'
 
 library.add(
@@ -88,7 +90,9 @@ library.add(
   faWater,
   faPersonWalking,
   faBoltLightning,
-  faSeedling
+  faSeedling,
+  faDownload,
+  faFilePdf,
 )
 
 const app = createApp(App)

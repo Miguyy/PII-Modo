@@ -40,3 +40,9 @@ __screenshots__/
 
 # Local env files
 .env
+
+# package-lock.json
+package-lock.json
+
+# package.json
+package.json
