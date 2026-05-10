@@ -95,7 +95,7 @@ CREATE TABLE Impacto (
     id_tarefa INT,
     tipo_impacto ENUM('Water','Energy','Residuals', 'Mobility', 'Emissions'),
     valor_por_unidade DECIMAL(10,2),
-    unidade VARCHAR(20),
+    unidade ENUM('Litters','kWh','kg', 'km', 'kg CO2e'),
     FOREIGN KEY (id_tarefa) REFERENCES Tarefas(id_tarefa)
 );
 
