@@ -47,7 +47,10 @@ export default (sequelize, DataTypes) =>
           },
         },
       },
-      unidade: { type: DataTypes.STRING, allowNull: false },
+      unidade: {
+        type: DataTypes.ENUM("Litters", "kWh", "kg", "km", "kg CO2e"),
+        allowNull: false,
+      },
     },
     {
       timestamps: false, // remove createdAt and updatedAt fields
