@@ -40,18 +40,46 @@ const AvatarDecoration = AvatarDecorationModel(sequelize, DataTypes);
 import UserTasksModel from "../models/userTasks.model.js";
 const UserTasks = UserTasksModel(sequelize, DataTypes);
 
-import ActiveAvatarDecorationModel from "../models/activeAvatarDecoration.model.js";
-const ActiveAvatarDecoration = ActiveAvatarDecorationModel(
-  sequelize,
-  DataTypes,
-);
+import LocationModel from "../models/locations.model.js";
+const Location = LocationModel(sequelize, DataTypes);
 
-// add relationships here
-// N:M relationship between Product and Cart through a join table CartProducts
-// add RESTRICT on delete to prevent deleting products that are in carts,and cascading delete for cart items when a cart is deleted
-/* 
-Product.belongsToMany(Cart,{through: CartItem, onDelete: "RESTRICT", foreignKey: "itemId"});
-Cart.belongsToMany(Product, { through: CartItem, onDelete: "CASCADE" }); */
+import NotificationModel from "../models/notifications.model.js";
+const Notification = NotificationModel(sequelize, DataTypes);
+
+import ReportModel from "../models/reports.model.js";
+const Report = ReportModel(sequelize, DataTypes);
+
+import UserDecorationsModel from "../models/userDecorations.model.js";
+const UserDecorations = UserDecorationsModel(sequelize, DataTypes);
+
+// Define relationships
+// User has many Notifications (1:N)
+User.hasMany(Notification, { foreignKey: "id_utilizador", onDelete: "CASCADE" });
+Notification.belongsTo(User, { foreignKey: "id_utilizador" });
+
+// User has many Reports (1:N)
+User.hasMany(Report, { foreignKey: "id_utilizador", onDelete: "CASCADE" });
+Report.belongsTo(User, { foreignKey: "id_utilizador" });
+
+// User has many Locations (1:N)
+User.hasMany(Location, { foreignKey: "id_utilizador", onDelete: "CASCADE" });
+Location.belongsTo(User, { foreignKey: "id_utilizador" });
+
+// Habit has many Tasks (1:N)
+Habit.hasMany(Task, { foreignKey: "id_tarefa", onDelete: "CASCADE" });
+Task.belongsTo(Habit, { foreignKey: "id_tarefa" });
+
+// Task has many Impacts (1:N)
+Task.hasMany(Impact, { foreignKey: "id_tarefa", onDelete: "CASCADE" });
+Impact.belongsTo(Task, { foreignKey: "id_tarefa" });
+
+// User and Task have many-to-many relationship through UserTasks
+User.belongsToMany(Task, { through: UserTasks, foreignKey: "id_utilizador", onDelete: "CASCADE" });
+Task.belongsToMany(User, { through: UserTasks, foreignKey: "id_tarefa", onDelete: "CASCADE" });
+
+// User and AvatarDecoration have many-to-many relationship through UserDecorations
+User.belongsToMany(AvatarDecoration, { through: UserDecorations, foreignKey: "id_utilizador", onDelete: "CASCADE" });
+AvatarDecoration.belongsToMany(User, { through: UserDecorations, foreignKey: "id_decoracao", onDelete: "CASCADE" });
 
 // Sync the models with the database
 try {
@@ -63,4 +91,4 @@ try {
 }
 
 // export the models for use in other modules
-export {};
+export { sequelize, User, Habit, Task, Impact, AvatarDecoration, UserTasks, Location, Notification, Report, UserDecorations };

@@ -34,9 +34,8 @@ export default (sequelize, DataTypes) =>
         allowNull: false,
       },
       prioridade_tarefa: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.ENUM("Low", "Medium", "High"),
         allowNull: false,
-        validate: { min: 1, max: 3 },
       },
       duracao_temporizador: {
         type: DataTypes.INTEGER,
@@ -72,6 +71,6 @@ export default (sequelize, DataTypes) =>
       },
     },
     {
-      Timerstamps: false, // remove createdAt and updatedAt fields
+      timestamps: false, // remove createdAt and updatedAt fields
     },
   );

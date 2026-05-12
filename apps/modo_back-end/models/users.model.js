@@ -36,9 +36,14 @@ export default (sequelize, DataTypes) =>
       },
       data_criacao_conta: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
       tipo_utilizador: {
-        type: DataTypes.ENUM("Admin", "Cliente"),
-        defaultValue: "Cliente",
+        type: DataTypes.ENUM("Admin", "Client"),
+        defaultValue: "Client",
       },
+      nivel: {
+        type: DataTypes.INTEGER,
+        defaultValue: 1,
+      },
+      imagem_utilizador: { type: DataTypes.STRING, allowNull: true },
     },
     {
       timestamps: false, // remove createdAt and updatedAt fields
