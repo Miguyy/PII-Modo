@@ -54,7 +54,10 @@ const UserDecorations = UserDecorationsModel(sequelize, DataTypes);
 
 // Define relationships
 // User has many Notifications (1:N)
-User.hasMany(Notification, { foreignKey: "id_utilizador", onDelete: "CASCADE" });
+User.hasMany(Notification, {
+  foreignKey: "id_utilizador",
+  onDelete: "CASCADE",
+});
 Notification.belongsTo(User, { foreignKey: "id_utilizador" });
 
 // User has many Reports (1:N)
@@ -66,20 +69,36 @@ User.hasMany(Location, { foreignKey: "id_utilizador", onDelete: "CASCADE" });
 Location.belongsTo(User, { foreignKey: "id_utilizador" });
 
 // Habit has many Tasks (1:N)
-Habit.hasMany(Task, { foreignKey: "id_tarefa", onDelete: "CASCADE" });
-Task.belongsTo(Habit, { foreignKey: "id_tarefa" });
+Habit.hasMany(Task, { foreignKey: "id_habito", onDelete: "CASCADE" });
+Task.belongsTo(Habit, { foreignKey: "id_habito" });
 
 // Task has many Impacts (1:N)
 Task.hasMany(Impact, { foreignKey: "id_tarefa", onDelete: "CASCADE" });
 Impact.belongsTo(Task, { foreignKey: "id_tarefa" });
 
 // User and Task have many-to-many relationship through UserTasks
-User.belongsToMany(Task, { through: UserTasks, foreignKey: "id_utilizador", onDelete: "CASCADE" });
-Task.belongsToMany(User, { through: UserTasks, foreignKey: "id_tarefa", onDelete: "CASCADE" });
+User.belongsToMany(Task, {
+  through: UserTasks,
+  foreignKey: "id_utilizador",
+  onDelete: "CASCADE",
+});
+Task.belongsToMany(User, {
+  through: UserTasks,
+  foreignKey: "id_tarefa",
+  onDelete: "CASCADE",
+});
 
 // User and AvatarDecoration have many-to-many relationship through UserDecorations
-User.belongsToMany(AvatarDecoration, { through: UserDecorations, foreignKey: "id_utilizador", onDelete: "CASCADE" });
-AvatarDecoration.belongsToMany(User, { through: UserDecorations, foreignKey: "id_decoracao", onDelete: "CASCADE" });
+User.belongsToMany(AvatarDecoration, {
+  through: UserDecorations,
+  foreignKey: "id_utilizador",
+  onDelete: "CASCADE",
+});
+AvatarDecoration.belongsToMany(User, {
+  through: UserDecorations,
+  foreignKey: "id_decoracao",
+  onDelete: "CASCADE",
+});
 
 // Sync the models with the database
 try {
@@ -91,4 +110,16 @@ try {
 }
 
 // export the models for use in other modules
-export { sequelize, User, Habit, Task, Impact, AvatarDecoration, UserTasks, Location, Notification, Report, UserDecorations };
+export {
+  sequelize,
+  User,
+  Habit,
+  Task,
+  Impact,
+  AvatarDecoration,
+  UserTasks,
+  Location,
+  Notification,
+  Report,
+  UserDecorations,
+};
