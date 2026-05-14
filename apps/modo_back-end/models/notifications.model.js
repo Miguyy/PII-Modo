@@ -1,41 +1,38 @@
-// Use sequelize to create a model for the notifications table, with validations
 /*
-fields:
-id_notificacao (integer, primary key, auto-increment)
-id_utilizador (integer, foreign key to users.id_utilizador)
-tipo_notificacao (enum, values: ['level','avatar', 'admin', 'system'], not null)
-mensagem (text, not null)
-data (date, not null)
-lida (boolean, default false)
+  Purpose: Defines the Notificacao model for the application, representing notifications that users receive in the system. 
+  Each notification has a unique ID, a reference to the user it belongs to, a type of notification (e.g., level up, avatar unlocked, admin message, system alert), a message content, a timestamp for when the notification was created, and a boolean indicating whether the notification has been read. 
+  This model is used to manage user notifications in the system and to provide users with relevant updates and information based on their activities and progress.
 */
-//Use ES module syntax
-// export function that takes a sequelize and DataTypes instance and defines the model, then returns it
 
 export default (sequelize, DataTypes) =>
   sequelize.define(
-    "notification",
+    "Notificacao",
     {
       id_notificacao: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
+      },
+      id_utilizador: {
+        type: DataTypes.INTEGER,
+        references: {
+          model: "users",
+          key: "id_utilizador",
         },
-        id_utilizador: {
-            type: DataTypes.INTEGER,
-            references: {
-            model: "users",
-                key: "id_utilizador",
-            },
-        },
-        tipo_notificacao: {
-            type: DataTypes.ENUM("Level", "Avatar", "Admin", "System"),
-            allowNull: false,
-        },
-        mensagem: { type: DataTypes.TEXT, allowNull: false },
-        data: { type: DataTypes.DATE, allowNull: false },
-        lida: { type: DataTypes.BOOLEAN, defaultValue: false },
+      },
+      tipo_notificacao: {
+        type: DataTypes.ENUM("Level", "Avatar", "Admin", "System"),
+        allowNull: false,
+      },
+      mensagem: { type: DataTypes.TEXT, allowNull: false },
+      data: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: DataTypes.NOW,
+      },
+      lida: { type: DataTypes.BOOLEAN, defaultValue: false },
     },
     {
-        timestamps: false, // remove createdAt and updatedAt fields
+      timestamps: false, // remove createdAt and updatedAt fields
     },
   );

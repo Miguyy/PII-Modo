@@ -1,35 +1,29 @@
 /*
-use sequelize to define the UserTasks model, with validations:
-fields:
-id_utilizador (integer, foreign key to users),
-id_tarefa (integer, foreign key to tasks),
-tarefa_ativa (tinyint, default 1, validate: isIn [0, 1]),
-estado_tarefa (enum (Pending, Completed, failed), default Pending)
-progresso (integer, default 0, validate: isInt, min 0)
-data_inicio (date, default current date)
-data_conclusao (date, allow null, validate: if estado_tarefa is "Completed" or "failed", then data_conclusao must not be null and must be after data_inicio)
-use ES module syntax
-export function that takes a sequelize and DataTypes instance and defines the model, then returns it
+  Purpose: Defines the Tarefas_Utilizador model for the application, representing the relationship between users and tasks.
+  Each record in this model indicates that a specific user has a specific task, along with the status of that task (active or not), its progress, and the start and completion dates.
+  This model is used to manage the tasks assigned to users, track their progress, and determine when tasks are completed or failed based on their status and dates.
 */
 
 export default (sequelize, DataTypes) =>
   sequelize.define(
-    "user_tasks",
+    "Tarefas_Utilizador",
     {
       id_utilizador: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references: { model: "users", key: "id_utilizador" },
+        primaryKey: true,
+        references: { model: "Utilizador", key: "id_utilizador" },
       },
       id_tarefa: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references: { model: "tasks", key: "id" },
+        primaryKey: true,
+        references: { model: "Tarefas", key: "id_tarefa" },
       },
       tarefa_ativa: {
-        type: DataTypes.TINYINT,
-        defaultValue: 1,
-        validate: { isIn: [[0, 1]] },
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+        validate: { isIn: [[true, false]] },
       },
       estado_tarefa: {
         type: DataTypes.ENUM("Pending", "Completed"),

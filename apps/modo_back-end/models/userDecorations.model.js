@@ -1,34 +1,26 @@
-//Use sequelize to create a model for the userDecorations table, with validations
-/*
-fields:
-id_utilizador (integer, foreign key to users.id_utilizador)
-id_decoracao  (integer, foreign key to avatarDecorations.id_decoracao)
-decoração_ativa (boolean, default false)
+/* 
+    Purpose: Defines the Decoracao_Avatar_Utilizador model for the application, representing the relationship between users and avatar decorations.
+    Each record in this model indicates that a specific user has acquired a specific avatar decoration, and whether that decoration is currently active for the user's avatar.
+    This model is used to manage the avatar decorations that users have unlocked and to determine which decoration is currently active for each user's avatar.
 */
-//Use ES module syntax
-// export function that takes a sequelize and DataTypes instance and defines the model, then returns it
 
 export default (sequelize, DataTypes) =>
   sequelize.define(
-    "userDecoration",
+    "Decoracao_Avatar_Utilizador",
     {
-        id_utilizador: {
-            type: DataTypes.INTEGER,
-            references: {
-            model: "users",
-                key: "id_utilizador",
-            },
-        },
-        id_decoracao: {
-            type: DataTypes.INTEGER,
-            references: {
-            model: "avatarDecoration",
-                key: "id_decoracao",
-            },
-        },
-        decoracao_ativa: { type: DataTypes.BOOLEAN, defaultValue: false },
+      id_utilizador: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        references: { model: "Utilizador", key: "id_utilizador" },
+      },
+      id_decoracao: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        references: { model: "Decoracao_Avatar", key: "id_decoracao" },
+      },
+      decoracao_ativa: { type: DataTypes.BOOLEAN, defaultValue: false },
     },
     {
-        timestamps: false, // remove createdAt and updatedAt fields
+      timestamps: false, // remove createdAt and updatedAt fields
     },
   );
