@@ -47,5 +47,6 @@ export default (sequelize, DataTypes) =>
     },
     {
       timestamps: false, // remove createdAt and updatedAt fields
+      freezeTableName: true,
     },
   );

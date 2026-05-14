@@ -26,7 +26,7 @@ export const createLocation = async (req, res, next) => {
       nome_localizacao,
       latitude,
       longitude,
-      userId // Foreign key that associates the location with the user
+      userId, // Foreign key that associates the location with the user
     });
 
     // Include HATEOAS links in the response (updated to /locations base path)
@@ -34,10 +34,10 @@ export const createLocation = async (req, res, next) => {
       ...location.toJSON(),
       links: {
         self: `/locations/${location.id}`,
-        user: `/users/${userId}`
+        user: `/users/${userId}`,
       },
     };
-    
+
     res.status(201).json(response);
   } catch (error) {
     // Handle specific errors
@@ -60,7 +60,7 @@ export const createLocation = async (req, res, next) => {
 
 // Controller to get locations (filtered by user if userId is passed in query)
 // GET /locations?userId={id}
-export const getLocations = async (req, res, next) => {
+export const getUserLocation = async (req, res, next) => {
   try {
     // userId is now extracted from the query parameters
     const { userId } = req.query;
@@ -81,7 +81,7 @@ export const getLocations = async (req, res, next) => {
     // Fetch the locations
     const locations = await Location.findAll({
       where: whereClause,
-      order: [['createdAt', 'DESC']] // Brings the most recent location first
+      order: [["createdAt", "DESC"]], // Brings the most recent location first
     });
 
     // Include HATEOAS links in the response
@@ -89,7 +89,7 @@ export const getLocations = async (req, res, next) => {
       ...loc.toJSON(),
       links: {
         self: `/locations/${loc.id}`,
-        user: `/users/${loc.userId}`
+        user: `/users/${loc.userId}`,
       },
     }));
 
@@ -101,7 +101,9 @@ export const getLocations = async (req, res, next) => {
       return next(err);
     }
     if (error.name === "ForbiddenError") {
-      const err = new Error("You do not have permission to access this resource.");
+      const err = new Error(
+        "You do not have permission to access this resource.",
+      );
       err.status = 403;
       return next(err);
     }
@@ -116,7 +118,7 @@ export const getLocations = async (req, res, next) => {
 export const updateLocation = async (req, res, next) => {
   try {
     // locationId is extracted from the URL parameters
-    const { locationId } = req.params; 
+    const { locationId } = req.params;
     // Fields to be updated are extracted from the body
     const { nome_localizacao, latitude, longitude } = req.body;
 
@@ -141,7 +143,7 @@ export const updateLocation = async (req, res, next) => {
       ...location.toJSON(),
       links: {
         self: `/locations/${location.id}`,
-        user: `/users/${location.userId}`
+        user: `/users/${location.userId}`,
       },
     };
 

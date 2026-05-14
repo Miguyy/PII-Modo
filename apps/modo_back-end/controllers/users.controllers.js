@@ -5,7 +5,7 @@
   forwards errors via `next()`.
 */
 // Import users data
-import jwt from "jsonwebtoken";
+/* import jwt from "jsonwebtoken"; */
 import { User, Habit } from "../config/db.config.js";
 
 /**

@@ -5,7 +5,7 @@
   to `next()`.
 */
 // Import user tasks data
-import { UserTask, User, Task } from "../config/db.config.js";
+import { UserTasks, User, Task } from "../config/db.config.js";
 
 /**
  * getAllUserTasks(req, res, next)
