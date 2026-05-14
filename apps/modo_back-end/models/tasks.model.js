@@ -1,27 +1,28 @@
-// use Sequelize do define the Task model, with validations:
-// fields:
-// id_tarefa (integer, foreign key to habits),
-// nome_tarefa (string, not null),
-// pontos_tarefa (integer, not null),
-// tipo_tarefa (string, not null, validate: only "Count", "Timer", "check")
-// localizacao_tarefa (enum (inside, outside), not null)
-// prioridade_tarefa (integer, not null, validate: 1-3)
-// duracao_temporizador (integer, allow null, validate: if tipo_tarefa is "Timer", then duracao_temporizador must be > 0)
-// quantidade_necessaria (integer, allow null, validate: if tipo_tarefa is "Count", then quantidade_necessaria must be > 0)
-// use ES module syntax
-// export function that takes a sequelize and DataTypes instance and defines the model, then returns it
+/* 
+  Purpose: Defines the Tarefas model for the application, representing tasks that users can complete as part of their habits. 
+  Each task has a unique ID, a reference to the habit it belongs to, a name, points awarded for completion, a type (Check, Count, Timer), location (Inside or Outside), priority (Low, Medium, High), and additional fields for timer duration or count quantity as needed. 
+  This model is used to manage the tasks associated with user habits and to track user progress and achievements in the system.
+*/
 
 export default (sequelize, DataTypes) =>
   sequelize.define(
-    "task",
+    "Tarefas",
     {
       id_tarefa: {
         type: DataTypes.INTEGER,
-        allowNull: false,
-        references: { model: "habits", key: "id" },
+        primaryKey: true,
+        autoIncrement: true,
+      },
+      id_habito: {
+        type: DataTypes.INTEGER,
+        references: { model: "Habitos", key: "id_habito" },
       },
       nome_tarefa: { type: DataTypes.STRING, allowNull: false },
-      pontos_tarefa: { type: DataTypes.INTEGER, allowNull: false },
+      pontos_tarefa: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+      },
       tipo_tarefa: {
         type: DataTypes.STRING,
         allowNull: false,

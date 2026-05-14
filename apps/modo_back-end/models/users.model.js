@@ -1,20 +1,12 @@
-//use Sequelize to define the User model, with validations:
 /*
-fields:
-id_utilizador (integer, primary key, auto-increment),
-nome (string, not null),
-email (string, not null, unique, validate: isEmail),
-hashed_password (string, not null),
-pontos (integer, default 0, validate: isInt, min 0)
-data_criacao_conta (date, default current date)
-tipo_utilizador (enum (Admin, Cliente), default Cliente)
+  Purpose: Defines the Utilizador model for the application, representing users in the system. 
+  Each user has a unique ID, a name, an email, a hashed password, points, account creation date, user type (Admin or Client), level, and an optional profile image. 
+  This model is used to manage user information and authentication in the system, as well as to track user progress and achievements through points and levels.
 */
-// use ES module syntax
-// export function that takes a sequelize and DataTypes instance and defines the model, then returns it
 
 export default (sequelize, DataTypes) =>
   sequelize.define(
-    "user",
+    "Utilizador",
     {
       id_utilizador: {
         type: DataTypes.INTEGER,

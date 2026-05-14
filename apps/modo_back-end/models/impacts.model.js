@@ -1,19 +1,12 @@
 /*
-use Sequelize to define the Impact model, with validations:
-fields:
-id_impacto (integer, primary key, auto-increment),
-id_tarefa (integer, foreign key to tasks),
-tipo_impacto (enum 'Water','Energy','Residuals', 'Mobility', 'Emissions', not null),
-valor_por_unidade (decimal, not null, validate: isDecimal, min 0)
-unidade (string, not null)
-use ES module syntax
-export function that takes a sequelize and DataTypes instance and defines the model, then returns it
-
+  Purpose: Defines the Impacto model for the application, representing the environmental impacts associated with each task. 
+  Each impact has a unique ID, a reference to the associated task, a type of impact (e.g., water, energy, residuals, mobility, emissions), a value per unit of impact, and the unit of measurement. 
+  This model is used to manage the environmental impacts of tasks in the system and to calculate the total impact based on user activities and progress.
 */
 
 export default (sequelize, DataTypes) =>
   sequelize.define(
-    "impact",
+    "Impacto",
     {
       id_impacto: {
         type: DataTypes.INTEGER,
@@ -23,7 +16,7 @@ export default (sequelize, DataTypes) =>
       id_tarefa: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references: { model: "tasks", key: "id" },
+        references: { model: "Tarefas", key: "id_tarefa" },
       },
       tipo_impacto: {
         type: DataTypes.ENUM(
