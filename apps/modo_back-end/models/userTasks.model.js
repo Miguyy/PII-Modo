@@ -41,12 +41,12 @@ export default (sequelize, DataTypes) =>
         validate: {
           isValidEndDate(value) {
             if (
-              (this.estado_tarefa === "Completed" ||
-                this.estado_tarefa === "failed") &&
-              (value === null || value <= this.data_inicio)
+              this.estado_tarefa === "Completed" ||
+              value === null ||
+              value <= this.data_inicio
             ) {
               throw new Error(
-                "data_conclusao must be after data_inicio when estado_tarefa is 'Completed' or 'failed'",
+                "data_conclusao must be after data_inicio when estado_tarefa is 'Completed'",
               );
             }
           },
