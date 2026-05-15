@@ -20,6 +20,8 @@ import random
 import hashlib
 import secrets
 from datetime import datetime
+import json
+from pathlib import Path
 
 fake = Faker()  # Initialize Faker
 
@@ -98,6 +100,13 @@ def generate_user_data():
         "tipo_utilizador": tipo_utilizador
     }
 
-users = [generate_user_data() for _ in range(20)]  # Generate a list of 20 users
+users = [generate_user_data() for _ in range(40)]  # Generate a list of 20 users
 for user in users:
     print(user)
+
+base = Path(__file__).resolve().parent.parent  # .../PII-Modo/apps
+out = base / "modo_back-end" / "data" / "users.json"
+out.parent.mkdir(parents=True, exist_ok=True)
+
+with out.open("w", encoding="utf-8") as f:
+    json.dump(users, f, default=str, ensure_ascii=False, indent=2)
