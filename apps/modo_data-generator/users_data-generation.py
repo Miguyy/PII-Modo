@@ -104,7 +104,7 @@ users = [generate_user_data() for _ in range(40)]  # Generate a list of 20 users
 for user in users:
     print(user)
 
-base = Path(__file__).resolve().parent.parent  # .../PII-Modo/apps
+base = Path(__file__).resolve().parent.parent  
 out = base / "modo_back-end" / "data" / "users.json"
 out.parent.mkdir(parents=True, exist_ok=True)
 
