@@ -15,10 +15,9 @@ export default (sequelize, DataTypes) =>
       },
       id_decoracao: {
         type: DataTypes.INTEGER,
-        primaryKey: true,
+        allowNull: true,  // NULL = sem decoração ativa
         references: { model: "Decoracao_Avatar", key: "id_decoracao" },
       },
-      decoracao_ativa: { type: DataTypes.BOOLEAN, defaultValue: false },
     },
     {
       timestamps: false, // remove createdAt and updatedAt fields
