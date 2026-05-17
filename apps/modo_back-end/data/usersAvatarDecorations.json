@@ -1,0 +1,102 @@
+[
+  {
+    "id_utilizador": 31,
+    "id_decoracao": 5,
+    "decoracao_ativa": false
+  },
+  {
+    "id_utilizador": 39,
+    "id_decoracao": 5,
+    "decoracao_ativa": true
+  },
+  {
+    "id_utilizador": 31,
+    "id_decoracao": 6,
+    "decoracao_ativa": true
+  },
+  {
+    "id_utilizador": 30,
+    "id_decoracao": 6,
+    "decoracao_ativa": true
+  },
+  {
+    "id_utilizador": 60,
+    "id_decoracao": 4,
+    "decoracao_ativa": true
+  },
+  {
+    "id_utilizador": 32,
+    "id_decoracao": 6,
+    "decoracao_ativa": false
+  },
+  {
+    "id_utilizador": 53,
+    "id_decoracao": 5,
+    "decoracao_ativa": false
+  },
+  {
+    "id_utilizador": 46,
+    "id_decoracao": 2,
+    "decoracao_ativa": true
+  },
+  {
+    "id_utilizador": 12,
+    "id_decoracao": 2,
+    "decoracao_ativa": false
+  },
+  {
+    "id_utilizador": 56,
+    "id_decoracao": 1,
+    "decoracao_ativa": true
+  },
+  {
+    "id_utilizador": 14,
+    "id_decoracao": 1,
+    "decoracao_ativa": false
+  },
+  {
+    "id_utilizador": 3,
+    "id_decoracao": 4,
+    "decoracao_ativa": false
+  },
+  {
+    "id_utilizador": 44,
+    "id_decoracao": 5,
+    "decoracao_ativa": true
+  },
+  {
+    "id_utilizador": 47,
+    "id_decoracao": 2,
+    "decoracao_ativa": true
+  },
+  {
+    "id_utilizador": 4,
+    "id_decoracao": 5,
+    "decoracao_ativa": true
+  },
+  {
+    "id_utilizador": 28,
+    "id_decoracao": 6,
+    "decoracao_ativa": false
+  },
+  {
+    "id_utilizador": 24,
+    "id_decoracao": 4,
+    "decoracao_ativa": true
+  },
+  {
+    "id_utilizador": 43,
+    "id_decoracao": 3,
+    "decoracao_ativa": true
+  },
+  {
+    "id_utilizador": 60,
+    "id_decoracao": 4,
+    "decoracao_ativa": false
+  },
+  {
+    "id_utilizador": 59,
+    "id_decoracao": 6,
+    "decoracao_ativa": true
+  }
+]
