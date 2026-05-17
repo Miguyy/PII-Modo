@@ -1,0 +1,212 @@
+[
+  {
+    "id_utilizador": 25,
+    "tipo_notificacao": "admin",
+    "mensagem": "Admin notification: A task has been created. Please review the changes in the admin panel for more details.",
+    "data": "2026-02-19 03:02:26",
+    "lida": true
+  },
+  {
+    "id_utilizador": 30,
+    "tipo_notificacao": "system",
+    "mensagem": "System update: We have made some improvements to enhance your experience. Please check the latest features in the app and enjoy the new functionalities.",
+    "data": "2025-10-21 04:07:40",
+    "lida": true
+  },
+  {
+    "id_utilizador": 2,
+    "tipo_notificacao": "system",
+    "mensagem": "System update: We have made some improvements to enhance your experience. Please check the latest features in the app and enjoy the new functionalities.",
+    "data": "2026-01-20 17:10:40",
+    "lida": false
+  },
+  {
+    "id_utilizador": 27,
+    "tipo_notificacao": "avatar",
+    "mensagem": "New avatar unlocked! Check out your new look in the avatar section and show it off to your friends.",
+    "data": "2025-08-10 04:14:36",
+    "lida": false
+  },
+  {
+    "id_utilizador": 5,
+    "tipo_notificacao": "avatar",
+    "mensagem": "New avatar unlocked! Check out your new look in the avatar section and show it off to your friends.",
+    "data": "2026-01-28 06:28:34",
+    "lida": false
+  },
+  {
+    "id_utilizador": 5,
+    "tipo_notificacao": "level",
+    "mensagem": "Congratulations! You've reached a new level 10. Keep up the good work to unlock more rewards.",
+    "data": "2025-12-28 23:59:09",
+    "lida": false
+  },
+  {
+    "id_utilizador": 34,
+    "tipo_notificacao": "avatar",
+    "mensagem": "New avatar unlocked! Check out your new look in the avatar section and show it off to your friends.",
+    "data": "2025-05-25 19:10:44",
+    "lida": true
+  },
+  {
+    "id_utilizador": 31,
+    "tipo_notificacao": "level",
+    "mensagem": "Congratulations! You've reached a new level 4. Keep up the good work to unlock more rewards.",
+    "data": "2026-04-21 13:56:21",
+    "lida": true
+  },
+  {
+    "id_utilizador": 35,
+    "tipo_notificacao": "level",
+    "mensagem": "Congratulations! You've reached a new level 7. Keep up the good work to unlock more rewards.",
+    "data": "2026-03-09 08:58:34",
+    "lida": false
+  },
+  {
+    "id_utilizador": 37,
+    "tipo_notificacao": "system",
+    "mensagem": "System update: We have made some improvements to enhance your experience. Please check the latest features in the app and enjoy the new functionalities.",
+    "data": "2026-05-17 05:28:39",
+    "lida": false
+  },
+  {
+    "id_utilizador": 11,
+    "tipo_notificacao": "system",
+    "mensagem": "System update: We have made some improvements to enhance your experience. Please check the latest features in the app and enjoy the new functionalities.",
+    "data": "2025-12-01 12:22:54",
+    "lida": false
+  },
+  {
+    "id_utilizador": 51,
+    "tipo_notificacao": "admin",
+    "mensagem": "Admin notification: A user has been updated. Please review the changes in the admin panel for more details.",
+    "data": "2026-01-07 18:40:09",
+    "lida": true
+  },
+  {
+    "id_utilizador": 50,
+    "tipo_notificacao": "admin",
+    "mensagem": "Admin notification: A avatar has been deleted. Please review the changes in the admin panel for more details.",
+    "data": "2025-12-07 14:29:17",
+    "lida": false
+  },
+  {
+    "id_utilizador": 55,
+    "tipo_notificacao": "level",
+    "mensagem": "Congratulations! You've reached a new level 6. Keep up the good work to unlock more rewards.",
+    "data": "2025-08-15 15:21:45",
+    "lida": true
+  },
+  {
+    "id_utilizador": 50,
+    "tipo_notificacao": "admin",
+    "mensagem": "Admin notification: A habit has been created. Please review the changes in the admin panel for more details.",
+    "data": "2025-09-02 23:33:05",
+    "lida": true
+  },
+  {
+    "id_utilizador": 37,
+    "tipo_notificacao": "system",
+    "mensagem": "System update: We have made some improvements to enhance your experience. Please check the latest features in the app and enjoy the new functionalities.",
+    "data": "2026-02-14 00:47:51",
+    "lida": false
+  },
+  {
+    "id_utilizador": 24,
+    "tipo_notificacao": "admin",
+    "mensagem": "Admin notification: A habit has been created. Please review the changes in the admin panel for more details.",
+    "data": "2025-11-08 09:03:07",
+    "lida": true
+  },
+  {
+    "id_utilizador": 25,
+    "tipo_notificacao": "avatar",
+    "mensagem": "New avatar unlocked! Check out your new look in the avatar section and show it off to your friends.",
+    "data": "2026-01-22 01:56:57",
+    "lida": false
+  },
+  {
+    "id_utilizador": 20,
+    "tipo_notificacao": "admin",
+    "mensagem": "Admin notification: A habit has been created. Please review the changes in the admin panel for more details.",
+    "data": "2025-08-20 09:22:44",
+    "lida": true
+  },
+  {
+    "id_utilizador": 4,
+    "tipo_notificacao": "system",
+    "mensagem": "System update: We have made some improvements to enhance your experience. Please check the latest features in the app and enjoy the new functionalities.",
+    "data": "2026-01-21 00:16:46",
+    "lida": true
+  },
+  {
+    "id_utilizador": 14,
+    "tipo_notificacao": "avatar",
+    "mensagem": "New avatar unlocked! Check out your new look in the avatar section and show it off to your friends.",
+    "data": "2025-07-17 08:10:51",
+    "lida": false
+  },
+  {
+    "id_utilizador": 39,
+    "tipo_notificacao": "admin",
+    "mensagem": "Admin notification: A user has been created. Please review the changes in the admin panel for more details.",
+    "data": "2026-04-24 22:08:48",
+    "lida": true
+  },
+  {
+    "id_utilizador": 29,
+    "tipo_notificacao": "level",
+    "mensagem": "Congratulations! You've reached a new level 4. Keep up the good work to unlock more rewards.",
+    "data": "2025-11-25 09:20:41",
+    "lida": false
+  },
+  {
+    "id_utilizador": 27,
+    "tipo_notificacao": "level",
+    "mensagem": "Congratulations! You've reached a new level 9. Keep up the good work to unlock more rewards.",
+    "data": "2025-08-25 20:21:31",
+    "lida": false
+  },
+  {
+    "id_utilizador": 25,
+    "tipo_notificacao": "level",
+    "mensagem": "Congratulations! You've reached a new level 9. Keep up the good work to unlock more rewards.",
+    "data": "2026-04-06 06:25:55",
+    "lida": true
+  },
+  {
+    "id_utilizador": 34,
+    "tipo_notificacao": "level",
+    "mensagem": "Congratulations! You've reached a new level 4. Keep up the good work to unlock more rewards.",
+    "data": "2025-10-17 04:22:04",
+    "lida": false
+  },
+  {
+    "id_utilizador": 23,
+    "tipo_notificacao": "avatar",
+    "mensagem": "New avatar unlocked! Check out your new look in the avatar section and show it off to your friends.",
+    "data": "2026-01-24 14:28:50",
+    "lida": false
+  },
+  {
+    "id_utilizador": 20,
+    "tipo_notificacao": "system",
+    "mensagem": "System update: We have made some improvements to enhance your experience. Please check the latest features in the app and enjoy the new functionalities.",
+    "data": "2026-04-21 09:43:16",
+    "lida": true
+  },
+  {
+    "id_utilizador": 16,
+    "tipo_notificacao": "level",
+    "mensagem": "Congratulations! You've reached a new level 2. Keep up the good work to unlock more rewards.",
+    "data": "2025-07-24 14:15:23",
+    "lida": false
+  },
+  {
+    "id_utilizador": 24,
+    "tipo_notificacao": "system",
+    "mensagem": "System update: We have made some improvements to enhance your experience. Please check the latest features in the app and enjoy the new functionalities.",
+    "data": "2025-10-11 12:21:02",
+    "lida": true
+  }
+]
