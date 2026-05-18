@@ -4,17 +4,17 @@ import { Location, User } from "../config/db.config.js";
 // Controller to create a new location
 export const createLocation = async (req, res, next) => {
   try {
-    // userId is now extracted from the request body
-    const { userId, nome_localizacao, latitude, longitude } = req.body;
+    // id_utilizador, pais, and cidade are now extracted from the request body
+    const { id_utilizador, pais, cidade, latitude, longitude } = req.body;
 
-    if (!userId) {
-      const err = new Error("User ID is required in the request body.");
+    if (!id_utilizador) {
+      const err = new Error("User ID (id_utilizador) is required in the request body.");
       err.status = 400;
       return next(err);
     }
 
     // Check if the user exists
-    const user = await User.findByPk(userId);
+    const user = await User.findByPk(id_utilizador);
     if (!user) {
       const err = new Error("User not found.");
       err.status = 404;
@@ -23,7 +23,9 @@ export const createLocation = async (req, res, next) => {
 
     // Create the location associated with the user
     const location = await Location.create({
-      nome_localizacao,
+      id_utilizador, // Foreign key that associates the location with the user
+      pais,
+      cidade,
       latitude,
       longitude,
       userId // Foreign key that associates the location with the user
@@ -34,6 +36,7 @@ export const createLocation = async (req, res, next) => {
       ...location.toJSON(),
       links: {
         self: `/locations/${location.id}`,
+        user: `/users/${id_utilizador}`,
         user: `/users/${userId}`
       },
     };
@@ -58,24 +61,27 @@ export const createLocation = async (req, res, next) => {
   }
 };
 
+// Controller to get locations (filtered by user if id_utilizador is passed in query)
+// GET /locations?id_utilizador={id}
+export const getUserLocation = async (req, res, next) => {
 // Controller to get locations (filtered by user if userId is passed in query)
 // GET /locations?userId={id}
 export const getLocations = async (req, res, next) => {
   try {
-    // userId is now extracted from the query parameters
-    const { userId } = req.query;
+    // id_utilizador is now extracted from the query parameters
+    const { id_utilizador } = req.query;
 
     let whereClause = {};
 
-    // If a userId is provided, validate the user and filter locations
-    if (userId) {
-      const user = await User.findByPk(userId);
+    // If a id_utilizador is provided, validate the user and filter locations
+    if (id_utilizador) {
+      const user = await User.findByPk(id_utilizador);
       if (!user) {
         const err = new Error("User not found.");
         err.status = 404;
         return next(err);
       }
-      whereClause.userId = userId;
+      whereClause.id_utilizador = id_utilizador;
     }
 
     // Fetch the locations
@@ -118,7 +124,7 @@ export const updateLocation = async (req, res, next) => {
     // locationId is extracted from the URL parameters
     const { locationId } = req.params; 
     // Fields to be updated are extracted from the body
-    const { nome_localizacao, latitude, longitude } = req.body;
+    const { pais, cidade, latitude, longitude } = req.body;
 
     // Find the location directly by its ID
     const location = await Location.findByPk(locationId);
@@ -130,9 +136,10 @@ export const updateLocation = async (req, res, next) => {
     }
 
     // Update only the fields sent in the body (PATCH behavior)
-    if (nome_localizacao) location.nome_localizacao = nome_localizacao;
-    if (latitude) location.latitude = latitude;
-    if (longitude) location.longitude = longitude;
+    if (pais) location.pais = pais;
+    if (cidade) location.cidade = cidade;
+    if (latitude !== undefined) location.latitude = latitude;
+    if (longitude !== undefined) location.longitude = longitude;
 
     await location.save();
 

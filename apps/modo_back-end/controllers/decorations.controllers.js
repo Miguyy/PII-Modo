@@ -1,4 +1,4 @@
-// Import models (adjust according to the exact names exported in your db.config.js)
+// Import decorations data
 import { Decoration } from "../config/db.config.js";
 
 // Controller to create a new avatar decoration in the global catalog

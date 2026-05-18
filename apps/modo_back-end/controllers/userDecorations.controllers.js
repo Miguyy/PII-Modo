@@ -1,4 +1,4 @@
-// Import models (adjust according to the exact names exported in your db.config.js)
+// Import user, decoration and userdecoration data
 import { User, Decoration, UserDecoration } from "../config/db.config.js";
 
 // Controller to unlock or associate a decoration to a user
@@ -27,6 +27,7 @@ export const unlockDecoration = async (req, res, next) => {
     // 3. Check if the user already has this decoration
     const existingAssociation = await UserDecoration.findOne({
       where: { userId, decorationId }
+      where: { userId, decorationId }
     });
 
     if (existingAssociation) {
@@ -40,6 +41,7 @@ export const unlockDecoration = async (req, res, next) => {
       userId,
       decorationId,
       is_active: false // Unlocked, but not active by default
+      is_active: false // Unlocked, but not active by default
     });
 
     const response = {
@@ -47,6 +49,8 @@ export const unlockDecoration = async (req, res, next) => {
       data: userDecoration,
       links: {
         self: `/users/${userId}/avatar-decorations`,
+        activate: `/users/${userId}/avatar-decorations/${decorationId}`
+      }
         activate: `/users/${userId}/avatar-decorations/${decorationId}`
       }
     };
@@ -89,11 +93,16 @@ export const getUserDecorations = async (req, res, next) => {
           attributes: ['nome', 'imagem_url', 'nivel_necessario'] 
         }
       ]
+          attributes: ['nome', 'imagem_url', 'nivel_necessario'] 
+        }
+      ]
     });
 
     const response = userDecorations.map((ud) => ({
       ...ud.toJSON(),
       links: {
+        activate: `/users/${userId}/avatar-decorations/${ud.decorationId}`
+      }
         activate: `/users/${userId}/avatar-decorations/${ud.decorationId}`
       }
     }));
@@ -115,6 +124,7 @@ export const activateDecoration = async (req, res, next) => {
     // 1. Find the specific user-decoration association
     const userDecoration = await UserDecoration.findOne({
       where: { userId, decorationId }
+      where: { userId, decorationId }
     });
 
     if (!userDecoration) {
@@ -125,6 +135,10 @@ export const activateDecoration = async (req, res, next) => {
 
     // 2. Business Logic: Usually, a user can only have ONE active decoration.
     // So we first deactivate all other decorations for this user.
+    await UserDecoration.update(
+      { is_active: false },
+      { where: { userId } }
+    );
     await UserDecoration.update(
       { is_active: false },
       { where: { userId } }

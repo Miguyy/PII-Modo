@@ -1,4 +1,4 @@
-// Import models (adjust according to the exact names exported in your db.config.js)
+// Import notifications data
 import { Notification, User } from "../config/db.config.js";
 
 // Controller to list all notifications for a specific user
