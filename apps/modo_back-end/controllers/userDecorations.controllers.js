@@ -1,9 +1,5 @@
-// Import models (adjust according to the exact names exported in your db.config.js)
-import {
-  User,
-  AvatarDecoration,
-  UserDecorations,
-} from "../config/db.config.js";
+// Import user, decoration and userdecoration data
+import { User, Decoration, UserDecoration } from "../config/db.config.js";
 
 // Controller to unlock or associate a decoration to a user
 // POST /users/:userId/avatar-decorations
