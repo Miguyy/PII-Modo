@@ -1,66 +1,109 @@
-<script setup>
+<script>
 import NavBar from '../Components/NavBar.vue'
-import { ref, onMounted, onUnmounted } from 'vue'
+import { useUserStore } from '@/stores/userStore'
 
-// Estado da animação
-const titleActive = ref(false)
-const textActive = ref(false)
-let hasAnimated = false
+export default {
+  name: 'LandingPageView',
+  components: { NavBar },
 
-// Timeouts
-let titleTimeout = null
-let textTimeout = null
+  data() {
+    return {
+      // animation state
+      titleActive: false,
+      textActive: false,
+      hasAnimated: false,
+      // FAQ items
+      faqItems: [
+        {
+          question: 'What is Modo?',
+          answer:
+            'Modo is a sustainability tracker designed to help you build a greener lifestyle. It gamifies your environmental impact by rewarding you with points for every eco-friendly action you complete, turning personal growth into a win for the planet.',
+          open: false,
+        },
+        {
+          question: 'Is there an iOS or Android App?',
+          answer:
+            'Right now, Modo is available via web browser on all devices. We’re working hard on native iOS and Android apps to make sustainable living even easier for our community. Stay tuned for updates!',
+          open: false,
+        },
+        {
+          question: 'How many habits can I track?',
+          answer:
+            'As many as you need to make a real impact, though we recommend starting with 3 to 5 core rituals.',
+          open: false,
+        },
+      ],
+      // timeouts
+      titleTimeout: null,
+      textTimeout: null,
+      // DOM elements
+      sectionElement: null,
+      scrollElement: null,
+      // userStore will be assigned in created()
+      userStore: null,
+    }
+  },
 
-// Elementos DOM
-let sectionElement = null
-let scrollElement = null
+  computed: {
+    letsStartTarget() {
+      return this.userStore && this.userStore.loggedUserId ? '/habitsmanager' : '/signin'
+    },
+  },
 
-// Função de hover para animação
-function handleMouseEnter() {
-  if (hasAnimated) return
-  hasAnimated = true
+  methods: {
+    handleMouseEnter() {
+      if (this.hasAnimated) return
+      this.hasAnimated = true
 
-  titleTimeout = setTimeout(() => {
-    titleActive.value = true
-  }, 600)
+      this.titleTimeout = setTimeout(() => {
+        this.titleActive = true
+      }, 600)
 
-  textTimeout = setTimeout(() => {
-    textActive.value = true
-  }, 1200)
+      this.textTimeout = setTimeout(() => {
+        this.textActive = true
+      }, 1200)
+    },
+
+    handleScroll() {
+      if (!this.sectionElement || !this.scrollElement) return
+
+      const start = this.sectionElement.offsetTop
+      const height = this.sectionElement.offsetHeight
+      const scrollY = window.scrollY
+
+      if (scrollY < start || scrollY > start + height) return
+
+      const progress = (scrollY - start) / height
+      const maxMove = this.scrollElement.scrollWidth - window.innerWidth
+
+      this.scrollElement.style.transform = `translateX(${-progress * maxMove}px)`
+    },
+    toggleFaq(index) {
+      const currentlyOpen = this.faqItems[index].open
+      // close all
+      this.faqItems.forEach((f) => (f.open = false))
+      // if it was closed, open it
+      if (!currentlyOpen) this.faqItems[index].open = true
+    },
+  },
+
+  created() {
+    this.userStore = useUserStore()
+    if (this.userStore.loadFromLocalStorage) this.userStore.loadFromLocalStorage()
+  },
+
+  mounted() {
+    this.sectionElement = document.querySelector('.scroll-section-color')
+    this.scrollElement = document.querySelector('.scroll-section')
+    window.addEventListener('scroll', this.handleScroll)
+  },
+
+  unmounted() {
+    window.removeEventListener('scroll', this.handleScroll)
+    clearTimeout(this.titleTimeout)
+    clearTimeout(this.textTimeout)
+  },
 }
-
-// Função para scroll horizontal baseado no scroll vertical
-function handleScroll() {
-  if (!sectionElement || !scrollElement) return
-
-  const start = sectionElement.offsetTop
-  const height = sectionElement.offsetHeight
-  const scrollY = window.scrollY
-
-  if (scrollY < start || scrollY > start + height) return
-
-  const progress = (scrollY - start) / height
-  const maxMove = scrollElement.scrollWidth - window.innerWidth
-
-  scrollElement.style.transform = `translateX(${-progress * maxMove}px)`
-}
-
-// Monta os elementos após render
-onMounted(() => {
-  sectionElement = document.querySelector('.scroll-section-color')
-  scrollElement = document.querySelector('.scroll-section')
-
-  window.addEventListener('scroll', handleScroll)
-})
-
-// Remove listeners
-onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll)
-
-  // Limpa timeouts caso componente seja destruído
-  clearTimeout(titleTimeout)
-  clearTimeout(textTimeout)
-})
 </script>
 
 <template>
@@ -82,7 +125,14 @@ onUnmounted(() => {
       <div class="wave-front">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1512 985" preserveAspectRatio="none">
           <defs>
-            <linearGradient id="heroGradient" x1="756" y1="-239" x2="756" y2="968.18" gradientUnits="userSpaceOnUse">
+            <linearGradient
+              id="heroGradient"
+              x1="756"
+              y1="-239"
+              x2="756"
+              y2="968.18"
+              gradientUnits="userSpaceOnUse"
+            >
               <stop offset="0%" stop-color="#CBEDDA" stop-opacity="0.7" />
               <stop offset="58%" stop-color="#97DBB4" />
             </linearGradient>
@@ -110,14 +160,15 @@ onUnmounted(() => {
       <div class="hero-content">
         <div class="container">
           <h1 class="hero-title">
-            Change your <br/> habits create <br/>
+            Change your <br />
+            habits create <br />
             your new you.
           </h1>
           <p class="hero-description">
             Turn your goals into quests to beat <br />making a better world by a better you!
           </p>
           <div class="ms-auto">
-            <RouterLink class="letsStart-btn" to="/signin"> Let's start </RouterLink>
+            <RouterLink :to="letsStartTarget" class="letsStart-btn"> Let's start </RouterLink>
           </div>
         </div>
       </div>
@@ -125,10 +176,8 @@ onUnmounted(() => {
 
     <section id="case_studies" class="carousel-section">
       <div class="section-titles">
-        <div>
-          <h1>CASE STUDIES</h1>
-        </div>
-        <div>
+        <div class="page-title">
+          <h4>CASE STUDIES</h4>
           <h1>&#x2022;</h1>
         </div>
       </div>
@@ -172,17 +221,19 @@ onUnmounted(() => {
         </div>
 
         <div class="appear-content">
-          <div class="appear-text"> <!-- max 1024 -->
+          <div class="appear-text">
+            <!-- max 1024 -->
             <h2 :class="{ active: titleActive }">Why we built Modo.</h2>
 
             <p :class="{ active: textActive }">
-              We built Modo because we believe that while many people want to live a more eco-conscious life, 
-              the path to true sustainability can feel overwhelming. 
-              In a world of convenience and fast consumption, it is easy to lose track of the small, 
-              daily actions that lead to a significant environmental impact.
-              <br><br>
-              Modo was designed to bridge the gap between intention and action. 
-              We’ve created a dedicated space for sustainable habit-tracking that helps you stay committed to a greener lifestyle.
+              We built Modo because we believe that while many people want to live a more
+              eco-conscious life, the path to true sustainability can feel overwhelming. In a world
+              of convenience and fast consumption, it is easy to lose track of the small, daily
+              actions that lead to a significant environmental impact.
+              <br /><br />
+              Modo was designed to bridge the gap between intention and action. We’ve created a
+              dedicated space for sustainable habit-tracking that helps you stay committed to a
+              greener lifestyle.
             </p>
           </div>
 
@@ -257,88 +308,33 @@ onUnmounted(() => {
             <h2>Got questions? We got answers!</h2>
           </div>
 
-          <div class="accordion" id="faqAccordion">
-            <div class="accordion-item">
-              <h2 class="accordion-header" id="headingOne">
-                <button
-                  class="accordion-button"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#collapseOne"
-                  aria-expanded="true"
-                  aria-controls="collapseOne"
-                >
-                  What is Modo?
-                </button>
-              </h2>
-              <div
-                id="collapseOne"
-                class="accordion-collapse collapse show"
-                aria-labelledby="headingOne"
-                data-bs-parent="#faqAccordion"
-              >
-                <div class="accordion-body">
-                  Modo is a sustainability tracker designed to help you build a greener lifestyle. 
-                  It gamifies your environmental impact by rewarding you with points for every eco-friendly action you complete, 
-                  turning personal growth into a win for the planet.
-                </div>
-              </div>
-            </div>
+          <div class="faq-list">
+            <div
+              v-for="(item, index) in faqItems"
+              :key="index"
+              class="faq-item"
+              :class="{ open: item.open }"
+            >
+              <button class="faq-question" @click="toggleFaq(index)">
+                <span class="faq-plus" aria-hidden>{{ item.open ? '−' : '+' }}</span>
+                <span class="faq-title">{{ item.question }}</span>
+              </button>
 
-            <div class="accordion-item">
-              <h2 class="accordion-header" id="headingTwo">
-                <button
-                  class="accordion-button collapsed"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#collapseTwo"
-                  aria-expanded="false"
-                  aria-controls="collapseTwo"
+              <transition name="faq">
+                <div
+                  class="faq-answer"
+                  v-if="item.open"
+                  role="region"
+                  :aria-labelledby="`faq-${index}`"
                 >
-                  Is there an iOS or Android App?
-                </button>
-              </h2>
-              <div
-                id="collapseTwo"
-                class="accordion-collapse collapse"
-                aria-labelledby="headingTwo"
-                data-bs-parent="#faqAccordion"
-              >
-                <div class="accordion-body">
-                  Right now, Modo is available via web browser on all devices. 
-                  We’re working hard on native iOS and Android apps to make sustainable living even easier for our community. 
-                  Stay tuned for updates!
+                  <p>{{ item.answer }}</p>
                 </div>
-              </div>
-            </div>
-
-            <div class="accordion-item">
-              <h2 class="accordion-header" id="headingThree">
-                <button
-                  class="accordion-button collapsed"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#collapseThree"
-                  aria-expanded="false"
-                  aria-controls="collapseThree"
-                >
-                  How many habits can I track?
-                </button>
-              </h2>
-              <div
-                id="collapseThree"
-                class="accordion-collapse collapse"
-                aria-labelledby="headingThree"
-                data-bs-parent="#faqAccordion"
-              >
-                <div class="accordion-body">
-                  As many as you need to make a real impact, though we recommend starting with 3 to 5 core rituals.
-                </div>
-              </div>
+              </transition>
             </div>
           </div>
         </div>
       </div>
+      <Footer />
     </section>
   </div>
 </template>

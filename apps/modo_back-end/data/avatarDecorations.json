@@ -1,0 +1,32 @@
+[
+  {
+    "nome_decoracao": "cat",
+    "nivel_necessario": 15,
+    "caminho_decoracao": "/apps/modo_front-end/Modo/src/images/cat.png"
+  },
+  {
+    "nome_decoracao": "garden",
+    "nivel_necessario": 5,
+    "caminho_decoracao": "/apps/modo_front-end/Modo/src/images/garden.png"
+  },
+  {
+    "nome_decoracao": "olives",
+    "nivel_necessario": 10,
+    "caminho_decoracao": "/apps/modo_front-end/Modo/src/images/olives.png"
+  },
+  {
+    "nome_decoracao": "solarSystem",
+    "nivel_necessario": 0,
+    "caminho_decoracao": "/apps/modo_front-end/Modo/src/images/solarSystem.png"
+  },
+  {
+    "nome_decoracao": "summer",
+    "nivel_necessario": 20,
+    "caminho_decoracao": "/apps/modo_front-end/Modo/src/images/summer.png"
+  },
+  {
+    "nome_decoracao": "zoo",
+    "nivel_necessario": 25,
+    "caminho_decoracao": "/apps/modo_front-end/Modo/src/images/zoo.png"
+  }
+]

@@ -10,6 +10,8 @@ timestamp and a read/unread flag.
 from faker import Faker
 import random
 from datetime import datetime
+import json
+from pathlib import Path
 
 fake = Faker()  # Initialize Faker
 
@@ -19,9 +21,9 @@ entities = ["task", "habit", "avatar", "user"]
 def notification_type():
     """Randomly choose a notification category.
 
-    Returns one of: 'nivel', 'avatar', 'admin', 'sistema'.
+    Returns one of: 'level', 'avatar', 'admin', 'system'.
     """
-    return random.choice(["nivel", "avatar", "admin", "sistema"])
+    return random.choice(["level", "avatar", "admin", "system"])
 
 
 def generate_admin_message():
@@ -43,14 +45,14 @@ def generate_message(tipo):
     Returns:
         str: Human-readable notification message.
     """
-    if tipo == "nivel":
-        nivel = random.randint(1, 10)
-        return f"Congratulations! You've reached a new level {nivel}. Keep up the good work to unlock more rewards."
+    if tipo == "level":
+        level = random.randint(1, 10)
+        return f"Congratulations! You've reached a new level {level}. Keep up the good work to unlock more rewards."
     elif tipo == "avatar":
         return "New avatar unlocked! Check out your new look in the avatar section and show it off to your friends."
     elif tipo == "admin":
         return generate_admin_message()
-    elif tipo == "sistema":
+    elif tipo == "system":
         return "System update: We have made some improvements to enhance your experience. Please check the latest features in the app and enjoy the new functionalities."
 
 def generate_notification_data():
@@ -64,7 +66,7 @@ def generate_notification_data():
     """
     tipo = notification_type()
     mensagem = generate_message(tipo)
-    id_utilizador = random.randint(1, 20)
+    id_utilizador = random.randint(1, 60)
     data = fake.date_time_between(start_date='-1y', end_date='now')
     lida = random.choice([True, False])
 
@@ -76,6 +78,13 @@ def generate_notification_data():
         "lida": lida
     }
 
-notifications = [generate_notification_data() for _ in range(20)]  # Generate a list of 20 notifications
+notifications = [generate_notification_data() for _ in range(30)]  # Generate a list of 30 notifications
 for notification in notifications:
     print(notification)
+
+base = Path(__file__).resolve().parent.parent  
+out = base / "modo_back-end" / "data" / "notifications.json"
+out.parent.mkdir(parents=True, exist_ok=True)
+
+with out.open("w", encoding="utf-8") as f:
+    json.dump(notifications, f, default=str, ensure_ascii=False, indent=2)

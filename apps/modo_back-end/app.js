@@ -1,5 +1,6 @@
 // Import express
 import express from "express";
+import "dotenv/config";
 
 // Create an express app
 const app = express();
