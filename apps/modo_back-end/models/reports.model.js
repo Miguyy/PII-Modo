@@ -1,4 +1,10 @@
-/* export default (sequelize, DataTypes) => {
+/*
+  Purpose: Defines the Report model for the application, representing periodic summaries of a user's environmental impact and system engagement. 
+  Each report has a unique ID, a reference to the associated user, a title (titulo), a defined timeframe (periodo), a JSON payload of summarized statistics (dados_estatisticos), and an optional path to a generated document (url_pdf). 
+  This model is used to persistently store historical performance metrics, allowing users to track their progress and habits over time.
+*/
+
+export default (sequelize, DataTypes) => {
   const Report = sequelize.define("Report", {
     titulo: {
       type: DataTypes.STRING,
@@ -20,4 +26,4 @@
   });
 
   return Report;
-}; */
+};

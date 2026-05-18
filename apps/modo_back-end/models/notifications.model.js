@@ -1,4 +1,10 @@
-/* export default (sequelize, DataTypes) => {
+/*
+  Purpose: Defines the Notification model for the application, representing system alerts and messages directed at specific users. 
+  Each notification has a unique ID, a reference to the target user, the message content (mensagem), and a boolean status flag (lida) tracking whether the user has read it. 
+  This model is used to manage the internal communication loop, keeping users informed about their progress, achievements, or necessary actions.
+*/
+
+export default (sequelize, DataTypes) => {
   const Notification = sequelize.define("Notification", {
     mensagem: {
       type: DataTypes.STRING,
@@ -13,4 +19,4 @@
   });
 
   return Notification;
-}; */
+};

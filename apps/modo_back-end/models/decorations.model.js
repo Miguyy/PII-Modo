@@ -1,4 +1,10 @@
-/* export default (sequelize, DataTypes) => {
+/*
+  Purpose: Defines the Decoration model for the application, representing the global catalog of gamification items available. 
+  Each decoration has a unique ID, a name (nome), a required user level to unlock (nivel_necessario), a cost in points (preco_pontos), and an image URL (imagem_url). 
+  This model is used to manage the application's reward system and store, defining the customizable assets that users can acquire for their avatars.
+*/
+
+export default (sequelize, DataTypes) => {
   const Decoration = sequelize.define("Decoration", {
     nome: {
       type: DataTypes.STRING,
@@ -21,4 +27,4 @@
   });
 
   return Decoration;
-}; */
+};

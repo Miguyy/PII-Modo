@@ -2,9 +2,10 @@
 import { Location, User } from "../config/db.config.js";
 
 // Controller to create a new location
+// POST /locations
 export const createLocation = async (req, res, next) => {
   try {
-    // id_utilizador, pais, and cidade are now extracted from the request body
+    // id_utilizador, pais, and cidade are extracted from the request body
     const { id_utilizador, pais, cidade, latitude, longitude } = req.body;
 
     if (!id_utilizador) {
@@ -23,27 +24,24 @@ export const createLocation = async (req, res, next) => {
 
     // Create the location associated with the user
     const location = await Location.create({
-      id_utilizador, // Foreign key that associates the location with the user
+      id_utilizador, 
       pais,
       cidade,
       latitude,
-      longitude,
-      userId // Foreign key that associates the location with the user
+      longitude
     });
 
-    // Include HATEOAS links in the response (updated to /locations base path)
+    // Include HATEOAS links in the response
     const response = {
       ...location.toJSON(),
       links: {
         self: `/locations/${location.id}`,
-        user: `/users/${id_utilizador}`,
-        user: `/users/${userId}`
+        user: `/users/${id_utilizador}`
       },
     };
     
     res.status(201).json(response);
   } catch (error) {
-    // Handle specific errors
     if (error.name === "SequelizeValidationError") {
       const err = new Error("Validation error.");
       err.status = 400;
@@ -64,16 +62,11 @@ export const createLocation = async (req, res, next) => {
 // Controller to get locations (filtered by user if id_utilizador is passed in query)
 // GET /locations?id_utilizador={id}
 export const getUserLocation = async (req, res, next) => {
-// Controller to get locations (filtered by user if userId is passed in query)
-// GET /locations?userId={id}
-export const getLocations = async (req, res, next) => {
   try {
-    // id_utilizador is now extracted from the query parameters
     const { id_utilizador } = req.query;
-
     let whereClause = {};
 
-    // If a id_utilizador is provided, validate the user and filter locations
+    // If id_utilizador is provided, validate the user and filter locations
     if (id_utilizador) {
       const user = await User.findByPk(id_utilizador);
       if (!user) {
@@ -87,7 +80,7 @@ export const getLocations = async (req, res, next) => {
     // Fetch the locations
     const locations = await Location.findAll({
       where: whereClause,
-      order: [['createdAt', 'DESC']] // Brings the most recent location first
+      order: [['createdAt', 'DESC']]
     });
 
     // Include HATEOAS links in the response
@@ -95,7 +88,7 @@ export const getLocations = async (req, res, next) => {
       ...loc.toJSON(),
       links: {
         self: `/locations/${loc.id}`,
-        user: `/users/${loc.userId}`
+        user: `/users/${loc.id_utilizador}`
       },
     }));
 
@@ -121,9 +114,7 @@ export const getLocations = async (req, res, next) => {
 // PATCH /locations/:locationId
 export const updateLocation = async (req, res, next) => {
   try {
-    // locationId is extracted from the URL parameters
     const { locationId } = req.params; 
-    // Fields to be updated are extracted from the body
     const { pais, cidade, latitude, longitude } = req.body;
 
     // Find the location directly by its ID
@@ -135,7 +126,7 @@ export const updateLocation = async (req, res, next) => {
       return next(err);
     }
 
-    // Update only the fields sent in the body (PATCH behavior)
+    // Update only the fields sent in the body
     if (pais) location.pais = pais;
     if (cidade) location.cidade = cidade;
     if (latitude !== undefined) location.latitude = latitude;
@@ -148,7 +139,7 @@ export const updateLocation = async (req, res, next) => {
       ...location.toJSON(),
       links: {
         self: `/locations/${location.id}`,
-        user: `/users/${location.userId}`
+        user: `/users/${location.id_utilizador}`
       },
     };
 
