@@ -1,0 +1,188 @@
+[
+  {
+    "id_tarefa": 1,
+    "tipo_impacto": "Water",
+    "valor_por_unidade": 0.25,
+    "unidade": "Litters"
+  },
+  {
+    "id_tarefa": 2,
+    "tipo_impacto": "Residuals",
+    "valor_por_unidade": 0.08,
+    "unidade": "kg"
+  },
+  {
+    "id_tarefa": 3,
+    "tipo_impacto": "Mobility",
+    "valor_por_unidade": 0.21,
+    "unidade": "km"
+  },
+  {
+    "id_tarefa": 4,
+    "tipo_impacto": "Energy",
+    "valor_por_unidade": 0.45,
+    "unidade": "kWh"
+  },
+  {
+    "id_tarefa": 5,
+    "tipo_impacto": "Water",
+    "valor_por_unidade": 0.15,
+    "unidade": "Litters"
+  },
+  {
+    "id_tarefa": 6,
+    "tipo_impacto": "Water",
+    "valor_por_unidade": 0.4,
+    "unidade": "Litters"
+  },
+  {
+    "id_tarefa": 7,
+    "tipo_impacto": "Residuals",
+    "valor_por_unidade": 0.05,
+    "unidade": "kg"
+  },
+  {
+    "id_tarefa": 8,
+    "tipo_impacto": "Energy",
+    "valor_por_unidade": 0.3,
+    "unidade": "kWh"
+  },
+  {
+    "id_tarefa": 9,
+    "tipo_impacto": "Emissions",
+    "valor_por_unidade": 0.15,
+    "unidade": "kg CO2e"
+  },
+  {
+    "id_tarefa": 10,
+    "tipo_impacto": "Residuals",
+    "valor_por_unidade": 0.12,
+    "unidade": "kg"
+  },
+  {
+    "id_tarefa": 11,
+    "tipo_impacto": "Residuals",
+    "valor_por_unidade": 0.02,
+    "unidade": "kg"
+  },
+  {
+    "id_tarefa": 12,
+    "tipo_impacto": "Residuals",
+    "valor_por_unidade": 0.2,
+    "unidade": "kg"
+  },
+  {
+    "id_tarefa": 13,
+    "tipo_impacto": "Mobility",
+    "valor_por_unidade": 0.16,
+    "unidade": "km"
+  },
+  {
+    "id_tarefa": 13,
+    "tipo_impacto": "Emissions",
+    "valor_por_unidade": 0.35,
+    "unidade": "kg CO2e"
+  },
+  {
+    "id_tarefa": 14,
+    "tipo_impacto": "Emissions",
+    "valor_por_unidade": 0.12,
+    "unidade": "kg CO2e"
+  },
+  {
+    "id_tarefa": 15,
+    "tipo_impacto": "Water",
+    "valor_por_unidade": 0.12,
+    "unidade": "Litters"
+  },
+  {
+    "id_tarefa": 16,
+    "tipo_impacto": "Residuals",
+    "valor_por_unidade": 0.03,
+    "unidade": "kg"
+  },
+  {
+    "id_tarefa": 17,
+    "tipo_impacto": "Residuals",
+    "valor_por_unidade": 0.07,
+    "unidade": "kg"
+  },
+  {
+    "id_tarefa": 18,
+    "tipo_impacto": "Energy",
+    "valor_por_unidade": 0.05,
+    "unidade": "kWh"
+  },
+  {
+    "id_tarefa": 19,
+    "tipo_impacto": "Emissions",
+    "valor_por_unidade": 0.08,
+    "unidade": "kg CO2e"
+  },
+  {
+    "id_tarefa": 20,
+    "tipo_impacto": "Energy",
+    "valor_por_unidade": 0.55,
+    "unidade": "kWh"
+  },
+  {
+    "id_tarefa": 21,
+    "tipo_impacto": "Mobility",
+    "valor_por_unidade": 0.25,
+    "unidade": "km"
+  },
+  {
+    "id_tarefa": 22,
+    "tipo_impacto": "Energy",
+    "valor_por_unidade": 0.4,
+    "unidade": "kWh"
+  },
+  {
+    "id_tarefa": 23,
+    "tipo_impacto": "Water",
+    "valor_por_unidade": 0.1,
+    "unidade": "Litters"
+  },
+  {
+    "id_tarefa": 24,
+    "tipo_impacto": "Residuals",
+    "valor_por_unidade": 0.06,
+    "unidade": "kg"
+  },
+  {
+    "id_tarefa": 25,
+    "tipo_impacto": "Emissions",
+    "valor_por_unidade": 0.8,
+    "unidade": "kg CO2e"
+  },
+  {
+    "id_tarefa": 26,
+    "tipo_impacto": "Residuals",
+    "valor_por_unidade": 0.02,
+    "unidade": "kg"
+  },
+  {
+    "id_tarefa": 27,
+    "tipo_impacto": "Mobility",
+    "valor_por_unidade": 0.18,
+    "unidade": "km"
+  },
+  {
+    "id_tarefa": 28,
+    "tipo_impacto": "Residuals",
+    "valor_por_unidade": 0.14,
+    "unidade": "kg"
+  },
+  {
+    "id_tarefa": 29,
+    "tipo_impacto": "Water",
+    "valor_por_unidade": 0.5,
+    "unidade": "Litters"
+  },
+  {
+    "id_tarefa": 30,
+    "tipo_impacto": "Emissions",
+    "valor_por_unidade": 0.05,
+    "unidade": "kg CO2e"
+  }
+]

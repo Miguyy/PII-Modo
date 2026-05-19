@@ -17,7 +17,7 @@ export default (sequelize, DataTypes) =>
       email: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true,
+        // unique constraint removed to avoid exceeding MySQL max index limit (ER_TOO_MANY_KEYS)
         validate: { isEmail: true },
       },
       hashed_password: { type: DataTypes.STRING, allowNull: false },

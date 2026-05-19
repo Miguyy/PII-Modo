@@ -1,0 +1,152 @@
+[
+  {
+    "nome_habito": "Food",
+    "descricao_habito": "Support the campus farmers market or local food suppliers.",
+    "categoria": "Food"
+  },
+  {
+    "nome_habito": "Water",
+    "descricao_habito": "Record daily water consumption to increase awareness.",
+    "categoria": "Water"
+  },
+  {
+    "nome_habito": "Recycling",
+    "descricao_habito": "Sort household waste into the respective recycling bins.",
+    "categoria": "Recycling"
+  },
+  {
+    "nome_habito": "Energy",
+    "descricao_habito": "Dry clothes on a drying rack instead of using a machine.",
+    "categoria": "Energy"
+  },
+  {
+    "nome_habito": "Energy",
+    "descricao_habito": "Avoid the elevator to save electricity and get exercise.",
+    "categoria": "Energy"
+  },
+  {
+    "nome_habito": "Gardening / Watering",
+    "descricao_habito": "Take care of houseplants or the garden regularly.",
+    "categoria": "Gardening / Watering"
+  },
+  {
+    "nome_habito": "Water",
+    "descricao_habito": "Report and fix water leaks / use campus refill stations.",
+    "categoria": "Water"
+  },
+  {
+    "nome_habito": "Community",
+    "descricao_habito": "Pick up trash found during a walk.",
+    "categoria": "Community"
+  },
+  {
+    "nome_habito": "Waste",
+    "descricao_habito": "Buy second-hand or campus-swapped clothes instead of new.",
+    "categoria": "Waste"
+  },
+  {
+    "nome_habito": "Gardening / Watering",
+    "descricao_habito": "Take care of houseplants or the garden regularly.",
+    "categoria": "Gardening / Watering"
+  },
+  {
+    "nome_habito": "Community",
+    "descricao_habito": "Participate in a reforestation initiative.",
+    "categoria": "Community"
+  },
+  {
+    "nome_habito": "Community",
+    "descricao_habito": "Participate in a reforestation initiative.",
+    "categoria": "Community"
+  },
+  {
+    "nome_habito": "Waste",
+    "descricao_habito": "Request invoices via email instead of paper.",
+    "categoria": "Waste"
+  },
+  {
+    "nome_habito": "Waste",
+    "descricao_habito": "Place organic waste in the composter.",
+    "categoria": "Waste"
+  },
+  {
+    "nome_habito": "Food",
+    "descricao_habito": "Eat exclusively vegetarian meals once a week.",
+    "categoria": "Food"
+  },
+  {
+    "nome_habito": "Food",
+    "descricao_habito": "Buy fresh produce at the local market.",
+    "categoria": "Food"
+  },
+  {
+    "nome_habito": "Waste",
+    "descricao_habito": "Use a reusable water bottle daily.",
+    "categoria": "Waste"
+  },
+  {
+    "nome_habito": "Food",
+    "descricao_habito": "Buy fresh produce at the local market.",
+    "categoria": "Food"
+  },
+  {
+    "nome_habito": "Community",
+    "descricao_habito": "Sort old clothes for donation.",
+    "categoria": "Community"
+  },
+  {
+    "nome_habito": "Energy",
+    "descricao_habito": "Replace old light bulbs with LED technology.",
+    "categoria": "Energy"
+  },
+  {
+    "nome_habito": "Energy",
+    "descricao_habito": "Avoid the elevator to save electricity and get exercise.",
+    "categoria": "Energy"
+  },
+  {
+    "nome_habito": "Water",
+    "descricao_habito": "Report and fix water leaks / use campus refill stations.",
+    "categoria": "Water"
+  },
+  {
+    "nome_habito": "Waste",
+    "descricao_habito": "Buy second-hand or campus-swapped clothes instead of new.",
+    "categoria": "Waste"
+  },
+  {
+    "nome_habito": "Community",
+    "descricao_habito": "Pick up trash found during a walk.",
+    "categoria": "Community"
+  },
+  {
+    "nome_habito": "Gardening / Watering",
+    "descricao_habito": "Take care of houseplants or the garden regularly.",
+    "categoria": "Gardening / Watering"
+  },
+  {
+    "nome_habito": "Waste",
+    "descricao_habito": "Place organic waste in the composter.",
+    "categoria": "Waste"
+  },
+  {
+    "nome_habito": "Sustainable Mobility",
+    "descricao_habito": "Use a bicycle instead of a car for short distances.",
+    "categoria": "Sustainable Mobility"
+  },
+  {
+    "nome_habito": "Energy",
+    "descricao_habito": "Avoid the elevator to save electricity and get exercise.",
+    "categoria": "Energy"
+  },
+  {
+    "nome_habito": "Energy",
+    "descricao_habito": "Avoid the elevator to save electricity and get exercise.",
+    "categoria": "Energy"
+  },
+  {
+    "nome_habito": "Waste",
+    "descricao_habito": "Use a reusable water bottle daily.",
+    "categoria": "Waste"
+  }
+]

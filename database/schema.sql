@@ -41,7 +41,7 @@ CREATE TABLE Decoracao_Avatar (
 CREATE TABLE Decoracao_Avatar_Utilizador (
     id_utilizador INT,
     id_decoracao INT,
-    decoracao_ativa BOOLEAN DEFAULT FALSE,
+    /* decoracao_ativa BOOLEAN DEFAULT FALSE, */
     PRIMARY KEY (id_utilizador, id_decoracao),
     FOREIGN KEY (id_utilizador) REFERENCES Utilizador(id_utilizador),
     FOREIGN KEY (id_decoracao) REFERENCES Decoracao_Avatar(id_decoracao)
@@ -98,5 +98,3 @@ CREATE TABLE Impacto (
     unidade ENUM('Litters','kWh','kg', 'km', 'kg CO2e'),
     FOREIGN KEY (id_tarefa) REFERENCES Tarefas(id_tarefa)
 );
-
-
