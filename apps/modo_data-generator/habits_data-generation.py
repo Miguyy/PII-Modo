@@ -4,11 +4,13 @@ habits and utilities to generate random habit records for demo data.
 
 Functions:
 - generate_habit_data(): pick a random habit and return a mapping with
-  name, description and category suitable for inserting into test data.
+  name, descricao_habito and categoria suitable for inserting into test data.
 """
 
 from faker import Faker
 import random
+import json
+from pathlib import Path
 
 fake = Faker()  # Initialize Faker
 
@@ -38,26 +40,38 @@ habits = [
     ('Turn off the faucet while brushing your teeth.', 'Water'),
     ('Buy in bulk using your own jars.', 'Waste'),
     ('Participate in a reforestation initiative.', 'Community'),
+    ('Use a reusable coffee cup or bottle instead of disposables.', 'Waste'),
+    ('Carpool or use a campus shuttle instead of driving alone.', 'Sustainable Mobility'),
+    ('Buy second-hand or campus-swapped clothes instead of new.', 'Waste'),
+    ('Report and fix water leaks / use campus refill stations.', 'Water'),
+    ('Support the campus farmers market or local food suppliers.', 'Food'),
 ]
 
 def generate_habit_data():
     """Select a random habit and return a structured habit record.
 
-    The returned dictionary contains `habit_name` (category), `description`
-    and `category`, suitable for importing into demo datasets or
+    The returned dictionary contains `nome_habito` (categoria), `descricao_habito`
+    and `categoria`, suitable for importing into demo datasets or
     displaying in UI mockups.
 
     Returns:
-        dict: A habit record with keys `habit_name`, `description`, `category`.
+        dict: A habit record with keys `nome_habito`, `descricao_habito`, `categoria`.
     """
-    description, category = random.choice(habits)
+    descricao_habito, categoria = random.choice(habits)
     return {
-        "habit_name": category,
-        "description": description,
-        "category": category
+        "nome_habito": categoria,
+        "descricao_habito": descricao_habito,
+        "categoria": categoria
     }
 
-habits_data = [generate_habit_data() for _ in range(20)]  # Generate a list of 20 habits
-for habit in habits_data:
+habits = [generate_habit_data() for _ in range(30)]  # Generate a list of 30 habits
+for habit in habits:
     print(habit)
+
+base = Path(__file__).resolve().parent.parent  
+out = base / "modo_back-end" / "data" / "habits.json"
+out.parent.mkdir(parents=True, exist_ok=True)
+
+with out.open("w", encoding="utf-8") as f:
+    json.dump(habits, f, default=str, ensure_ascii=False, indent=2)
 
