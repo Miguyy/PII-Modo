@@ -1,4 +1,4 @@
-// Import models (adjust according to the exact names exported in your db.config.js)
+// Import reports data
 import { Report, User } from "../config/db.config.js";
 
 // Controller to create a new report for a specific user

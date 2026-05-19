@@ -1,32 +1,52 @@
 /*
-  Purpose: Defines the Localizacao model for the application, representing user locations. 
-  Each location has a unique ID, a reference to the user it belongs to, latitude and longitude coordinates, and city and country information. 
-  This model is used to store and manage the geographical locations associated with users in the system.
+  Purpose: Defines the Location model for the application, representing the geographical locations associated with users. 
+  Each location has a unique ID, a reference to the associated user (id_utilizador), the country (pais), the city (cidade), and precise GPS coordinates. 
+  This model is used to manage spatial data in the system, allowing users to associate their activities, tasks, or habits with specific physical places.
 */
 
 export default (sequelize, DataTypes) =>
   sequelize.define(
-    "Localizacao",
+    "Location",
     {
-      id_localizacao: {
+      id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
       },
       id_utilizador: {
         type: DataTypes.INTEGER,
-        references: {
-          model: "Utilizador",
-          key: "id_utilizador",
+        allowNull: false,
+        // Assuming your User model is named "User" and its primary key is "id"
+        references: { model: "Users", key: "id" }, 
+      },
+      pais: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      cidade: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      latitude: {
+        // The JSON data has many decimal places (e.g., 39.3802122066059)
+        // DECIMAL(10, 8) will safely store the most important digits for pinpoint accuracy
+        type: DataTypes.DECIMAL(10, 8),
+        allowNull: false,
+        validate: {
+          min: -90,
+          max: 90,
         },
       },
-      latitude: { type: DataTypes.DECIMAL(6,4), allowNull: false },
-      longitude: { type: DataTypes.DECIMAL(6,4), allowNull: false },
-      cidade: { type: DataTypes.STRING, allowNull: false },
-      pais: { type: DataTypes.STRING, allowNull: false },
+      longitude: {
+        type: DataTypes.DECIMAL(11, 8),
+        allowNull: false,
+        validate: {
+          min: -180,
+          max: 180,
+        },
+      },
     },
     {
-      timestamps: false, // remove createdAt and updatedAt fields
-      freezeTableName: true,
-    },
+      timestamps: true, // Keeps createdAt and updatedAt for sorting
+    }
   );

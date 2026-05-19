@@ -1,5 +1,5 @@
-// Import models (adjust according to the exact names exported in your db.config.js)
-import { AvatarDecoration } from "../config/db.config.js";
+// Import decorations data
+import { Decoration } from "../config/db.config.js";
 
 // Controller to create a new avatar decoration in the global catalog
 // POST /avatar-decorations
@@ -11,7 +11,7 @@ export const createDecoration = async (req, res, next) => {
       nome,
       nivel_necessario,
       preco_pontos,
-      imagem_url,
+      imagem_url
     });
 
     // Include HATEOAS links
@@ -19,10 +19,10 @@ export const createDecoration = async (req, res, next) => {
       ...decoration.toJSON(),
       links: {
         self: `/avatar-decorations/${decoration.id}`,
-        all_decorations: `/avatar-decorations`,
+        all_decorations: `/avatar-decorations`
       },
     };
-
+    
     res.status(201).json(response);
   } catch (error) {
     if (error.name === "SequelizeValidationError") {
@@ -42,7 +42,7 @@ export const createDecoration = async (req, res, next) => {
 export const getDecorations = async (req, res, next) => {
   try {
     const decorations = await Decoration.findAll({
-      order: [["nivel_necessario", "ASC"]], // Order by the required level to unlock
+      order: [['nivel_necessario', 'ASC']] // Order by the required level to unlock
     });
 
     // Include HATEOAS links for each item
@@ -78,8 +78,7 @@ export const updateDecoration = async (req, res, next) => {
 
     // Update only the provided fields (PATCH behavior)
     if (nome) decoration.nome = nome;
-    if (nivel_necessario !== undefined)
-      decoration.nivel_necessario = nivel_necessario;
+    if (nivel_necessario !== undefined) decoration.nivel_necessario = nivel_necessario;
     if (preco_pontos !== undefined) decoration.preco_pontos = preco_pontos;
     if (imagem_url) decoration.imagem_url = imagem_url;
 
@@ -89,7 +88,7 @@ export const updateDecoration = async (req, res, next) => {
       ...decoration.toJSON(),
       links: {
         self: `/avatar-decorations/${decoration.id}`,
-        all_decorations: `/avatar-decorations`,
+        all_decorations: `/avatar-decorations`
       },
     };
 
@@ -121,18 +120,17 @@ export const deleteDecoration = async (req, res, next) => {
       return next(err);
     }
 
-    // Deleting the decoration.
-    // NOTE: If the database relations are set up with 'ON DELETE CASCADE'
-    // for the user_decorations junction table, this will automatically
+    // Deleting the decoration. 
+    // NOTE: If the database relations are set up with 'ON DELETE CASCADE' 
+    // for the user_decorations junction table, this will automatically 
     // remove the decoration from all users' accounts.
     await decoration.destroy();
 
-    res.status(200).json({
-      message:
-        "Decoration deleted successfully. It has been removed from the system and all associated user accounts.",
+    res.status(200).json({ 
+      message: "Decoration deleted successfully. It has been removed from the system and all associated user accounts.",
       links: {
-        all_decorations: `/avatar-decorations`,
-      },
+        all_decorations: `/avatar-decorations`
+      }
     });
   } catch (error) {
     const err = new Error("Internal server error.");

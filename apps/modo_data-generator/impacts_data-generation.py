@@ -61,7 +61,7 @@ def unit(impact_type):
         str: Unit string (e.g. 'litros', 'kWh', 'kg', 'km', 'kg CO2e').
     """
     if impact_type == "Water":
-        return "Litters"
+        return "litros"
     elif impact_type == "Energy":
         return "kWh"
     elif impact_type == "Residuals":
