@@ -1,4 +1,4 @@
-// Import reports data
+// Import models (adjust according to the exact names exported in your db.config.js)
 import { Report, User } from "../config/db.config.js";
 
 // Controller to create a new report for a specific user
@@ -23,7 +23,7 @@ export const createReport = async (req, res, next) => {
       periodo,
       dados_estatisticos,
       url_pdf,
-      userId // Foreign key
+      userId, // Foreign key
     });
 
     // Include HATEOAS links
@@ -31,10 +31,10 @@ export const createReport = async (req, res, next) => {
       ...report.toJSON(),
       links: {
         self: `/reports/${report.id}`,
-        user: `/users/${userId}`
+        user: `/users/${userId}`,
       },
     };
-    
+
     res.status(201).json(response);
   } catch (error) {
     if (error.name === "SequelizeValidationError") {
@@ -70,7 +70,7 @@ export const getReports = async (req, res, next) => {
     // Fetch the reports
     const reports = await Report.findAll({
       where: whereClause,
-      order: [['createdAt', 'DESC']] // Newest reports first
+      order: [["createdAt", "DESC"]], // Newest reports first
     });
 
     // Include HATEOAS links
@@ -78,7 +78,7 @@ export const getReports = async (req, res, next) => {
       ...rep.toJSON(),
       links: {
         self: `/reports/${rep.id}`,
-        user: `/users/${rep.userId}`
+        user: `/users/${rep.userId}`,
       },
     }));
 
@@ -109,7 +109,7 @@ export const getReportById = async (req, res, next) => {
       ...report.toJSON(),
       links: {
         self: `/reports/${report.id}`,
-        all_user_reports: `/reports?userId=${report.userId}`
+        all_user_reports: `/reports?userId=${report.userId}`,
       },
     };
 

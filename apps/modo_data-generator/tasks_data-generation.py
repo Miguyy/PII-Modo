@@ -8,8 +8,7 @@ convenient for seeding local JSON/DB fixtures for frontend development.
 
 Main functions:
 - _pick_points_and_priority(): choose points and map to priority label.
-- generate_tasks(num_tasks, num_users): build lists of tasks and user-task
-  relationships.
+- generate_tasks(num_tasks, num_users): build lists of tasks and user-task relationships.
 - generate_tasks_data(): example runner that prints generated data.
 """
 

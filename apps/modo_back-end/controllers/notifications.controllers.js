@@ -1,4 +1,4 @@
-// Import notifications data
+// Import models (adjust according to the exact names exported in your db.config.js)
 import { Notification, User } from "../config/db.config.js";
 
 // Controller to list all notifications for a specific user
@@ -18,14 +18,14 @@ export const getUserNotifications = async (req, res, next) => {
     // Fetch the notifications for this user
     const notifications = await Notification.findAll({
       where: { userId },
-      order: [['createdAt', 'DESC']] // Most recent notifications first
+      order: [["createdAt", "DESC"]], // Most recent notifications first
     });
 
     // Include HATEOAS links in the response
     const response = notifications.map((notif) => ({
       ...notif.toJSON(),
       links: {
-        mark_as_read: `/notifications/${notif.id}` // Link to the PATCH endpoint
+        mark_as_read: `/notifications/${notif.id}`, // Link to the PATCH endpoint
       },
     }));
 
@@ -54,14 +54,14 @@ export const markAsRead = async (req, res, next) => {
 
     // Update the status (assuming the column is named 'lida' or 'is_read')
     // Adjust 'lida' to your exact database column name if different
-    notification.lida = true; 
+    notification.lida = true;
     await notification.save();
 
     // Include HATEOAS links in the response
     const response = {
       ...notification.toJSON(),
       links: {
-        user_notifications: `/users/${notification.userId}/notifications`
+        user_notifications: `/users/${notification.userId}/notifications`,
       },
     };
 
