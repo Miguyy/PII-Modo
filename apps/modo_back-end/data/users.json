@@ -1,0 +1,362 @@
+[
+  {
+    "nome": "Sharon Tate",
+    "email": "sharon.tate@example.pt",
+    "password": "ab8f0ddc093339bf40dea6c7cc4d8f82927d3c495cf3af7f14d561cf32eee568",
+    "pontos": 325,
+    "nivel": 3,
+    "data_criacao": "2026-05-06 12:38:53",
+    "tipo_utilizador": "cliente"
+  },
+  {
+    "nome": "Jessica Griffith",
+    "email": "jessica.griffith@example.pt",
+    "password": "ba9eecdec766edcd5aa036ce775ec42844472c55a0d0178b9f2812bc80ebae2d",
+    "pontos": 345,
+    "nivel": 3,
+    "data_criacao": "2026-02-05 20:41:32",
+    "tipo_utilizador": "cliente"
+  },
+  {
+    "nome": "Brandon Reed",
+    "email": "brandon.reed@example.pt",
+    "password": "4691642bba59d48b1761bc5e12932ed0d874a580fc40b12b0f3bdd77e701ab2e",
+    "pontos": 240,
+    "nivel": 2,
+    "data_criacao": "2026-03-26 13:23:32",
+    "tipo_utilizador": "cliente"
+  },
+  {
+    "nome": "Mary Miller",
+    "email": "mary.miller@example.pt",
+    "password": "85324eb52edea429de61249a8b7ccf62ae19f81cc25110b022417e4c179633dc",
+    "pontos": 310,
+    "nivel": 3,
+    "data_criacao": "2025-10-30 10:29:41",
+    "tipo_utilizador": "cliente"
+  },
+  {
+    "nome": "Elijah Luna",
+    "email": "elijah.luna@example.pt",
+    "password": "be657d6b285335af7d36010a01d4a2d7285618c4e616b389ffcea7c3ff0ddcc7",
+    "pontos": 155,
+    "nivel": 1,
+    "data_criacao": "2026-03-03 18:51:37",
+    "tipo_utilizador": "cliente"
+  },
+  {
+    "nome": "Thomas Evans",
+    "email": "thomas.evans@example.pt",
+    "password": "ffd20a9fc875ac3ba5ddf1be9b8566c5f9d7242563643f9270effe244ddb92df",
+    "pontos": 190,
+    "nivel": 1,
+    "data_criacao": "2025-08-02 21:08:40",
+    "tipo_utilizador": "cliente"
+  },
+  {
+    "nome": "Lisa Lee",
+    "email": "lisa.lee@example.pt",
+    "password": "e566ea911385c0f937253a30cf975c7e941419f78df6335320244089c660b289",
+    "pontos": 405,
+    "nivel": 4,
+    "data_criacao": "2026-05-10 01:08:55",
+    "tipo_utilizador": "cliente"
+  },
+  {
+    "nome": "Francis Cohen",
+    "email": "francis.cohen@example.pt",
+    "password": "2f1129e883a1f185dad34b26bd1646dbd5780738a3ea82d96f83596d6bc50fec",
+    "pontos": 265,
+    "nivel": 2,
+    "data_criacao": "2026-02-25 09:54:58",
+    "tipo_utilizador": "cliente"
+  },
+  {
+    "nome": "William Santos",
+    "email": "william.santos@example.pt",
+    "password": "127978b786973e4f4ae661dd4afff331e2b62563a17747028833fffce236dd7d",
+    "pontos": 225,
+    "nivel": 2,
+    "data_criacao": "2025-12-07 03:10:21",
+    "tipo_utilizador": "cliente"
+  },
+  {
+    "nome": "Emily Rice",
+    "email": "emily.rice@example.pt",
+    "password": "9aec5ce0698f582c77c13c44a1e5730fa360acdad92ae624e06c9d3c9e7b2cb4",
+    "pontos": 270,
+    "nivel": 2,
+    "data_criacao": "2026-01-29 06:19:44",
+    "tipo_utilizador": "cliente"
+  },
+  {
+    "nome": "Martin Taylor",
+    "email": "martin.taylor@example.pt",
+    "password": "3908e07ee701d45338d41b038f511d53a713dedb6df1427f286b7a4087ef7055",
+    "pontos": 345,
+    "nivel": 3,
+    "data_criacao": "2026-05-08 11:22:57",
+    "tipo_utilizador": "cliente"
+  },
+  {
+    "nome": "James Ball",
+    "email": "james.ball@example.pt",
+    "password": "39fe6245b2d4fbd0884e207caa9fbf5060d67059e5fac74da6424ba93c99548b",
+    "pontos": 105,
+    "nivel": 1,
+    "data_criacao": "2025-06-02 02:54:00",
+    "tipo_utilizador": "cliente"
+  },
+  {
+    "nome": "Jennifer Sparks",
+    "email": "jennifer.sparks@example.pt",
+    "password": "f139076e76ba0cba4eb7e3e5ccb3caf6c4762db3380477cd9c3b8641203d793a",
+    "pontos": 480,
+    "nivel": 4,
+    "data_criacao": "2025-07-24 02:15:25",
+    "tipo_utilizador": "admin"
+  },
+  {
+    "nome": "Tracy Mcclain",
+    "email": "tracy.mcclain@example.pt",
+    "password": "6f8f96311be8b8c7eea6d6796cd2f4c8ee5531364c564cf5c59615a5dcaad3e2",
+    "pontos": 185,
+    "nivel": 1,
+    "data_criacao": "2026-01-28 21:42:18",
+    "tipo_utilizador": "cliente"
+  },
+  {
+    "nome": "Michael Ford",
+    "email": "michael.ford@example.pt",
+    "password": "d0e7a75662c42121d88987432a2d3ba1b85c5b985af2d59e3359ac001f46fedc",
+    "pontos": 395,
+    "nivel": 3,
+    "data_criacao": "2025-06-08 02:17:26",
+    "tipo_utilizador": "cliente"
+  },
+  {
+    "nome": "Dr. Virginia White",
+    "email": "dr..virginia.white@example.pt",
+    "password": "8ed667677e609ad9b73ebf4957423801cc7ebfcb3e898c502b175853c654d1d4",
+    "pontos": 90,
+    "nivel": 0,
+    "data_criacao": "2025-10-15 23:02:10",
+    "tipo_utilizador": "cliente"
+  },
+  {
+    "nome": "Diane Rogers",
+    "email": "diane.rogers@example.pt",
+    "password": "457ef80ef2e77d87e06811b88ddd56a441690edee06779f873dbdd53a46a9071",
+    "pontos": 280,
+    "nivel": 2,
+    "data_criacao": "2025-09-19 00:58:25",
+    "tipo_utilizador": "cliente"
+  },
+  {
+    "nome": "Barbara Savage",
+    "email": "barbara.savage@example.pt",
+    "password": "7bb96afac1b76353f25c5b36c77264c03518a7432b96d891a3f6d057e85cf8b5",
+    "pontos": 230,
+    "nivel": 2,
+    "data_criacao": "2025-09-18 17:04:48",
+    "tipo_utilizador": "cliente"
+  },
+  {
+    "nome": "Danielle Mitchell",
+    "email": "danielle.mitchell@example.pt",
+    "password": "14edeb75a9258ed73f95cce985ed003b0604096fb347a03e92b490f9dca9a539",
+    "pontos": 135,
+    "nivel": 1,
+    "data_criacao": "2025-12-04 16:22:51",
+    "tipo_utilizador": "cliente"
+  },
+  {
+    "nome": "Samantha Bell",
+    "email": "samantha.bell@example.pt",
+    "password": "c6abd39f1960f9f8b76ff1123ee196a348b60b2ca7ae6ec7f1382d9b1b180344",
+    "pontos": 250,
+    "nivel": 2,
+    "data_criacao": "2025-11-12 16:06:11",
+    "tipo_utilizador": "cliente"
+  },
+  {
+    "nome": "Tyler Ortiz",
+    "email": "tyler.ortiz@example.pt",
+    "password": "d424c6ac5227819a50e926a54b8585525555670dd13ada2fd400a564a1e70ee0",
+    "pontos": 300,
+    "nivel": 3,
+    "data_criacao": "2025-09-12 22:08:38",
+    "tipo_utilizador": "cliente"
+  },
+  {
+    "nome": "Marvin Alvarez",
+    "email": "marvin.alvarez@example.pt",
+    "password": "3a9d714ee759238dfbfe2fbbc978893d1429e0677b46cf8fa5cc78139f282790",
+    "pontos": 455,
+    "nivel": 4,
+    "data_criacao": "2026-03-02 08:53:08",
+    "tipo_utilizador": "cliente"
+  },
+  {
+    "nome": "Shane Parks",
+    "email": "shane.parks@example.pt",
+    "password": "b628276962dfc6a0259416c75112a4effa1fc3c230182a05e8e914ac9e35ddf5",
+    "pontos": 290,
+    "nivel": 2,
+    "data_criacao": "2025-05-21 14:14:15",
+    "tipo_utilizador": "cliente"
+  },
+  {
+    "nome": "Yolanda Lucas",
+    "email": "yolanda.lucas@example.pt",
+    "password": "b4d97ecc686823a65db695c6d0a3fefa24194224ab87704114dd37464a2d308c",
+    "pontos": 145,
+    "nivel": 1,
+    "data_criacao": "2025-05-20 07:26:51",
+    "tipo_utilizador": "cliente"
+  },
+  {
+    "nome": "Michele Vargas",
+    "email": "michele.vargas@example.pt",
+    "password": "e9976e727839ed4317ccb652379da9900be17bae51dbbf4a2d85764187ae3585",
+    "pontos": 335,
+    "nivel": 3,
+    "data_criacao": "2025-07-13 19:12:58",
+    "tipo_utilizador": "cliente"
+  },
+  {
+    "nome": "Michael Stevens",
+    "email": "michael.stevens@example.pt",
+    "password": "7d7f738ba628e3ffb20eab634821aa2a68929b55e3c8dd2723cf6909eb9e7ee1",
+    "pontos": 180,
+    "nivel": 1,
+    "data_criacao": "2025-06-16 17:52:32",
+    "tipo_utilizador": "cliente"
+  },
+  {
+    "nome": "Meagan Zimmerman",
+    "email": "meagan.zimmerman@example.pt",
+    "password": "609e13d0ea007e218cf01e0827530242f81b9f01dd5cd19aa8c1993892d8ff83",
+    "pontos": 15,
+    "nivel": 0,
+    "data_criacao": "2026-04-30 20:36:04",
+    "tipo_utilizador": "cliente"
+  },
+  {
+    "nome": "Thomas Eaton",
+    "email": "thomas.eaton@example.pt",
+    "password": "ee0c9b121d499331bd2194f48a98c0efedd59e1246f3f580082ff31ac2c8fda8",
+    "pontos": 180,
+    "nivel": 1,
+    "data_criacao": "2025-05-15 13:40:25",
+    "tipo_utilizador": "cliente"
+  },
+  {
+    "nome": "Blake Reed",
+    "email": "blake.reed@example.pt",
+    "password": "b05466da9912a5e237f6f0c482b534ecd1128c173c4265d0d3dc7821aeab9358",
+    "pontos": 60,
+    "nivel": 0,
+    "data_criacao": "2025-11-24 04:46:24",
+    "tipo_utilizador": "cliente"
+  },
+  {
+    "nome": "Jason Reynolds",
+    "email": "jason.reynolds@example.pt",
+    "password": "759e2ed7d829b405e0ea2cc9a041b640d6a0eda434881c06490be8daa29b8df3",
+    "pontos": 115,
+    "nivel": 1,
+    "data_criacao": "2025-08-22 16:11:42",
+    "tipo_utilizador": "cliente"
+  },
+  {
+    "nome": "Catherine Nguyen",
+    "email": "catherine.nguyen@example.pt",
+    "password": "05eda909537f21f5d5ab1cbef93d317c031177ce690c9055ea225715a140901f",
+    "pontos": 255,
+    "nivel": 2,
+    "data_criacao": "2025-06-22 09:11:54",
+    "tipo_utilizador": "cliente"
+  },
+  {
+    "nome": "Phillip Anderson",
+    "email": "phillip.anderson@example.pt",
+    "password": "8dd9f0909cebf101b4f50903fd8516a32d6a9a1fe99e2cfd2383cbedac733253",
+    "pontos": 215,
+    "nivel": 2,
+    "data_criacao": "2025-07-13 16:52:53",
+    "tipo_utilizador": "cliente"
+  },
+  {
+    "nome": "Christopher Collins",
+    "email": "christopher.collins@example.pt",
+    "password": "b0c9fb87bb18026cd37fe51585372976ecc0222b1aff367286c56e000ee42e10",
+    "pontos": 110,
+    "nivel": 1,
+    "data_criacao": "2026-04-24 09:52:54",
+    "tipo_utilizador": "cliente"
+  },
+  {
+    "nome": "William Scott",
+    "email": "william.scott@example.pt",
+    "password": "fef762bdc55bfda731514d19df62ec592c1dce48fbe54fdc4ca98e52ba4de025",
+    "pontos": 445,
+    "nivel": 4,
+    "data_criacao": "2026-01-13 15:08:40",
+    "tipo_utilizador": "admin"
+  },
+  {
+    "nome": "Julie Parsons",
+    "email": "julie.parsons@example.pt",
+    "password": "a233d337040b8852e55ecb0ac1820b0a5b3abe3008d780013e4dd39be48d5631",
+    "pontos": 430,
+    "nivel": 4,
+    "data_criacao": "2025-12-02 14:53:52",
+    "tipo_utilizador": "cliente"
+  },
+  {
+    "nome": "Barbara Duarte",
+    "email": "barbara.duarte@example.pt",
+    "password": "5eaae282dac3ccb7364436b52ebe29b3267f367bf584806297510daf72f3314a",
+    "pontos": 475,
+    "nivel": 4,
+    "data_criacao": "2026-05-07 14:41:23",
+    "tipo_utilizador": "cliente"
+  },
+  {
+    "nome": "Emily Carrillo",
+    "email": "emily.carrillo@example.pt",
+    "password": "d0d71535f7b014c37faf9fb04b625fdffa2a293d56ad55a11750467bd49d1d2b",
+    "pontos": 335,
+    "nivel": 3,
+    "data_criacao": "2025-10-22 08:56:09",
+    "tipo_utilizador": "cliente"
+  },
+  {
+    "nome": "Paul Park",
+    "email": "paul.park@example.pt",
+    "password": "627b5b44584ed89a7f0a20212d0d084830c71a131cbfd1032e8bf19204b3aa0e",
+    "pontos": 20,
+    "nivel": 0,
+    "data_criacao": "2026-03-30 06:14:36",
+    "tipo_utilizador": "cliente"
+  },
+  {
+    "nome": "Nicole Baker",
+    "email": "nicole.baker@example.pt",
+    "password": "ee5e65dbb40fa9f42b799e8127fc25f478b70918806a15faf167acac7c765fa3",
+    "pontos": 255,
+    "nivel": 2,
+    "data_criacao": "2026-02-20 00:49:53",
+    "tipo_utilizador": "cliente"
+  },
+  {
+    "nome": "Elijah Garza",
+    "email": "elijah.garza@example.pt",
+    "password": "fbe3e31ce4188dcb3be8bb21efd20e98b02a672dfb2772b85d21d5f5433274e8",
+    "pontos": 390,
+    "nivel": 3,
+    "data_criacao": "2025-12-30 23:26:12",
+    "tipo_utilizador": "cliente"
+  }
+]

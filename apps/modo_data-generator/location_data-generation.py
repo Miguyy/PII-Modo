@@ -87,14 +87,17 @@ GEOJSON_PATH = BASE_DIR / "portugal_boundary_sampler" / "Portugal_Municipalities
 _MUNIS = _load_municipalities(GEOJSON_PATH)
 
 
-def generate_location_data():
+def generate_location_data(id_utilizador=None):
     """Create a random user location record.
 
     If the municipalities GeoJSON is available, pick a random municipality and
     sample a random point inside one of its polygons. Otherwise fall back to a
     small set of fixed cities.
     """
-    id_utilizador = random.randint(1, 20)
+
+    if id_utilizador is None:
+        id_utilizador = random.randint(1, 20)
+    
     if _MUNIS:
         muni = random.choice(_MUNIS)
         poly = random.choice(muni["polygons"])
@@ -123,6 +126,14 @@ def generate_location_data():
     }
 
 
-for _ in range(20):
-    print(generate_location_data())
+# generate list of 60 location dicts with sequential ids
+locations_list = [generate_location_data(i) for i in range(1, 61)]
+for loc in locations_list:
+    print(loc)
 
+base = Path(__file__).resolve().parent.parent
+out = base / "modo_back-end" / "data" / "locations.json"
+out.parent.mkdir(parents=True, exist_ok=True)
+
+with out.open("w", encoding="utf-8") as f:
+    json.dump(locations_list, f, ensure_ascii=False, indent=2)

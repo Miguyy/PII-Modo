@@ -1,24 +1,25 @@
-/*
-  Purpose: Defines the UserDecoration model for the application, acting as a junction table to map the many-to-many relationship between Users and Decorations. 
-  Each record represents an item owned by a user, containing a unique ID, references to both the user and the decoration, and a boolean flag (is_active) indicating if the item is currently equipped. 
-  This model is used to manage individual user inventories and track the active customization state of their avatars.
+/* 
+    Purpose: Defines the Decoracao_Avatar_Utilizador model for the application, representing the relationship between users and avatar decorations.
+    Each record in this model indicates that a specific user has acquired a specific avatar decoration, and whether that decoration is currently active for the user's avatar.
+    This model is used to manage the avatar decorations that users have unlocked and to determine which decoration is currently active for each user's avatar.
 */
-
-export default (sequelize, DataTypes) => {
-  const UserDecoration = sequelize.define("UserDecoration", {
-    id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true,
-      allowNull: false
+export default (sequelize, DataTypes) =>
+  sequelize.define(
+    "Decoracao_Avatar_Utilizador",
+    {
+      id_utilizador: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        references: { model: "Utilizador", key: "id_utilizador" },
+      },
+      id_decoracao: {
+        type: DataTypes.INTEGER,
+        allowNull: true, // NULL = sem decoração ativa
+        references: { model: "Decoracao_Avatar", key: "id_decoracao" },
+      },
     },
-    is_active: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: false, // By default, a newly unlocked decoration is not equipped
-    }
-    // Note: 'userId' and 'decorationId' will be added by the associations in db.config.js
-  });
-
-  return UserDecoration;
-};
+    {
+      timestamps: false, // remove createdAt and updatedAt fields
+      freezeTableName: true,
+    },
+  );

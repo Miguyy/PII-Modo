@@ -1,0 +1,242 @@
+[
+  {
+    "id_utilizador": 8,
+    "mes": 9,
+    "semana": 1,
+    "data_geracao": "2025-08-23 15:10:55",
+    "conteudo": "Report for user 8. Generated on 2025-08-23 15:10:55. Tasks completed: 24, points earned: 95.",
+    "caminho_relatorio": "/apps/modo_front-end/Modo/src/reports/report_8_m9_w1.pdf"
+  },
+  {
+    "id_utilizador": 37,
+    "mes": 6,
+    "semana": 1,
+    "data_geracao": "2025-12-28 17:00:07",
+    "conteudo": "Report for user 37. Generated on 2025-12-28 17:00:07. Tasks completed: 7, points earned: 85.",
+    "caminho_relatorio": "/apps/modo_front-end/Modo/src/reports/report_37_m6_w1.pdf"
+  },
+  {
+    "id_utilizador": 30,
+    "mes": 12,
+    "semana": 3,
+    "data_geracao": "2025-12-29 07:09:24",
+    "conteudo": "Report for user 30. Generated on 2025-12-29 07:09:24. Tasks completed: 5, points earned: 150.",
+    "caminho_relatorio": "/apps/modo_front-end/Modo/src/reports/report_30_m12_w3.pdf"
+  },
+  {
+    "id_utilizador": 2,
+    "mes": 10,
+    "semana": 1,
+    "data_geracao": "2025-08-28 18:28:30",
+    "conteudo": "Report for user 2. Generated on 2025-08-28 18:28:30. Tasks completed: 29, points earned: 150.",
+    "caminho_relatorio": "/apps/modo_front-end/Modo/src/reports/report_2_m10_w1.pdf"
+  },
+  {
+    "id_utilizador": 36,
+    "mes": 11,
+    "semana": 4,
+    "data_geracao": "2025-09-26 03:45:27",
+    "conteudo": "Report for user 36. Generated on 2025-09-26 03:45:27. Tasks completed: 4, points earned: 70.",
+    "caminho_relatorio": "/apps/modo_front-end/Modo/src/reports/report_36_m11_w4.pdf"
+  },
+  {
+    "id_utilizador": 43,
+    "mes": 8,
+    "semana": 1,
+    "data_geracao": "2026-01-10 17:07:47",
+    "conteudo": "Report for user 43. Generated on 2026-01-10 17:07:47. Tasks completed: 0, points earned: 125.",
+    "caminho_relatorio": "/apps/modo_front-end/Modo/src/reports/report_43_m8_w1.pdf"
+  },
+  {
+    "id_utilizador": 6,
+    "mes": 1,
+    "semana": 1,
+    "data_geracao": "2025-12-09 04:13:36",
+    "conteudo": "Report for user 6. Generated on 2025-12-09 04:13:36. Tasks completed: 25, points earned: 145.",
+    "caminho_relatorio": "/apps/modo_front-end/Modo/src/reports/report_6_m1_w1.pdf"
+  },
+  {
+    "id_utilizador": 16,
+    "mes": 1,
+    "semana": 3,
+    "data_geracao": "2025-05-18 14:08:37",
+    "conteudo": "Report for user 16. Generated on 2025-05-18 14:08:37. Tasks completed: 12, points earned: 190.",
+    "caminho_relatorio": "/apps/modo_front-end/Modo/src/reports/report_16_m1_w3.pdf"
+  },
+  {
+    "id_utilizador": 53,
+    "mes": 1,
+    "semana": 1,
+    "data_geracao": "2025-05-31 05:22:07",
+    "conteudo": "Report for user 53. Generated on 2025-05-31 05:22:07. Tasks completed: 26, points earned: 350.",
+    "caminho_relatorio": "/apps/modo_front-end/Modo/src/reports/report_53_m1_w1.pdf"
+  },
+  {
+    "id_utilizador": 56,
+    "mes": 4,
+    "semana": 1,
+    "data_geracao": "2026-05-11 23:03:20",
+    "conteudo": "Report for user 56. Generated on 2026-05-11 23:03:20. Tasks completed: 22, points earned: 180.",
+    "caminho_relatorio": "/apps/modo_front-end/Modo/src/reports/report_56_m4_w1.pdf"
+  },
+  {
+    "id_utilizador": 58,
+    "mes": 4,
+    "semana": 1,
+    "data_geracao": "2026-04-01 17:19:53",
+    "conteudo": "Report for user 58. Generated on 2026-04-01 17:19:53. Tasks completed: 29, points earned: 490.",
+    "caminho_relatorio": "/apps/modo_front-end/Modo/src/reports/report_58_m4_w1.pdf"
+  },
+  {
+    "id_utilizador": 29,
+    "mes": 3,
+    "semana": 2,
+    "data_geracao": "2026-04-12 13:31:00",
+    "conteudo": "Report for user 29. Generated on 2026-04-12 13:31:00. Tasks completed: 30, points earned: 485.",
+    "caminho_relatorio": "/apps/modo_front-end/Modo/src/reports/report_29_m3_w2.pdf"
+  },
+  {
+    "id_utilizador": 54,
+    "mes": 5,
+    "semana": 3,
+    "data_geracao": "2025-10-17 10:15:41",
+    "conteudo": "Report for user 54. Generated on 2025-10-17 10:15:41. Tasks completed: 21, points earned: 295.",
+    "caminho_relatorio": "/apps/modo_front-end/Modo/src/reports/report_54_m5_w3.pdf"
+  },
+  {
+    "id_utilizador": 32,
+    "mes": 10,
+    "semana": 3,
+    "data_geracao": "2025-12-08 09:44:30",
+    "conteudo": "Report for user 32. Generated on 2025-12-08 09:44:30. Tasks completed: 28, points earned: 260.",
+    "caminho_relatorio": "/apps/modo_front-end/Modo/src/reports/report_32_m10_w3.pdf"
+  },
+  {
+    "id_utilizador": 17,
+    "mes": 7,
+    "semana": 2,
+    "data_geracao": "2026-05-05 13:10:58",
+    "conteudo": "Report for user 17. Generated on 2026-05-05 13:10:58. Tasks completed: 20, points earned: 430.",
+    "caminho_relatorio": "/apps/modo_front-end/Modo/src/reports/report_17_m7_w2.pdf"
+  },
+  {
+    "id_utilizador": 27,
+    "mes": 6,
+    "semana": 3,
+    "data_geracao": "2026-03-11 09:59:25",
+    "conteudo": "Report for user 27. Generated on 2026-03-11 09:59:25. Tasks completed: 10, points earned: 10.",
+    "caminho_relatorio": "/apps/modo_front-end/Modo/src/reports/report_27_m6_w3.pdf"
+  },
+  {
+    "id_utilizador": 25,
+    "mes": 8,
+    "semana": 2,
+    "data_geracao": "2025-07-21 20:19:39",
+    "conteudo": "Report for user 25. Generated on 2025-07-21 20:19:39. Tasks completed: 18, points earned: 440.",
+    "caminho_relatorio": "/apps/modo_front-end/Modo/src/reports/report_25_m8_w2.pdf"
+  },
+  {
+    "id_utilizador": 5,
+    "mes": 6,
+    "semana": 3,
+    "data_geracao": "2025-05-23 11:44:25",
+    "conteudo": "Report for user 5. Generated on 2025-05-23 11:44:25. Tasks completed: 30, points earned: 445.",
+    "caminho_relatorio": "/apps/modo_front-end/Modo/src/reports/report_5_m6_w3.pdf"
+  },
+  {
+    "id_utilizador": 30,
+    "mes": 7,
+    "semana": 3,
+    "data_geracao": "2025-11-23 19:45:10",
+    "conteudo": "Report for user 30. Generated on 2025-11-23 19:45:10. Tasks completed: 23, points earned: 145.",
+    "caminho_relatorio": "/apps/modo_front-end/Modo/src/reports/report_30_m7_w3.pdf"
+  },
+  {
+    "id_utilizador": 57,
+    "mes": 12,
+    "semana": 1,
+    "data_geracao": "2025-05-18 11:50:47",
+    "conteudo": "Report for user 57. Generated on 2025-05-18 11:50:47. Tasks completed: 7, points earned: 150.",
+    "caminho_relatorio": "/apps/modo_front-end/Modo/src/reports/report_57_m12_w1.pdf"
+  },
+  {
+    "id_utilizador": 57,
+    "mes": 9,
+    "semana": 1,
+    "data_geracao": "2025-11-06 06:48:24",
+    "conteudo": "Report for user 57. Generated on 2025-11-06 06:48:24. Tasks completed: 13, points earned: 500.",
+    "caminho_relatorio": "/apps/modo_front-end/Modo/src/reports/report_57_m9_w1.pdf"
+  },
+  {
+    "id_utilizador": 44,
+    "mes": 7,
+    "semana": 4,
+    "data_geracao": "2025-08-14 10:00:58",
+    "conteudo": "Report for user 44. Generated on 2025-08-14 10:00:58. Tasks completed: 29, points earned: 485.",
+    "caminho_relatorio": "/apps/modo_front-end/Modo/src/reports/report_44_m7_w4.pdf"
+  },
+  {
+    "id_utilizador": 44,
+    "mes": 1,
+    "semana": 3,
+    "data_geracao": "2026-01-17 13:45:47",
+    "conteudo": "Report for user 44. Generated on 2026-01-17 13:45:47. Tasks completed: 4, points earned: 355.",
+    "caminho_relatorio": "/apps/modo_front-end/Modo/src/reports/report_44_m1_w3.pdf"
+  },
+  {
+    "id_utilizador": 18,
+    "mes": 5,
+    "semana": 4,
+    "data_geracao": "2026-02-18 18:56:55",
+    "conteudo": "Report for user 18. Generated on 2026-02-18 18:56:55. Tasks completed: 5, points earned: 495.",
+    "caminho_relatorio": "/apps/modo_front-end/Modo/src/reports/report_18_m5_w4.pdf"
+  },
+  {
+    "id_utilizador": 1,
+    "mes": 4,
+    "semana": 1,
+    "data_geracao": "2025-08-19 04:33:42",
+    "conteudo": "Report for user 1. Generated on 2025-08-19 04:33:42. Tasks completed: 18, points earned: 255.",
+    "caminho_relatorio": "/apps/modo_front-end/Modo/src/reports/report_1_m4_w1.pdf"
+  },
+  {
+    "id_utilizador": 46,
+    "mes": 3,
+    "semana": 1,
+    "data_geracao": "2025-08-09 00:18:36",
+    "conteudo": "Report for user 46. Generated on 2025-08-09 00:18:36. Tasks completed: 4, points earned: 295.",
+    "caminho_relatorio": "/apps/modo_front-end/Modo/src/reports/report_46_m3_w1.pdf"
+  },
+  {
+    "id_utilizador": 14,
+    "mes": 8,
+    "semana": 1,
+    "data_geracao": "2025-09-05 00:53:54",
+    "conteudo": "Report for user 14. Generated on 2025-09-05 00:53:54. Tasks completed: 0, points earned: 0.",
+    "caminho_relatorio": "/apps/modo_front-end/Modo/src/reports/report_14_m8_w1.pdf"
+  },
+  {
+    "id_utilizador": 28,
+    "mes": 8,
+    "semana": 2,
+    "data_geracao": "2025-08-17 13:46:15",
+    "conteudo": "Report for user 28. Generated on 2025-08-17 13:46:15. Tasks completed: 30, points earned: 445.",
+    "caminho_relatorio": "/apps/modo_front-end/Modo/src/reports/report_28_m8_w2.pdf"
+  },
+  {
+    "id_utilizador": 29,
+    "mes": 12,
+    "semana": 4,
+    "data_geracao": "2025-09-25 22:09:16",
+    "conteudo": "Report for user 29. Generated on 2025-09-25 22:09:16. Tasks completed: 17, points earned: 100.",
+    "caminho_relatorio": "/apps/modo_front-end/Modo/src/reports/report_29_m12_w4.pdf"
+  },
+  {
+    "id_utilizador": 38,
+    "mes": 7,
+    "semana": 3,
+    "data_geracao": "2026-03-10 18:45:30",
+    "conteudo": "Report for user 38. Generated on 2026-03-10 18:45:30. Tasks completed: 23, points earned: 155.",
+    "caminho_relatorio": "/apps/modo_front-end/Modo/src/reports/report_38_m7_w3.pdf"
+  }
+]

@@ -1,8 +1,13 @@
+/*Purpose: This file defines the routes for managing user decorations in the application. 
+It includes routes for unlocking a decoration for a user, retrieving all decorations owned by a user, and activating a specific decoration for the user's avatar. 
+Each route is associated with a specific controller function that handles the corresponding operation. 
+The routes are designed to be nested under a user-specific path, allowing for operations that are specific to a particular user.*/
+
 import express from "express";
 import {
   unlockDecoration,
   getUserDecorations,
-  activateDecoration
+  activateDecoration,
 } from "../controllers/userDecorations.controllers.js";
 
 const router = express.Router();

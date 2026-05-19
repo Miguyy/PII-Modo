@@ -1,9 +1,12 @@
+/*Purpose: This file defines the routes for managing decorations in the application. It includes routes for creating, retrieving, updating, and deleting decorations. 
+Each route is associated with a specific controller function that handles the corresponding operation.*/
+
 import express from "express";
 import {
   createDecoration,
   getDecorations,
   updateDecoration,
-  deleteDecoration
+  deleteDecoration,
 } from "../controllers/decorations.controllers.js";
 
 const router = express.Router();
