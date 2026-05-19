@@ -74,4 +74,3 @@ out.parent.mkdir(parents=True, exist_ok=True)
 
 with out.open("w", encoding="utf-8") as f:
     json.dump(habits, f, default=str, ensure_ascii=False, indent=2)
-

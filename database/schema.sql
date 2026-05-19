@@ -98,5 +98,3 @@ CREATE TABLE Impacto (
     unidade VARCHAR(20),
     FOREIGN KEY (id_tarefa) REFERENCES Tarefas(id_tarefa)
 );
-
-
