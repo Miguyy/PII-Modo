@@ -39,7 +39,7 @@ export const createLocation = async (req, res, next) => {
         user: `/users/${id_utilizador}`
       },
     };
-
+    
     res.status(201).json(response);
   } catch (error) {
     if (error.name === "SequelizeValidationError") {
@@ -100,9 +100,7 @@ export const getUserLocation = async (req, res, next) => {
       return next(err);
     }
     if (error.name === "ForbiddenError") {
-      const err = new Error(
-        "You do not have permission to access this resource.",
-      );
+      const err = new Error("You do not have permission to access this resource.");
       err.status = 403;
       return next(err);
     }
