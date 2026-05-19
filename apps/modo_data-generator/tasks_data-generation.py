@@ -45,6 +45,11 @@ HABITS = [
     (23, 'Turn off tap while brushing', 'Turn off the faucet while brushing your teeth.', 'Water'),
     (24, 'Buy bulk groceries', 'Buy in bulk using your own jars.', 'Waste'),
     (25, 'Plant a tree', 'Participate in a reforestation initiative.', 'Community'),
+    (26, 'Use reusable coffee cup', 'Use a reusable coffee cup or bottle instead of disposables.', 'Waste'),
+    (27, 'Carpool or shuttle', 'Carpool or use a campus shuttle instead of driving alone.', 'Sustainable Mobility'),
+    (28, 'Buy second-hand clothes', 'Buy second-hand or campus-swapped clothes instead of new.', 'Waste'),
+    (29, 'Report water leaks', 'Report and fix water leaks / use campus refill stations.', 'Water'),
+    (30, 'Support local food suppliers', 'Support the campus farmers market or local food suppliers.', 'Food'),
 ]
 
 def _pick_points_and_priority():
@@ -140,7 +145,7 @@ def generate_tasks_data():
     (20 tasks, 12 users) and prints the two resulting lists. It is useful
     for quickly creating fixture output when developing locally.
     """
-    tarefas, tarefas_utilizador = generate_tasks(num_tasks=20, num_users=12)
+    tarefas, tarefas_utilizador = generate_tasks(num_tasks=30, num_users=12)
     print("TAREFAS:")
     for t in tarefas:
         print(t)

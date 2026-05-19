@@ -1,0 +1,362 @@
+[
+  {
+    "id_tarefa": 1,
+    "id_utilizador": 1,
+    "tarefa_ativa": true,
+    "estado_tarefa": "Pending",
+    "progresso": 40,
+    "data_inicio": "2026-05-10T08:00:00Z",
+    "data_conclusao": null
+  },
+  {
+    "id_tarefa": 2,
+    "id_utilizador": 2,
+    "tarefa_ativa": true,
+    "estado_tarefa": "Completed",
+    "progresso": 100,
+    "data_inicio": "2026-05-11T09:00:00Z",
+    "data_conclusao": "2026-05-11T09:05:30Z"
+  },
+  {
+    "id_tarefa": 3,
+    "id_utilizador": 3,
+    "tarefa_ativa": true,
+    "estado_tarefa": "Completed",
+    "progresso": 100,
+    "data_inicio": "2026-05-12T07:30:00Z",
+    "data_conclusao": "2026-05-12T08:10:00Z"
+  },
+  {
+    "id_tarefa": 4,
+    "id_utilizador": 4,
+    "tarefa_ativa": true,
+    "estado_tarefa": "Pending",
+    "progresso": 10,
+    "data_inicio": "2026-05-13T12:00:00Z",
+    "data_conclusao": null
+  },
+  {
+    "id_tarefa": 5,
+    "id_utilizador": 5,
+    "tarefa_ativa": false,
+    "estado_tarefa": "Completed",
+    "progresso": 100,
+    "data_inicio": "2026-05-01T06:00:00Z",
+    "data_conclusao": "2026-05-01T06:10:00Z"
+  },
+  {
+    "id_tarefa": 6,
+    "id_utilizador": 6,
+    "tarefa_ativa": true,
+    "estado_tarefa": "Pending",
+    "progresso": 60,
+    "data_inicio": "2026-05-14T06:00:00Z",
+    "data_conclusao": null
+  },
+  {
+    "id_tarefa": 7,
+    "id_utilizador": 7,
+    "tarefa_ativa": true,
+    "estado_tarefa": "Completed",
+    "progresso": 100,
+    "data_inicio": "2026-04-30T10:00:00Z",
+    "data_conclusao": "2026-04-30T10:02:00Z"
+  },
+  {
+    "id_tarefa": 8,
+    "id_utilizador": 8,
+    "tarefa_ativa": true,
+    "estado_tarefa": "Pending",
+    "progresso": 25,
+    "data_inicio": "2026-05-09T18:00:00Z",
+    "data_conclusao": null
+  },
+  {
+    "id_tarefa": 9,
+    "id_utilizador": 9,
+    "tarefa_ativa": false,
+    "estado_tarefa": "Completed",
+    "progresso": 100,
+    "data_inicio": "2026-05-05T13:00:00Z",
+    "data_conclusao": "2026-05-05T13:30:00Z"
+  },
+  {
+    "id_tarefa": 10,
+    "id_utilizador": 10,
+    "tarefa_ativa": true,
+    "estado_tarefa": "Pending",
+    "progresso": 0,
+    "data_inicio": "2026-05-15T15:00:00Z",
+    "data_conclusao": null
+  },
+  {
+    "id_tarefa": 11,
+    "id_utilizador": 11,
+    "tarefa_ativa": true,
+    "estado_tarefa": "Completed",
+    "progresso": 100,
+    "data_inicio": "2026-05-02T09:00:00Z",
+    "data_conclusao": "2026-05-02T09:01:00Z"
+  },
+  {
+    "id_tarefa": 12,
+    "id_utilizador": 12,
+    "tarefa_ativa": true,
+    "estado_tarefa": "Pending",
+    "progresso": 55,
+    "data_inicio": "2026-05-08T08:30:00Z",
+    "data_conclusao": null
+  },
+  {
+    "id_tarefa": 13,
+    "id_utilizador": 13,
+    "tarefa_ativa": true,
+    "estado_tarefa": "Completed",
+    "progresso": 100,
+    "data_inicio": "2026-05-03T07:00:00Z",
+    "data_conclusao": "2026-05-03T07:40:00Z"
+  },
+  {
+    "id_tarefa": 14,
+    "id_utilizador": 14,
+    "tarefa_ativa": true,
+    "estado_tarefa": "Pending",
+    "progresso": 5,
+    "data_inicio": "2026-05-16T11:00:00Z",
+    "data_conclusao": null
+  },
+  {
+    "id_tarefa": 15,
+    "id_utilizador": 15,
+    "tarefa_ativa": false,
+    "estado_tarefa": "Completed",
+    "progresso": 100,
+    "data_inicio": "2026-04-28T06:30:00Z",
+    "data_conclusao": "2026-04-28T06:35:00Z"
+  },
+  {
+    "id_tarefa": 16,
+    "id_utilizador": 16,
+    "tarefa_ativa": true,
+    "estado_tarefa": "Pending",
+    "progresso": 70,
+    "data_inicio": "2026-05-07T14:00:00Z",
+    "data_conclusao": null
+  },
+  {
+    "id_tarefa": 17,
+    "id_utilizador": 17,
+    "tarefa_ativa": true,
+    "estado_tarefa": "Completed",
+    "progresso": 100,
+    "data_inicio": "2026-05-06T10:00:00Z",
+    "data_conclusao": "2026-05-06T10:15:00Z"
+  },
+  {
+    "id_tarefa": 18,
+    "id_utilizador": 18,
+    "tarefa_ativa": true,
+    "estado_tarefa": "Pending",
+    "progresso": 30,
+    "data_inicio": "2026-05-12T08:30:00Z",
+    "data_conclusao": null
+  },
+  {
+    "id_tarefa": 19,
+    "id_utilizador": 19,
+    "tarefa_ativa": true,
+    "estado_tarefa": "Completed",
+    "progresso": 100,
+    "data_inicio": "2026-05-04T19:00:00Z",
+    "data_conclusao": "2026-05-04T19:15:00Z"
+  },
+  {
+    "id_tarefa": 20,
+    "id_utilizador": 20,
+    "tarefa_ativa": true,
+    "estado_tarefa": "Pending",
+    "progresso": 12,
+    "data_inicio": "2026-05-14T09:00:00Z",
+    "data_conclusao": null
+  },
+  {
+    "id_tarefa": 21,
+    "id_utilizador": 21,
+    "tarefa_ativa": true,
+    "estado_tarefa": "Completed",
+    "progresso": 100,
+    "data_inicio": "2026-05-01T06:00:00Z",
+    "data_conclusao": "2026-05-01T07:00:00Z"
+  },
+  {
+    "id_tarefa": 22,
+    "id_utilizador": 22,
+    "tarefa_ativa": true,
+    "estado_tarefa": "Pending",
+    "progresso": 45,
+    "data_inicio": "2026-05-09T07:00:00Z",
+    "data_conclusao": null
+  },
+  {
+    "id_tarefa": 23,
+    "id_utilizador": 23,
+    "tarefa_ativa": false,
+    "estado_tarefa": "Completed",
+    "progresso": 100,
+    "data_inicio": "2026-05-02T07:30:00Z",
+    "data_conclusao": "2026-05-02T07:35:00Z"
+  },
+  {
+    "id_tarefa": 24,
+    "id_utilizador": 24,
+    "tarefa_ativa": true,
+    "estado_tarefa": "Pending",
+    "progresso": 20,
+    "data_inicio": "2026-05-10T16:00:00Z",
+    "data_conclusao": null
+  },
+  {
+    "id_tarefa": 25,
+    "id_utilizador": 25,
+    "tarefa_ativa": true,
+    "estado_tarefa": "Completed",
+    "progresso": 100,
+    "data_inicio": "2026-04-20T09:00:00Z",
+    "data_conclusao": "2026-04-20T12:00:00Z"
+  },
+  {
+    "id_tarefa": 26,
+    "id_utilizador": 26,
+    "tarefa_ativa": true,
+    "estado_tarefa": "Pending",
+    "progresso": 65,
+    "data_inicio": "2026-05-08T10:15:00Z",
+    "data_conclusao": null
+  },
+  {
+    "id_tarefa": 27,
+    "id_utilizador": 27,
+    "tarefa_ativa": true,
+    "estado_tarefa": "Completed",
+    "progresso": 100,
+    "data_inicio": "2026-05-03T06:45:00Z",
+    "data_conclusao": "2026-05-03T08:00:00Z"
+  },
+  {
+    "id_tarefa": 28,
+    "id_utilizador": 28,
+    "tarefa_ativa": false,
+    "estado_tarefa": "Completed",
+    "progresso": 100,
+    "data_inicio": "2026-05-05T11:00:00Z",
+    "data_conclusao": "2026-05-05T11:45:00Z"
+  },
+  {
+    "id_tarefa": 29,
+    "id_utilizador": 29,
+    "tarefa_ativa": true,
+    "estado_tarefa": "Pending",
+    "progresso": 88,
+    "data_inicio": "2026-05-13T08:00:00Z",
+    "data_conclusao": null
+  },
+  {
+    "id_tarefa": 30,
+    "id_utilizador": 30,
+    "tarefa_ativa": true,
+    "estado_tarefa": "Completed",
+    "progresso": 100,
+    "data_inicio": "2026-05-07T09:00:00Z",
+    "data_conclusao": "2026-05-07T10:00:00Z"
+  },
+  {
+    "id_tarefa": 1,
+    "id_utilizador": 31,
+    "tarefa_ativa": true,
+    "estado_tarefa": "Pending",
+    "progresso": 50,
+    "data_inicio": "2026-05-11T08:00:00Z",
+    "data_conclusao": null
+  },
+  {
+    "id_tarefa": 2,
+    "id_utilizador": 32,
+    "tarefa_ativa": true,
+    "estado_tarefa": "Pending",
+    "progresso": 22,
+    "data_inicio": "2026-05-12T09:00:00Z",
+    "data_conclusao": null
+  },
+  {
+    "id_tarefa": 3,
+    "id_utilizador": 33,
+    "tarefa_ativa": true,
+    "estado_tarefa": "Completed",
+    "progresso": 100,
+    "data_inicio": "2026-05-02T07:30:00Z",
+    "data_conclusao": "2026-05-02T08:00:00Z"
+  },
+  {
+    "id_tarefa": 4,
+    "id_utilizador": 34,
+    "tarefa_ativa": true,
+    "estado_tarefa": "Pending",
+    "progresso": 3,
+    "data_inicio": "2026-05-14T12:00:00Z",
+    "data_conclusao": null
+  },
+  {
+    "id_tarefa": 5,
+    "id_utilizador": 35,
+    "tarefa_ativa": true,
+    "estado_tarefa": "Completed",
+    "progresso": 100,
+    "data_inicio": "2026-05-06T06:00:00Z",
+    "data_conclusao": "2026-05-06T06:05:00Z"
+  },
+  {
+    "id_tarefa": 6,
+    "id_utilizador": 36,
+    "tarefa_ativa": true,
+    "estado_tarefa": "Pending",
+    "progresso": 77,
+    "data_inicio": "2026-05-09T06:00:00Z",
+    "data_conclusao": null
+  },
+  {
+    "id_tarefa": 7,
+    "id_utilizador": 37,
+    "tarefa_ativa": true,
+    "estado_tarefa": "Completed",
+    "progresso": 100,
+    "data_inicio": "2026-05-01T10:00:00Z",
+    "data_conclusao": "2026-05-01T10:02:00Z"
+  },
+  {
+    "id_tarefa": 8,
+    "id_utilizador": 38,
+    "tarefa_ativa": true,
+    "estado_tarefa": "Pending",
+    "progresso": 35,
+    "data_inicio": "2026-05-10T18:00:00Z",
+    "data_conclusao": null
+  },
+  {
+    "id_tarefa": 9,
+    "id_utilizador": 39,
+    "tarefa_ativa": true,
+    "estado_tarefa": "Completed",
+    "progresso": 100,
+    "data_inicio": "2026-05-03T13:00:00Z",
+    "data_conclusao": "2026-05-03T13:30:00Z"
+  },
+  {
+    "id_tarefa": 10,
+    "id_utilizador": 40,
+    "tarefa_ativa": true,
+    "estado_tarefa": "Pending",
+    "progresso": 11,
+    "data_inicio": "2026-05-15T15:00:00Z",
+    "data_conclusao": null
+  }
+]
