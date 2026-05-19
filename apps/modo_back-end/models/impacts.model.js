@@ -3,7 +3,6 @@
   Each impact has a unique ID, a reference to the associated task, a type of impact (e.g., water, energy, residuals, mobility, emissions), a value per unit of impact, and the unit of measurement. 
   This model is used to manage the environmental impacts of tasks in the system and to calculate the total impact based on user activities and progress.
 */
-
 export default (sequelize, DataTypes) =>
   sequelize.define(
     "Impacto",

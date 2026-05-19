@@ -4,6 +4,7 @@
   Responses include HATEOAS `self` links and errors are forwarded to
   `next()`.
 */
+
 // Import impacts data
 import { Impact } from "../config/db.config.js";
 

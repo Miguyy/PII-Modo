@@ -3,7 +3,6 @@
   Each record in this model indicates that a specific user has a specific task, along with the status of that task (active or not), its progress, and the start and completion dates.
   This model is used to manage the tasks assigned to users, track their progress, and determine when tasks are completed or failed based on their status and dates.
 */
-
 export default (sequelize, DataTypes) =>
   sequelize.define(
     "Tarefas_Utilizador",

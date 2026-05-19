@@ -1,5 +1,7 @@
+/*Purpose: This file defines the routes for handling location-related operations in the application. It includes routes for creating a new location, retrieving user locations, and updating existing locations. 
+The routes are designed to be nested under a user-specific path, allowing for operations that are specific to a particular user.*/
+
 import express from "express";
-// Import controllers for locations resources
 import {
   createLocation,
   getUserLocation,

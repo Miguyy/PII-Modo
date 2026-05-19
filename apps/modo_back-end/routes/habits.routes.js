@@ -4,6 +4,7 @@
   appropriate authentication, authorization and validation middleware
   before delegating to controller handlers.
 */
+
 import express from "express";
 
 // Import middlewares for habits resources

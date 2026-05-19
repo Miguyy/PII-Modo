@@ -3,6 +3,7 @@
   endpoints. Exports middleware to validate input payloads, validate
   habit ID params, and attach habit instances to `req` when found.
 */
+
 import { Habit } from "../config/db.config.js";
 
 /**

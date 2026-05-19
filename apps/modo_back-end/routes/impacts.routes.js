@@ -3,6 +3,7 @@
 	routes used to retrieve impacts and attaches authentication/validation
 	middleware where required.
 */
+
 import express from "express";
 
 // Import middlewares for impacts resources

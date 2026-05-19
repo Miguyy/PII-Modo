@@ -4,6 +4,7 @@
   delete habit records. Each controller responds with HATEOAS links
   and calls `next()` with an error object on failure.
 */
+
 // Import habits data
 import { Habit } from "../config/db.config.js";
 

@@ -3,7 +3,6 @@
   Each decoration has a unique ID, a name, a required level for unlocking, and a file path to the decoration's image. 
   This model is used to manage the available avatar decorations in the system and to associate them with user avatars based on their progress and achievements.
 */
-
 export default (sequelize, DataTypes) =>
   sequelize.define(
     "Decoracao_Avatar",

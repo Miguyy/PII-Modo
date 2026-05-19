@@ -3,7 +3,6 @@
   Each report has a unique ID, a reference to the user it belongs to, month and week information for when the report was generated, a timestamp for when the report was created, the content of the report, and a file path to the generated report. 
   This model is used to manage user reports in the system and to provide users with insights and summaries based on their activities and progress.
 */
-
 export default (sequelize, DataTypes) =>
   sequelize.define(
     "Relatorio",

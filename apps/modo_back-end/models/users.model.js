@@ -3,7 +3,6 @@
   Each user has a unique ID, a name, an email, a hashed password, points, account creation date, user type (Admin or Client), level, and an optional profile image. 
   This model is used to manage user information and authentication in the system, as well as to track user progress and achievements through points and levels.
 */
-
 export default (sequelize, DataTypes) =>
   sequelize.define(
     "Utilizador",

@@ -4,6 +4,7 @@
   deleting a user and assigning habits to a user. Applies validation
   and authentication middleware where appropriate.
 */
+
 import express from "express";
 
 // Import middlewares for users resources

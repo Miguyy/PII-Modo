@@ -4,6 +4,7 @@
   controller returns JSON responses enriched with HATEOAS links and
   forwards errors via `next()`.
 */
+
 // Import users data
 /* import jwt from "jsonwebtoken"; */
 import { User, Habit } from "../config/db.config.js";

@@ -1,6 +1,21 @@
-// using sequelize with MySQL
-// create a connection to the database using environment variables for configuration
+/*
+Purpose: This file sets up the Sequelize connection to the database, defines the models and their relationships, and synchronizes the models with the database. 
+It also tests the database connection and handles any errors that may occur during the process.
+The models defined in this file include User, Habit, Task, Impact, AvatarDecoration, UserTasks, Location, Notification, Report, and UserDecorations.
+The relationships between the models are defined as follows:
+- User has many Notifications (1:N)
+- User has many Reports (1:N)
+- User has many Locations (1:N)
+- Habit has many Tasks (1:N)
+- Task has many Impacts (1:N)
+- User and Task have a many-to-many relationship through UserTasks
+- User and AvatarDecoration have a many-to-many relationship through UserDecorations
+The models are synchronized with the database using sequelize.sync() and any errors during synchronization are handled appropriately.
+*/
+
 import { Sequelize, DataTypes } from "sequelize";
+import dotenv from "dotenv";
+dotenv.config();
 
 const sequelize = new Sequelize(
   process.env.DB_NAME,

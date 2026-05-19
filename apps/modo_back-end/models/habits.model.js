@@ -3,7 +3,6 @@
   Each habit has a unique ID, a name, a description, and a category. 
   This model is used to manage the available habits in the system and to associate them with user tasks and progress tracking.
 */
-
 export default (sequelize, DataTypes) =>
   sequelize.define(
     "Habitos",

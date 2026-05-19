@@ -1,3 +1,7 @@
+/*Purpose: This script is responsible for importing user decoration data from a JSON file into the database. 
+It reads the data from the specified JSON file, processes it, and then uses Sequelize's bulkCreate method to insert the data into the UserDecorations table in chunks. 
+The script also handles transactions to ensure data integrity and logs the results of the import process. If any errors occur during the import, they are caught and logged, and the process exits with an error code.*/
+
 import fs from "fs/promises";
 import "dotenv/config";
 import { sequelize, UserDecorations } from "../config/db.config.js";

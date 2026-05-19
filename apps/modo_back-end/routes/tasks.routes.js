@@ -4,6 +4,7 @@
   Authentication, authorization and validation middleware are applied
   where appropriate and controllers handle the business logic.
 */
+
 import express from "express";
 
 // Import middlewares for users resources

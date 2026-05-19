@@ -3,7 +3,6 @@
   Each task has a unique ID, a reference to the habit it belongs to, a name, points awarded for completion, a type (Check, Count, Timer), location (Inside or Outside), priority (Low, Medium, High), and additional fields for timer duration or count quantity as needed. 
   This model is used to manage the tasks associated with user habits and to track user progress and achievements in the system.
 */
-
 export default (sequelize, DataTypes) =>
   sequelize.define(
     "Tarefas",
