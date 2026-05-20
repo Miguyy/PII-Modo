@@ -40,3 +40,9 @@ __screenshots__/
 
 # Local env files
 .env
+
+# package-lock.json apps/modo_front-end/Modo
+package-lock.json
+
+# package.json
+package.json
