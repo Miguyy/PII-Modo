@@ -1,33 +1,32 @@
-/*Purpose: This script is responsible for importing impact data from a JSON file into the database. 
-It reads the data from the specified JSON file, processes it, and then uses Sequelize's bulkCreate method to insert the data into the Impact table in chunks. 
-The script also handles transactions to ensure data integrity and logs the results of the import process. If any errors occur during the import, they are caught and logged, and the process exits with an error code.*/
-
 import fs from "fs/promises";
 import "dotenv/config";
-import { sequelize, Impact } from "../config/db.config.js";
+import { sequelize, Habit } from "../config/db.config.js";
 
-const dataPath = new URL("../data/impacts.json", import.meta.url);
+const dataPath = new URL("../data/habits.json", import.meta.url);
 
-async function importImpacts() {
+async function importHabits() {
   try {
     const raw = await fs.readFile(dataPath, "utf8");
-    const impacts = JSON.parse(raw);
-    const payload = impacts.map((i) => ({
-      id_tarefa: i.id_tarefa,
-      tipo_impacto: i.tipo_impacto,
-      valor_por_unidade: i.valor_por_unidade,
-      unidade: i.unidade,
+    const habits = JSON.parse(raw);
+    const payload = habits.map((h) => ({
+      nome_habito: h.nome_habito,
+      descricao_habito: h.descricao_habito,
+      categoria: h.categoria,
     }));
 
+    const chunkSize = 500;
     const transaction = await sequelize.transaction();
     try {
-      await Impact.bulkCreate(payload, {
-        transaction,
-        validate: false,
-        ignoreDuplicates: true,
-      });
+      for (let i = 0; i < payload.length; i += chunkSize) {
+        const chunk = payload.slice(i, i + chunkSize);
+        await Habit.bulkCreate(chunk, {
+          transaction,
+          validate: false,
+          ignoreDuplicates: true,
+        });
+      }
       await transaction.commit();
-      console.log(`Imported ${payload.length} impacts successfully.`);
+      console.log(`Imported ${payload.length} habits successfully.`);
     } catch (err) {
       await transaction.rollback();
       throw err;
@@ -40,4 +39,4 @@ async function importImpacts() {
   }
 }
 
-importImpacts();
+importHabits();
