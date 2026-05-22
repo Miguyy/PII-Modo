@@ -1,142 +1,122 @@
-// Import models (adjust according to the exact names exported in your db.config.js)
-import { AvatarDecoration } from "../config/db.config.js";
+/*
+  Purpose: HTTP controller handlers for the Decoration resource.
+  Exports functions to list, create, read, update, and delete decorations.
+  Each controller responds with HATEOAS links and forwards errors via `next()`.
+  Includes protections against Mass Assignment by destructuring req.body.
+*/
 
-// Controller to create a new avatar decoration in the global catalog
-// POST /avatar-decorations
+import { Decoration } from "../config/db.config.js";
+
+/**
+ * getAllDecorations(req, res, next)
+ * Retrieves all decorations from the database.
+ */
+export const getAllDecorations = async (req, res, next) => {
+  try {
+    const decorations = await Decoration.findAll();
+
+    const response = decorations.map((decoration) => ({
+      ...decoration.toJSON(),
+      links: [{ rel: "self", method: "GET", href: `/decorations/${decoration.id}` }],
+    }));
+    
+    res.status(200).json(response);
+  } catch (error) {
+    return next({ status: 500, message: "Internal server error." });
+  }
+};
+
+/**
+ * createDecoration(req, res, next)
+ * Creates a new Decoration. Returns HTTP 201 with a `self` HATEOAS link.
+ */
 export const createDecoration = async (req, res, next) => {
   try {
-    const { nome, nivel_necessario, preco_pontos, imagem_url } = req.body;
+    // Security Protection: Extract only the allowed fields
+    const { nome_decoracao, nivel_necessario, caminho_decoracao } = req.body;
 
     const decoration = await Decoration.create({
-      nome,
+      nome_decoracao,
       nivel_necessario,
-      preco_pontos,
-      imagem_url,
+      caminho_decoracao,
     });
 
-    // Include HATEOAS links
-    const response = {
+    res.status(201).json({
       ...decoration.toJSON(),
-      links: {
-        self: `/avatar-decorations/${decoration.id}`,
-        all_decorations: `/avatar-decorations`,
-      },
-    };
-
-    res.status(201).json(response);
-  } catch (error) {
-    if (error.name === "SequelizeValidationError") {
-      const err = new Error("Validation error.");
-      err.status = 400;
-      err.errors = error.errors.map((e) => e.message);
-      return next(err);
-    }
-    const err = new Error("Internal server error.");
-    err.status = 500;
-    return next(err);
-  }
-};
-
-// Controller to list all available decorations in the game
-// GET /avatar-decorations
-export const getDecorations = async (req, res, next) => {
-  try {
-    const decorations = await Decoration.findAll({
-      order: [["nivel_necessario", "ASC"]], // Order by the required level to unlock
+      links: [{ rel: "self", method: "GET", href: `/decorations/${decoration.id}` }],
     });
-
-    // Include HATEOAS links for each item
-    const response = decorations.map((dec) => ({
-      ...dec.toJSON(),
-      links: {
-        self: `/avatar-decorations/${dec.id}`,
-      },
-    }));
-
-    res.status(200).json(response);
   } catch (error) {
-    const err = new Error("Internal server error.");
-    err.status = 500;
-    return next(err);
+    if (error.name === "SequelizeUniqueConstraintError") {
+      return next({
+        status: 409,
+        message: "Resource conflict.",
+        errors: { nome_decoracao: ["A decoration with this name already exists."] },
+      });
+    }
+    return next({ status: 500, message: "Internal server error." });
   }
 };
 
-// Controller to update a specific decoration
-// PATCH /avatar-decorations/:id
-export const updateDecoration = async (req, res, next) => {
+/**
+ * getDecorationById(req, res, next)
+ * Returns the decoration attached to `req.decoration` by middleware.
+ */
+export const getDecorationById = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const { nome, nivel_necessario, preco_pontos, imagem_url } = req.body;
-
-    const decoration = await Decoration.findByPk(id);
-
-    if (!decoration) {
-      const err = new Error("Decoration not found.");
-      err.status = 404;
-      return next(err);
-    }
-
-    // Update only the provided fields (PATCH behavior)
-    if (nome) decoration.nome = nome;
-    if (nivel_necessario !== undefined)
-      decoration.nivel_necessario = nivel_necessario;
-    if (preco_pontos !== undefined) decoration.preco_pontos = preco_pontos;
-    if (imagem_url) decoration.imagem_url = imagem_url;
-
-    await decoration.save();
-
-    const response = {
-      ...decoration.toJSON(),
-      links: {
-        self: `/avatar-decorations/${decoration.id}`,
-        all_decorations: `/avatar-decorations`,
-      },
-    };
-
-    res.status(200).json(response);
-  } catch (error) {
-    if (error.name === "SequelizeValidationError") {
-      const err = new Error("Validation error.");
-      err.status = 400;
-      err.errors = error.errors.map((e) => e.message);
-      return next(err);
-    }
-    const err = new Error("Internal server error.");
-    err.status = 500;
-    return next(err);
-  }
-};
-
-// Controller to remove a decoration from the catalog
-// DELETE /avatar-decorations/:id
-export const deleteDecoration = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-
-    const decoration = await Decoration.findByPk(id);
-
-    if (!decoration) {
-      const err = new Error("Decoration not found.");
-      err.status = 404;
-      return next(err);
-    }
-
-    // Deleting the decoration.
-    // NOTE: If the database relations are set up with 'ON DELETE CASCADE'
-    // for the user_decorations junction table, this will automatically
-    // remove the decoration from all users' accounts.
-    await decoration.destroy();
+    const decoration = req.decoration;
 
     res.status(200).json({
-      message:
-        "Decoration deleted successfully. It has been removed from the system and all associated user accounts.",
-      links: {
-        all_decorations: `/avatar-decorations`,
-      },
+      ...decoration.toJSON(),
+      links: [{ rel: "self", method: "GET", href: `/decorations/${decoration.id}` }],
     });
   } catch (error) {
-    const err = new Error("Internal server error.");
-    err.status = 500;
-    return next(err);
+    return next({ status: 500, message: "Internal server error." });
+  }
+};
+
+/**
+ * updateDecoration(req, res, next)
+ * Updates the decoration instance available at `req.decoration`.
+ */
+export const updateDecoration = async (req, res, next) => {
+  try {
+    const decoration = req.decoration;
+
+    // Security Protection: Extract only the allowed fields for update
+    const { nome_decoracao, nivel_necessario, caminho_decoracao } = req.body;
+
+    const updated = await decoration.update({
+      nome_decoracao: nome_decoracao ?? decoration.nome_decoracao,
+      nivel_necessario: nivel_necessario ?? decoration.nivel_necessario,
+      caminho_decoracao: caminho_decoracao ?? decoration.caminho_decoracao,
+    });
+
+    res.status(200).json({
+      ...updated.toJSON(),
+      links: [{ rel: "self", method: "GET", href: `/decorations/${decoration.id}` }],
+    });
+  } catch (error) {
+    if (error.name === "SequelizeUniqueConstraintError") {
+      return next({
+        status: 409,
+        message: "Resource conflict.",
+        errors: { nome_decoracao: ["A decoration with this name already exists."] },
+      });
+    }
+    return next({ status: 500, message: "Internal server error." });
+  }
+};
+
+/**
+ * deleteDecoration(req, res, next)
+ * Deletes the decoration attached to `req.decoration`.
+ */
+export const deleteDecoration = async (req, res, next) => {
+  try {
+    const decoration = req.decoration;
+    await decoration.destroy();
+    res.status(204).send();
+  } catch (error) {
+    return next({ status: 500, message: "Internal server error." });
   }
 };
