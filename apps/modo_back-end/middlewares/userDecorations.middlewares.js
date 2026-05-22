@@ -1,14 +1,61 @@
 /*
-  Purpose: Middleware utilities for UserDecoration-related routes. Exposes
-  validation middleware to check ownership and associations for user decorations.
+  Purpose: Validation and existence-check middleware for endpoints
+  managing decorations assigned to users.
 */
+
 import { UserDecoration } from "../config/db.config.js";
 
 /**
+ * validateUserDecorationIds(req, res, next)
+ * Validates `userId` and `decorationId` route parameters.
+ */
+export const validateUserDecorationIds = (req, res, next) => {
+  const { userId, decorationId } = req.params;
+  const errors = {};
+
+  if (!Number.isInteger(Number(userId)) || Number(userId) <= 0) {
+    errors.userId = ["Invalid user ID."];
+  }
+
+  if (decorationId && (!Number.isInteger(Number(decorationId)) || Number(decorationId) <= 0)) {
+    errors.decorationId = ["Invalid decoration ID."];
+  }
+
+  if (Object.keys(errors).length > 0) {
+    return res.status(400).json({
+      description: "Validation failed.",
+      errors,
+    });
+  }
+
+  next();
+};
+
+/**
+ * validateUpdateUserDecoration(req, res, next)
+ * Validates the payload when updating a user's decoration (e.g., setting it as active).
+ */
+export const validateUpdateUserDecoration = (req, res, next) => {
+  const { ativo } = req.body;
+  const errors = {};
+
+  if (ativo !== undefined && typeof ativo !== "boolean") {
+    errors.ativo = ["'ativo' must be a boolean value (true or false)."];
+  }
+
+  if (Object.keys(errors).length > 0) {
+    return res.status(400).json({
+      description: "Validation failed.",
+      errors,
+    });
+  }
+
+  next();
+};
+
+/**
  * checkUserDecorationExists(req, res, next)
- * Validates if the specified user owns the specified decoration in their inventory.
- * Responds with HTTP 404 and an error object when the association is not found, 
- * otherwise calls `next()`.
+ * Loads a UserDecoration by `userId` and `decorationId`.
  */
 export const checkUserDecorationExists = async (req, res, next) => {
   const { userId, decorationId } = req.params;
@@ -20,7 +67,7 @@ export const checkUserDecorationExists = async (req, res, next) => {
   if (!userDecoration) {
     return res.status(404).json({
       description: "Resource not found.",
-      errors: { userDecoration: ["User does not own this decoration."] },
+      errors: { userDecoration: ["User decoration not found."] },
     });
   }
 
