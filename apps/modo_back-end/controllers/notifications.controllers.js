@@ -1,80 +1,112 @@
-// Import models (adjust according to the exact names exported in your db.config.js)
-import { Notification, User } from "../config/db.config.js";
+/*
+  Purpose: HTTP controllers for Notifications.
+  Exports functions to list, create, read, update (mark as read), and delete notifications.
+  Includes protections against Mass Assignment by destructuring req.body.
+*/
 
-// Controller to list all notifications for a specific user
-// GET /users/:userId/notifications
-export const getUserNotifications = async (req, res, next) => {
+import { Notification } from "../config/db.config.js";
+
+/**
+ * getAllNotifications(req, res, next)
+ * Retrieves all notifications. Can be filtered by `userId` if provided in the query string.
+ */
+export const getAllNotifications = async (req, res, next) => {
   try {
-    const { userId } = req.params;
+    const { userId } = req.query;
+    const whereClause = userId ? { userId } : {};
 
-    // Check if the user exists
-    const user = await User.findByPk(userId);
-    if (!user) {
-      const err = new Error("User not found.");
-      err.status = 404;
-      return next(err);
-    }
+    const notifications = await Notification.findAll({ where: whereClause });
 
-    // Fetch the notifications for this user
-    const notifications = await Notification.findAll({
-      where: { userId },
-      order: [["createdAt", "DESC"]], // Most recent notifications first
-    });
-
-    // Include HATEOAS links in the response
     const response = notifications.map((notif) => ({
       ...notif.toJSON(),
-      links: {
-        mark_as_read: `/notifications/${notif.id}`, // Link to the PATCH endpoint
-      },
+      links: [{ rel: "self", method: "GET", href: `/notifications/${notif.id}` }],
     }));
 
     res.status(200).json(response);
   } catch (error) {
-    const err = new Error("Internal server error.");
-    err.status = 500;
-    return next(err);
+    return next({ status: 500, message: "Internal server error." });
   }
 };
 
-// Controller to mark a notification as read
-// PATCH /notifications/:id
-export const markAsRead = async (req, res, next) => {
+/**
+ * createNotification(req, res, next)
+ * Creates a new notification. Destructures the payload to prevent mass assignment vulnerabilities.
+ */
+export const createNotification = async (req, res, next) => {
   try {
-    const { id } = req.params;
+    // Security Protection: Extract only the allowed fields
+    // Note: Adjust 'titulo' and 'mensagem' if your database column names differ
+    const { userId, titulo, mensagem } = req.body;
 
-    // Find the specific notification
-    const notification = await Notification.findByPk(id);
+    const notification = await Notification.create({
+      userId,
+      titulo,
+      mensagem,
+      lida: false,
+    });
 
-    if (!notification) {
-      const err = new Error("Notification not found.");
-      err.status = 404;
-      return next(err);
-    }
-
-    // Update the status (assuming the column is named 'lida' or 'is_read')
-    // Adjust 'lida' to your exact database column name if different
-    notification.lida = true;
-    await notification.save();
-
-    // Include HATEOAS links in the response
-    const response = {
+    res.status(201).json({
       ...notification.toJSON(),
-      links: {
-        user_notifications: `/users/${notification.userId}/notifications`,
-      },
-    };
-
-    res.status(200).json(response);
+      links: [{ rel: "self", method: "GET", href: `/notifications/${notification.id}` }],
+    });
   } catch (error) {
-    if (error.name === "SequelizeValidationError") {
-      const err = new Error("Validation error.");
-      err.status = 400;
-      err.errors = error.errors.map((e) => e.message);
-      return next(err);
-    }
-    const err = new Error("Internal server error.");
-    err.status = 500;
-    return next(err);
+    return next({ status: 500, message: "Internal server error." });
+  }
+};
+
+/**
+ * getNotificationById(req, res, next)
+ * Returns the notification attached to `req.notification` by the middleware.
+ */
+export const getNotificationById = async (req, res, next) => {
+  try {
+    const notification = req.notification;
+
+    res.status(200).json({
+      ...notification.toJSON(),
+      links: [{ rel: "self", method: "GET", href: `/notifications/${notification.id}` }],
+    });
+  } catch (error) {
+    return next({ status: 500, message: "Internal server error." });
+  }
+};
+
+/**
+ * updateNotification(req, res, next)
+ * Updates the notification state. Restricted to updating only the 'lida' field.
+ */
+export const updateNotification = async (req, res, next) => {
+  try {
+    const notification = req.notification;
+    
+    // Security Protection: Ensure the user can only update the read status
+    const { lida } = req.body;
+
+    const updated = await notification.update({
+      lida: lida ?? notification.lida,
+    });
+
+    res.status(200).json({
+      ...updated.toJSON(),
+      links: [{ rel: "self", method: "GET", href: `/notifications/${notification.id}` }],
+    });
+  } catch (error) {
+    return next({ status: 500, message: "Internal server error." });
+  }
+};
+
+/**
+ * deleteNotification(req, res, next)
+ * Deletes the notification attached to `req.notification`.
+ */
+export const deleteNotification = async (req, res, next) => {
+  try {
+    const notification = req.notification;
+    
+    await notification.destroy();
+    
+    res.status(204).send();
+  } catch (error) {
+    return next({ status: 500, message: "Internal server error." });
   }
 };

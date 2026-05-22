@@ -1,122 +1,108 @@
-// Import models (adjust according to the exact names exported in your db.config.js)
-import { Report, User } from "../config/db.config.js";
+/*
+  Purpose: HTTP controllers for Reports generation and retrieval.
+  Includes protections against Mass Assignment by destructuring req.body.
+*/
 
-// Controller to create a new report for a specific user
-// POST /users/:userId/reports
-export const createReport = async (req, res, next) => {
+import { Report } from "../config/db.config.js";
+
+/**
+ * getAllReports(req, res, next)
+ * Retrieves all reports from the database.
+ */
+export const getAllReports = async (req, res, next) => {
   try {
-    const { userId } = req.params;
-    // Assuming some standard report fields. Adjust to your actual model.
-    const { titulo, periodo, dados_estatisticos, url_pdf } = req.body;
+    const reports = await Report.findAll();
 
-    // Check if the user exists
-    const user = await User.findByPk(userId);
-    if (!user) {
-      const err = new Error("User not found.");
-      err.status = 404;
-      return next(err);
-    }
-
-    // Create the report associated with the user
-    const report = await Report.create({
-      titulo,
-      periodo,
-      dados_estatisticos,
-      url_pdf,
-      userId, // Foreign key
-    });
-
-    // Include HATEOAS links
-    const response = {
+    const response = reports.map((report) => ({
       ...report.toJSON(),
-      links: {
-        self: `/reports/${report.id}`,
-        user: `/users/${userId}`,
-      },
-    };
-
-    res.status(201).json(response);
-  } catch (error) {
-    if (error.name === "SequelizeValidationError") {
-      const err = new Error("Validation error.");
-      err.status = 400;
-      err.errors = error.errors.map((e) => e.message);
-      return next(err);
-    }
-    const err = new Error("Internal server error.");
-    err.status = 500;
-    return next(err);
-  }
-};
-
-// Controller to list reports (filtered by user if userId is provided in query)
-// GET /reports?userId={id}
-export const getReports = async (req, res, next) => {
-  try {
-    const { userId } = req.query;
-    let whereClause = {};
-
-    // If a userId is passed, we validate it and filter the results
-    if (userId) {
-      const user = await User.findByPk(userId);
-      if (!user) {
-        const err = new Error("User not found.");
-        err.status = 404;
-        return next(err);
-      }
-      whereClause.userId = userId;
-    }
-
-    // Fetch the reports
-    const reports = await Report.findAll({
-      where: whereClause,
-      order: [["createdAt", "DESC"]], // Newest reports first
-    });
-
-    // Include HATEOAS links
-    const response = reports.map((rep) => ({
-      ...rep.toJSON(),
-      links: {
-        self: `/reports/${rep.id}`,
-        user: `/users/${rep.userId}`,
-      },
+      links: [{ rel: "self", method: "GET", href: `/reports/${report.id}` }],
     }));
 
     res.status(200).json(response);
   } catch (error) {
-    const err = new Error("Internal server error.");
-    err.status = 500;
-    return next(err);
+    return next({ status: 500, message: "Internal server error." });
   }
 };
 
-// Controller to view a specific report details
-// GET /reports/:id
+/**
+ * createReport(req, res, next)
+ * Creates a new Report using `mes` and `semana`.
+ */
+export const createReport = async (req, res, next) => {
+  try {
+    // Security Protection: Extract only the allowed fields
+    const { mes, semana } = req.body;
+
+    const report = await Report.create({ mes, semana });
+
+    res.status(201).json({
+      ...report.toJSON(),
+      links: [{ rel: "self", method: "GET", href: `/reports/${report.id}` }],
+    });
+  } catch (error) {
+    if (error.name === "SequelizeUniqueConstraintError") {
+      return next({
+        status: 409,
+        message: "Resource conflict.",
+        errors: { report: ["A report for this specific period already exists."] },
+      });
+    }
+    return next({ status: 500, message: "Internal server error." });
+  }
+};
+
+/**
+ * getReportById(req, res, next)
+ * Returns the report attached to `req.report`.
+ */
 export const getReportById = async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const report = req.report;
 
-    const report = await Report.findByPk(id);
-
-    if (!report) {
-      const err = new Error("Report not found.");
-      err.status = 404;
-      return next(err);
-    }
-
-    // Include HATEOAS links
-    const response = {
+    res.status(200).json({
       ...report.toJSON(),
-      links: {
-        self: `/reports/${report.id}`,
-        all_user_reports: `/reports?userId=${report.userId}`,
-      },
-    };
-
-    res.status(200).json(response);
+      links: [{ rel: "self", method: "GET", href: `/reports/${report.id}` }],
+    });
   } catch (error) {
-    const err = new Error("Internal server error.");
-    err.status = 500;
-    return next(err);
+    return next({ status: 500, message: "Internal server error." });
+  }
+};
+
+/**
+ * updateReport(req, res, next)
+ * Updates the report instance.
+ */
+export const updateReport = async (req, res, next) => {
+  try {
+    const report = req.report;
+
+    // Security Protection: Extract only the allowed fields for update
+    const { mes, semana } = req.body;
+
+    const updated = await report.update({
+      mes: mes ?? report.mes,
+      semana: semana ?? report.semana,
+    });
+
+    res.status(200).json({
+      ...updated.toJSON(),
+      links: [{ rel: "self", method: "GET", href: `/reports/${report.id}` }],
+    });
+  } catch (error) {
+    return next({ status: 500, message: "Internal server error." });
+  }
+};
+
+/**
+ * deleteReport(req, res, next)
+ * Deletes the report attached to `req.report`.
+ */
+export const deleteReport = async (req, res, next) => {
+  try {
+    const report = req.report;
+    await report.destroy();
+    res.status(204).send();
+  } catch (error) {
+    return next({ status: 500, message: "Internal server error." });
   }
 };
