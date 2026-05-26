@@ -3,7 +3,7 @@
   and their unlocked decorations.
 */
 
-import { UserDecoration } from "../config/db.config.js";
+import { UserDecorations } from "../config/db.config.js";
 
 /**
  * getAllUserDecorations(req, res, next)
@@ -41,7 +41,7 @@ export const getAllUserDecorations = async (req, res, next) => {
 export const assignDecorationToUser = async (req, res, next) => {
   try {
     const { userId } = req.params;
-    
+
     // Security Protection: Extract only the decorationId
     const { decorationId } = req.body;
 
@@ -82,7 +82,7 @@ export const assignDecorationToUser = async (req, res, next) => {
  * getUserDecorationById(req, res, next)
  * Returns the `req.userDecoration` record attached by middleware.
  */
-export const getUserDecorationById = async (req, res, next) => {
+/* export const getUserDecorationById = async (req, res, next) => {
   try {
     const userDecoration = req.userDecoration;
 
@@ -99,7 +99,7 @@ export const getUserDecorationById = async (req, res, next) => {
   } catch (error) {
     return next({ status: 500, message: "Internal server error." });
   }
-};
+}; */
 
 /**
  * updateUserDecoration(req, res, next)
@@ -108,7 +108,7 @@ export const getUserDecorationById = async (req, res, next) => {
 export const updateUserDecoration = async (req, res, next) => {
   try {
     const userDecoration = req.userDecoration;
-    
+
     // Security Protection: Extract only the 'ativo' field
     const { ativo } = req.body;
 

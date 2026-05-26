@@ -5,23 +5,26 @@ The routes are designed to be nested under a user-specific path, allowing for op
 
 import express from "express";
 import {
-  unlockDecoration,
-  getUserDecorations,
-  activateDecoration,
+  updateUserDecoration,
+  getAllUserDecorations,
+  assignDecorationToUser,
 } from "../controllers/userDecorations.controllers.js";
 
 const router = express.Router();
 
 // Route to unlock or associate a decoration to the user
 // POST /users/:userId/avatar-decorations
-router.post("/:userId/avatar-decorations", unlockDecoration);
+router.post("/:userId/avatar-decorations", updateUserDecoration);
 
 // Route to list all decorations owned by the user
 // GET /users/:userId/avatar-decorations
-router.get("/:userId/avatar-decorations", getUserDecorations);
+router.get("/:userId/avatar-decorations", getAllUserDecorations);
 
 // Route to activate a specific decoration for the avatar
 // PATCH /users/:userId/avatar-decorations/:decorationId
-router.patch("/:userId/avatar-decorations/:decorationId", activateDecoration);
+router.patch(
+  "/:userId/avatar-decorations/:decorationId",
+  assignDecorationToUser,
+);
 
 export default router;

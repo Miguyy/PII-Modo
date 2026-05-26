@@ -13,11 +13,23 @@ export const validateCreateReport = (req, res, next) => {
   const { mes, semana } = req.body;
   const errors = {};
 
-  if (mes === undefined || !Number.isInteger(Number(mes)) || Number(mes) < 1 || Number(mes) > 12) {
-    errors.mes = ["Month is mandatory and must be an integer between 1 and 12."];
+  if (
+    mes === undefined ||
+    !Number.isInteger(Number(mes)) ||
+    Number(mes) < 1 ||
+    Number(mes) > 12
+  ) {
+    errors.mes = [
+      "Month is mandatory and must be an integer between 1 and 12.",
+    ];
   }
 
-  if (semana === undefined || !Number.isInteger(Number(semana)) || Number(semana) < 1 || Number(semana) > 5) {
+  if (
+    semana === undefined ||
+    !Number.isInteger(Number(semana)) ||
+    Number(semana) < 1 ||
+    Number(semana) > 5
+  ) {
     errors.semana = ["Week is mandatory and must be a valid integer."];
   }
 

@@ -12,7 +12,10 @@ import { Notification } from "../config/db.config.js";
 export const validateNotificationId = (req, res, next) => {
   const { notificationId } = req.params;
 
-  if (!Number.isInteger(Number(notificationId)) || Number(notificationId) <= 0) {
+  if (
+    !Number.isInteger(Number(notificationId)) ||
+    Number(notificationId) <= 0
+  ) {
     return res.status(400).json({
       description: "Invalid request.",
       errors: { notificationId: ["Invalid notification ID format."] },

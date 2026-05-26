@@ -4,7 +4,7 @@
   decoration ID params, and attach decoration instances to `req` when found.
 */
 
-import { Decoration } from "../config/db.config.js";
+import { AvatarDecoration } from "../config/db.config.js";
 
 /**
  * validateCreateDecoration(req, res, next)
@@ -15,15 +15,29 @@ export const validateCreateDecoration = (req, res, next) => {
   const { nome_decoracao, nivel_necessario, caminho_decoracao } = req.body;
   const errors = {};
 
-  if (!nome_decoracao || typeof nome_decoracao !== "string" || nome_decoracao.trim() === "") {
+  if (
+    !nome_decoracao ||
+    typeof nome_decoracao !== "string" ||
+    nome_decoracao.trim() === ""
+  ) {
     errors.nome_decoracao = ["Decoration name is mandatory."];
   }
 
-  if (nivel_necessario === undefined || !Number.isInteger(Number(nivel_necessario)) || Number(nivel_necessario) < 0) {
-    errors.nivel_necessario = ["Required level is mandatory and must be a positive integer or zero."];
+  if (
+    nivel_necessario === undefined ||
+    !Number.isInteger(Number(nivel_necessario)) ||
+    Number(nivel_necessario) < 0
+  ) {
+    errors.nivel_necessario = [
+      "Required level is mandatory and must be a positive integer or zero.",
+    ];
   }
 
-  if (!caminho_decoracao || typeof caminho_decoracao !== "string" || caminho_decoracao.trim() === "") {
+  if (
+    !caminho_decoracao ||
+    typeof caminho_decoracao !== "string" ||
+    caminho_decoracao.trim() === ""
+  ) {
     errors.caminho_decoracao = ["Decoration path is mandatory."];
   }
 

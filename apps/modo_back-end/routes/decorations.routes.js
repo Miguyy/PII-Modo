@@ -4,7 +4,7 @@ Each route is associated with a specific controller function that handles the co
 import express from "express";
 import {
   createDecoration,
-  getDecorations,
+  getAllDecorations,
   updateDecoration,
   deleteDecoration,
 } from "../controllers/decorations.controllers.js";
@@ -12,7 +12,7 @@ import {
 const router = express.Router();
 
 // Route to get all available decorations
-router.get("/", getDecorations);
+router.get("/", getAllDecorations);
 
 // Route to create a new decoration
 router.post("/", createDecoration);

@@ -16,7 +16,13 @@ export const getLocation = async (req, res, next) => {
 
     res.status(200).json({
       ...location.toJSON(),
-      links: [{ rel: "self", method: "GET", href: `/users/${location.userId}/location` }],
+      links: [
+        {
+          rel: "self",
+          method: "GET",
+          href: `/users/${location.userId}/location`,
+        },
+      ],
     });
   } catch (error) {
     return next({ status: 500, message: "Internal server error." });
@@ -30,7 +36,7 @@ export const getLocation = async (req, res, next) => {
 export const createLocation = async (req, res, next) => {
   try {
     const { userId } = req.params;
-    
+
     // Security Protection: Extract only the allowed fields
     const { latitude, longitude, cidade } = req.body;
 
@@ -46,15 +52,26 @@ export const createLocation = async (req, res, next) => {
       return next({
         status: 409,
         message: "Resource conflict.",
-        errors: { location: ["Location already exists for this user. Use PUT/PATCH to update."] },
+        errors: {
+          location: [
+            "Location already exists for this user. Use PUT/PATCH to update.",
+          ],
+        },
       });
     }
 
-    const location = await Location.create({ userId, latitude, longitude, cidade });
+    const location = await Location.create({
+      userId,
+      latitude,
+      longitude,
+      cidade,
+    });
 
     res.status(201).json({
       ...location.toJSON(),
-      links: [{ rel: "self", method: "GET", href: `/users/${userId}/location` }],
+      links: [
+        { rel: "self", method: "GET", href: `/users/${userId}/location` },
+      ],
     });
   } catch (error) {
     return next({ status: 500, message: "Internal server error." });
@@ -75,12 +92,18 @@ export const updateLocation = async (req, res, next) => {
     const updated = await location.update({
       latitude: latitude ?? location.latitude,
       longitude: longitude ?? location.longitude,
-      cidade: cidade ?? location.cidade
+      cidade: cidade ?? location.cidade,
     });
 
     res.status(200).json({
       ...updated.toJSON(),
-      links: [{ rel: "self", method: "GET", href: `/users/${location.userId}/location` }],
+      links: [
+        {
+          rel: "self",
+          method: "GET",
+          href: `/users/${location.userId}/location`,
+        },
+      ],
     });
   } catch (error) {
     return next({ status: 500, message: "Internal server error." });
@@ -91,7 +114,7 @@ export const updateLocation = async (req, res, next) => {
  * deleteLocation(req, res, next)
  * Deletes the location attached to `req.location`.
  */
-export const deleteLocation = async (req, res, next) => {
+/* export const deleteLocation = async (req, res, next) => {
   try {
     const location = req.location;
     await location.destroy();
@@ -100,3 +123,4 @@ export const deleteLocation = async (req, res, next) => {
     return next({ status: 500, message: "Internal server error." });
   }
 };
+ */

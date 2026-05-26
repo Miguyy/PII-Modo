@@ -44,7 +44,9 @@ export const createReport = async (req, res, next) => {
       return next({
         status: 409,
         message: "Resource conflict.",
-        errors: { report: ["A report for this specific period already exists."] },
+        errors: {
+          report: ["A report for this specific period already exists."],
+        },
       });
     }
     return next({ status: 500, message: "Internal server error." });
@@ -72,7 +74,7 @@ export const getReportById = async (req, res, next) => {
  * updateReport(req, res, next)
  * Updates the report instance.
  */
-export const updateReport = async (req, res, next) => {
+/* export const updateReport = async (req, res, next) => {
   try {
     const report = req.report;
 
@@ -91,13 +93,13 @@ export const updateReport = async (req, res, next) => {
   } catch (error) {
     return next({ status: 500, message: "Internal server error." });
   }
-};
+}; */
 
 /**
  * deleteReport(req, res, next)
  * Deletes the report attached to `req.report`.
  */
-export const deleteReport = async (req, res, next) => {
+/* export const deleteReport = async (req, res, next) => {
   try {
     const report = req.report;
     await report.destroy();
@@ -105,4 +107,4 @@ export const deleteReport = async (req, res, next) => {
   } catch (error) {
     return next({ status: 500, message: "Internal server error." });
   }
-};
+}; */

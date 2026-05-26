@@ -5,7 +5,7 @@
   Includes protections against Mass Assignment by destructuring req.body.
 */
 
-import { Decoration } from "../config/db.config.js";
+import { AvatarDecoration } from "../config/db.config.js";
 
 /**
  * getAllDecorations(req, res, next)
@@ -17,9 +17,11 @@ export const getAllDecorations = async (req, res, next) => {
 
     const response = decorations.map((decoration) => ({
       ...decoration.toJSON(),
-      links: [{ rel: "self", method: "GET", href: `/decorations/${decoration.id}` }],
+      links: [
+        { rel: "self", method: "GET", href: `/decorations/${decoration.id}` },
+      ],
     }));
-    
+
     res.status(200).json(response);
   } catch (error) {
     return next({ status: 500, message: "Internal server error." });
@@ -43,14 +45,18 @@ export const createDecoration = async (req, res, next) => {
 
     res.status(201).json({
       ...decoration.toJSON(),
-      links: [{ rel: "self", method: "GET", href: `/decorations/${decoration.id}` }],
+      links: [
+        { rel: "self", method: "GET", href: `/decorations/${decoration.id}` },
+      ],
     });
   } catch (error) {
     if (error.name === "SequelizeUniqueConstraintError") {
       return next({
         status: 409,
         message: "Resource conflict.",
-        errors: { nome_decoracao: ["A decoration with this name already exists."] },
+        errors: {
+          nome_decoracao: ["A decoration with this name already exists."],
+        },
       });
     }
     return next({ status: 500, message: "Internal server error." });
@@ -61,18 +67,20 @@ export const createDecoration = async (req, res, next) => {
  * getDecorationById(req, res, next)
  * Returns the decoration attached to `req.decoration` by middleware.
  */
-export const getDecorationById = async (req, res, next) => {
+/* export const getDecorationById = async (req, res, next) => {
   try {
     const decoration = req.decoration;
 
     res.status(200).json({
       ...decoration.toJSON(),
-      links: [{ rel: "self", method: "GET", href: `/decorations/${decoration.id}` }],
+      links: [
+        { rel: "self", method: "GET", href: `/decorations/${decoration.id}` },
+      ],
     });
   } catch (error) {
     return next({ status: 500, message: "Internal server error." });
   }
-};
+}; */
 
 /**
  * updateDecoration(req, res, next)
@@ -93,14 +101,18 @@ export const updateDecoration = async (req, res, next) => {
 
     res.status(200).json({
       ...updated.toJSON(),
-      links: [{ rel: "self", method: "GET", href: `/decorations/${decoration.id}` }],
+      links: [
+        { rel: "self", method: "GET", href: `/decorations/${decoration.id}` },
+      ],
     });
   } catch (error) {
     if (error.name === "SequelizeUniqueConstraintError") {
       return next({
         status: 409,
         message: "Resource conflict.",
-        errors: { nome_decoracao: ["A decoration with this name already exists."] },
+        errors: {
+          nome_decoracao: ["A decoration with this name already exists."],
+        },
       });
     }
     return next({ status: 500, message: "Internal server error." });

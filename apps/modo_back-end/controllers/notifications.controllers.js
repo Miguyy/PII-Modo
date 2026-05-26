@@ -19,7 +19,9 @@ export const getAllNotifications = async (req, res, next) => {
 
     const response = notifications.map((notif) => ({
       ...notif.toJSON(),
-      links: [{ rel: "self", method: "GET", href: `/notifications/${notif.id}` }],
+      links: [
+        { rel: "self", method: "GET", href: `/notifications/${notif.id}` },
+      ],
     }));
 
     res.status(200).json(response);
@@ -32,7 +34,7 @@ export const getAllNotifications = async (req, res, next) => {
  * createNotification(req, res, next)
  * Creates a new notification. Destructures the payload to prevent mass assignment vulnerabilities.
  */
-export const createNotification = async (req, res, next) => {
+/* export const createNotification = async (req, res, next) => {
   try {
     // Security Protection: Extract only the allowed fields
     // Note: Adjust 'titulo' and 'mensagem' if your database column names differ
@@ -47,30 +49,42 @@ export const createNotification = async (req, res, next) => {
 
     res.status(201).json({
       ...notification.toJSON(),
-      links: [{ rel: "self", method: "GET", href: `/notifications/${notification.id}` }],
+      links: [
+        {
+          rel: "self",
+          method: "GET",
+          href: `/notifications/${notification.id}`,
+        },
+      ],
     });
   } catch (error) {
     return next({ status: 500, message: "Internal server error." });
   }
 };
-
+ */
 /**
  * getNotificationById(req, res, next)
  * Returns the notification attached to `req.notification` by the middleware.
  */
-export const getNotificationById = async (req, res, next) => {
+/* export const getNotificationById = async (req, res, next) => {
   try {
     const notification = req.notification;
 
     res.status(200).json({
       ...notification.toJSON(),
-      links: [{ rel: "self", method: "GET", href: `/notifications/${notification.id}` }],
+      links: [
+        {
+          rel: "self",
+          method: "GET",
+          href: `/notifications/${notification.id}`,
+        },
+      ],
     });
   } catch (error) {
     return next({ status: 500, message: "Internal server error." });
   }
 };
-
+ */
 /**
  * updateNotification(req, res, next)
  * Updates the notification state. Restricted to updating only the 'lida' field.
@@ -78,7 +92,7 @@ export const getNotificationById = async (req, res, next) => {
 export const updateNotification = async (req, res, next) => {
   try {
     const notification = req.notification;
-    
+
     // Security Protection: Ensure the user can only update the read status
     const { lida } = req.body;
 
@@ -88,7 +102,13 @@ export const updateNotification = async (req, res, next) => {
 
     res.status(200).json({
       ...updated.toJSON(),
-      links: [{ rel: "self", method: "GET", href: `/notifications/${notification.id}` }],
+      links: [
+        {
+          rel: "self",
+          method: "GET",
+          href: `/notifications/${notification.id}`,
+        },
+      ],
     });
   } catch (error) {
     return next({ status: 500, message: "Internal server error." });
@@ -99,14 +119,15 @@ export const updateNotification = async (req, res, next) => {
  * deleteNotification(req, res, next)
  * Deletes the notification attached to `req.notification`.
  */
-export const deleteNotification = async (req, res, next) => {
+/* export const deleteNotification = async (req, res, next) => {
   try {
     const notification = req.notification;
-    
+
     await notification.destroy();
-    
+
     res.status(204).send();
   } catch (error) {
     return next({ status: 500, message: "Internal server error." });
   }
 };
+ */

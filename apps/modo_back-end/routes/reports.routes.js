@@ -5,14 +5,14 @@ The routes are designed to be nested under a user-specific path for creating rep
 import express from "express";
 import {
   createReport,
-  getReports,
+  getAllReports,
   getReportById,
 } from "../controllers/reports.controllers.js";
 
 const router = express.Router();
 
 // Route to get all reports (use ?userId=X to filter by user)
-router.get("/reports", getReports);
+router.get("/reports", getAllReports);
 
 // Route to get a specific report by its ID
 router.get("/reports/:id", getReportById);
