@@ -4,7 +4,7 @@ The routes are designed to be nested under a user-specific path, allowing for op
 import express from "express";
 import {
   createLocation,
-  getUserLocation,
+  getLocation,
   updateLocation,
 } from "../controllers/locations.controllers.js";
 
@@ -16,7 +16,7 @@ const router = express.Router({ mergeParams: true });
 router.post("/", createLocation);
 
 // Route to get all locations (or current) for a specific user
-router.get("/", getUserLocation);
+router.get("/", getLocation);
 
 // Route to update a specific location for a user
 router.patch("/:locationId", updateLocation);

@@ -3,7 +3,7 @@
   managing decorations assigned to users.
 */
 
-import { UserDecoration } from "../config/db.config.js";
+import { UserDecorations } from "../config/db.config.js";
 
 /**
  * validateUserDecorationIds(req, res, next)
@@ -17,7 +17,10 @@ export const validateUserDecorationIds = (req, res, next) => {
     errors.userId = ["Invalid user ID."];
   }
 
-  if (decorationId && (!Number.isInteger(Number(decorationId)) || Number(decorationId) <= 0)) {
+  if (
+    decorationId &&
+    (!Number.isInteger(Number(decorationId)) || Number(decorationId) <= 0)
+  ) {
     errors.decorationId = ["Invalid decoration ID."];
   }
 

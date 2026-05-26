@@ -3,16 +3,16 @@ Each route is associated with a specific controller function that handles the co
 
 import express from "express";
 import {
-  getUserNotifications,
-  markAsRead,
+  getAllNotifications,
+  updateNotification,
 } from "../controllers/notifications.controllers.js";
 
 const router = express.Router();
 
 // Route to get all notifications for a specific user
-router.get("/users/:userId/notifications", getUserNotifications);
+router.get("/users/:userId/notifications", getAllNotifications);
 
 // Route to mark a specific notification as read
-router.patch("/notifications/:id", markAsRead);
+router.patch("/notifications/:id", updateNotification);
 
 export default router;
