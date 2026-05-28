@@ -5,7 +5,7 @@
   guard.
 */
 
-/* import jwt from "jsonwebtoken"; */
+import jwt from "jsonwebtoken";
 import { User } from "../config/db.config.js";
 
 /**
@@ -118,7 +118,7 @@ export const validateUserId = (req, res, next) => {
  * raw token). On success, attaches the decoded token to `req.user`.
  * Returns 401 when the token is missing or invalid.
  */
-export const authenticateUser = (req, res, next) => {
+export const authenticateUser = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
@@ -132,9 +132,21 @@ export const authenticateUser = (req, res, next) => {
     const token = authHeader.startsWith("Bearer ")
       ? authHeader.split(" ")[1]
       : authHeader;
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const jwtSecret = process.env.JWT_SECRET || "dev_secret";
+    if (!process.env.JWT_SECRET)
+      console.warn(
+        "Warning: JWT_SECRET not set, using dev_secret (not for production)",
+      );
 
-    req.user = decoded; // 🔥 important
+    const decoded = jwt.verify(token, jwtSecret);
+
+    // Load full user instance from DB so controllers can use user.toJSON(), etc.
+    const userInstance = await User.findByPk(decoded.id);
+    if (!userInstance) {
+      return res.status(401).json({ description: "Invalid token." });
+    }
+
+    req.user = userInstance; // attach model instance
 
     next();
   } catch (err) {
@@ -151,7 +163,11 @@ export const authenticateUser = (req, res, next) => {
  * `authenticateUser`.
  */
 export const authorizeAdmin = (req, res, next) => {
-  if (!req.user || req.user.tipo_utilizador !== "admin") {
+  const role =
+    (req.user &&
+      (req.user.tipo_utilizador || req.user.dataValues?.tipo_utilizador)) ||
+    "";
+  if (!req.user || role.toLowerCase() !== "admin") {
     return res.status(403).json({
       description: "Forbidden.",
       errors: { access: ["You do not have permission."] },
