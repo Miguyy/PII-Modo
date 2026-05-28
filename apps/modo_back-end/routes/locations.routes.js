@@ -7,18 +7,30 @@ import {
   getLocation,
   updateLocation,
 } from "../controllers/locations.controllers.js";
+import { authenticateUser } from "../middlewares/users.middlewares.js";
+import {
+  validateLocationPayload,
+  checkLocationExists,
+} from "../middlewares/locations.middlewares.js";
 
 // - Use mergeParams: true to access parameters from the parent router (e.g., :userId)
 // - if this router is nested within another.
 const router = express.Router({ mergeParams: true });
 
-// Route to create a new location for a specific user
-router.post("/", createLocation);
+// Route to create a new location for a specific user (requires auth)
+router.post("/", authenticateUser, validateLocationPayload, createLocation);
 
-// Route to get all locations (or current) for a specific user
-router.get("/", getLocation);
+// Route to get the current location for a specific user (requires auth)
+router.get("/", authenticateUser, checkLocationExists, getLocation);
 
-// Route to update a specific location for a user
-router.patch("/:locationId", updateLocation);
+// Route to update the location for a user (requires auth)
+// PATCH / updates the user's attached location
+router.patch(
+  "/",
+  authenticateUser,
+  checkLocationExists,
+  validateLocationPayload,
+  updateLocation,
+);
 
 export default router;

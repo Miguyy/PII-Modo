@@ -20,7 +20,7 @@ export const getLocation = async (req, res, next) => {
         {
           rel: "self",
           method: "GET",
-          href: `/users/${location.userId}/location`,
+          href: `/users/${location.id_utilizador}/location`,
         },
       ],
     });
@@ -38,7 +38,7 @@ export const createLocation = async (req, res, next) => {
     const { userId } = req.params;
 
     // Security Protection: Extract only the allowed fields
-    const { latitude, longitude, cidade } = req.body;
+    const { latitude, longitude, cidade, pais } = req.body || {};
 
     // Optional Security Check: Ensure the authenticated user is creating a location for themselves
     /*
@@ -47,7 +47,9 @@ export const createLocation = async (req, res, next) => {
     }
     */
 
-    const existing = await Location.findOne({ where: { userId } });
+    const existing = await Location.findOne({
+      where: { id_utilizador: Number(userId) },
+    });
     if (existing) {
       return next({
         status: 409,
@@ -61,10 +63,11 @@ export const createLocation = async (req, res, next) => {
     }
 
     const location = await Location.create({
-      userId,
+      id_utilizador: Number(userId),
       latitude,
       longitude,
       cidade,
+      pais,
     });
 
     res.status(201).json({
@@ -87,12 +90,13 @@ export const updateLocation = async (req, res, next) => {
     const location = req.location;
 
     // Security Protection: Extract only the allowed fields for update
-    const { latitude, longitude, cidade } = req.body;
+    const { latitude, longitude, cidade, pais } = req.body || {};
 
     const updated = await location.update({
-      latitude: latitude ?? location.latitude,
-      longitude: longitude ?? location.longitude,
-      cidade: cidade ?? location.cidade,
+      latitude: latitude === undefined ? location.latitude : latitude,
+      longitude: longitude === undefined ? location.longitude : longitude,
+      cidade: cidade === undefined ? location.cidade : cidade,
+      pais: pais === undefined ? location.pais : pais,
     });
 
     res.status(200).json({
@@ -101,7 +105,7 @@ export const updateLocation = async (req, res, next) => {
         {
           rel: "self",
           method: "GET",
-          href: `/users/${location.userId}/location`,
+          href: `/users/${location.id_utilizador}/location`,
         },
       ],
     });
