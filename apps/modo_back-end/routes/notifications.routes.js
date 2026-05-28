@@ -2,17 +2,44 @@
 Each route is associated with a specific controller function that handles the corresponding operation.*/
 
 import express from "express";
+import { authenticateUser } from "../middlewares/users.middlewares.js";
 import {
   getAllNotifications,
   updateNotification,
+  updateNotificationByBody,
 } from "../controllers/notifications.controllers.js";
+import {
+  validateNotificationId,
+  checkNotificationExists,
+  validateUpdateNotification,
+} from "../middlewares/notifications.middlewares.js";
 
 const router = express.Router();
 
-// Route to get all notifications for a specific user
-router.get("/users/:userId/notifications", getAllNotifications);
+// Route to get all notifications for a specific user (requires auth)
+router.get(
+  "/users/:userId/notifications",
+  authenticateUser,
+  getAllNotifications,
+);
 
-// Route to mark a specific notification as read
-router.patch("/notifications/:id", updateNotification);
+// Route to mark a specific notification as read (requires auth)
+// Patch by route param: /notifications/:notificationId
+router.patch(
+  "/notifications/:notificationId",
+  authenticateUser,
+  validateNotificationId,
+  checkNotificationExists,
+  validateUpdateNotification,
+  updateNotification,
+);
+
+// Patch by body (accepts `{ id_notificacao, ... }`)
+router.patch(
+  "/notifications",
+  authenticateUser,
+  validateUpdateNotification,
+  updateNotificationByBody,
+);
 
 export default router;
