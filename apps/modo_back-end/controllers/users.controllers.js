@@ -5,8 +5,9 @@
   forwards errors via `next()`.
 */
 
+import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 // Import users data
-/* import jwt from "jsonwebtoken"; */
 import { User, Habit } from "../config/db.config.js";
 
 /**
@@ -19,20 +20,65 @@ import { User, Habit } from "../config/db.config.js";
 // Controller to create a new user
 export const createUser = async (req, res, next) => {
   try {
-    const { nome, email, password, tipo_utilizador } = req.body;
-    // Validate required fields and create user
-    const user = await User.create({ nome, email, password, tipo_utilizador });
+    const {
+      nome,
+      email,
+      password,
+      pontos,
+      nivel,
+      data_criacao,
+      tipo_utilizador,
+      imagem_utilizador,
+    } = req.body;
+
+    const roleMap = { cliente: "Client", client: "Client", admin: "Admin" };
+    const mappedRole = tipo_utilizador
+      ? roleMap[tipo_utilizador.toLowerCase()] || tipo_utilizador
+      : undefined;
+
+    const hashed = await bcrypt.hash(password, 10);
+
+    const payload = {
+      nome,
+      email,
+      hashed_password: hashed,
+      pontos,
+      nivel,
+      data_criacao_conta: data_criacao,
+      tipo_utilizador: mappedRole,
+      imagem_utilizador,
+    };
+
+    // Create user using model column names
+    const user = await User.create(payload);
 
     // Include HATEOAS links in the response
     const response = {
       ...user.toJSON(),
       links: [
         { rel: "login", method: "POST", href: "/users/login" },
-        { rel: "self", method: "GET", href: `/users/${user.id}` },
+        { rel: "self", method: "GET", href: `/users/${user.id_utilizador}` },
       ],
+      message: "User registration was a success!",
     };
-    res.status(201).json(response);
+    // Also sign a token and return it (auto-login on registration)
+    const jwtSecret = process.env.JWT_SECRET || "dev_secret";
+    if (!process.env.JWT_SECRET)
+      console.warn(
+        "Warning: JWT_SECRET not set, using dev_secret (not for production)",
+      );
+
+    const token = jwt.sign(
+      {
+        id: user.id_utilizador,
+        tipo_utilizador: (user.tipo_utilizador || "").toLowerCase(),
+      },
+      jwtSecret,
+    );
+
+    res.status(201).json({ token, ...response });
   } catch (error) {
+    console.error(error);
     // Handle specific errors: 400, 409 and 500
     if (error.name === "SequelizeValidationError") {
       const errors = {};
@@ -41,7 +87,7 @@ export const createUser = async (req, res, next) => {
         if (e.path === "email") {
           errors.email = ["Email is mandatory.", "Email must be valid."];
         }
-        if (e.path === "password") {
+        if (e.path === "hashed_password" || e.path === "password") {
           errors.password = [
             "Password must have between 12 and 15 characters.",
             "Password must include uppercase, lowercase, numbers and special characters.",
@@ -89,7 +135,9 @@ export const getAllUsers = async (req, res, next) => {
     // Include HATEOAS links in the response
     const response = users.map((user) => ({
       ...user.toJSON(),
-      links: [{ rel: "self", method: "GET", href: `/users/${user.id}` }],
+      links: [
+        { rel: "self", method: "GET", href: `/users/${user.id_utilizador}` },
+      ],
     }));
     res.status(200).json(response);
   } catch (error) {
@@ -111,19 +159,55 @@ export const getAllUsers = async (req, res, next) => {
 export const getUserById = async (req, res, next) => {
   try {
     const { userId } = req.params;
-    const user = await req.user;
+    // requester is attached by authenticateUser as a model instance
+    const requester = req.user;
 
-    if (!user) {
+    // load target user by id param
+    const targetUser = await User.findByPk(userId);
+    if (!targetUser) {
+      return next({ status: 404, message: "User not found." });
+    }
+
+    // authorization: allow if requester is admin or requester is the same user
+    const requesterRole =
+      requester &&
+      (requester.tipo_utilizador || requester.dataValues?.tipo_utilizador)
+        ? String(
+            requester.tipo_utilizador || requester.dataValues?.tipo_utilizador,
+          ).toLowerCase()
+        : "";
+
+    const requesterId =
+      requester &&
+      (requester.id_utilizador || requester.dataValues?.id_utilizador);
+
+    if (requesterRole !== "admin" && Number(requesterId) !== Number(userId)) {
+      return next({ status: 403, message: "Forbidden." });
+    }
+
+    // Prevent modifying another admin: admins may not modify/delete other admins
+    const targetRole = (
+      targetUser.tipo_utilizador ||
+      targetUser.dataValues?.tipo_utilizador ||
+      ""
+    ).toLowerCase();
+    if (targetRole === "admin" && Number(requesterId) !== Number(userId)) {
       return next({
-        status: 404,
-        message: "User not found.",
+        status: 403,
+        message: "Forbidden. Cannot modify another admin.",
       });
     }
 
     // Include HATEOAS links in the response
     const response = {
-      ...user.toJSON(),
-      links: [{ rel: "self", method: "GET", href: `/users/${user.id}` }],
+      ...targetUser.toJSON(),
+      links: [
+        {
+          rel: "self",
+          method: "GET",
+          href: `/users/${targetUser.id_utilizador}`,
+        },
+      ],
     };
     res.status(200).json(response);
   } catch (error) {
@@ -145,21 +229,63 @@ export const getUserById = async (req, res, next) => {
 export const updateUser = async (req, res, next) => {
   try {
     const { userId } = req.params;
-    const { email, password } = req.body;
-    const user = await req.user;
+    const { email, password, nome } = req.body;
+    const requester = req.user; // authenticated requester
 
-    if (!user) {
+    // load target user by id param
+    const targetUser = await User.findByPk(userId);
+    if (!targetUser) {
+      return next({ status: 404, message: "User not found." });
+    }
+
+    // authorization: allow if requester is admin or requester is the same user
+    const requesterRole =
+      requester &&
+      (requester.tipo_utilizador || requester.dataValues?.tipo_utilizador)
+        ? String(
+            requester.tipo_utilizador || requester.dataValues?.tipo_utilizador,
+          ).toLowerCase()
+        : "";
+
+    const requesterId =
+      requester &&
+      (requester.id_utilizador || requester.dataValues?.id_utilizador);
+
+    if (requesterRole !== "admin" && Number(requesterId) !== Number(userId)) {
+      return next({ status: 403, message: "Forbidden." });
+    }
+
+    const updates = {};
+    if (email !== undefined) updates.email = email;
+    if (password !== undefined)
+      updates.hashed_password = await bcrypt.hash(password, 10);
+    if (nome !== undefined) updates.nome = nome;
+
+    await targetUser.update(updates);
+
+    // Prevent modifying another admin: admins may not modify/delete other admins
+    const targetRole = (
+      targetUser.tipo_utilizador ||
+      targetUser.dataValues?.tipo_utilizador ||
+      ""
+    ).toLowerCase();
+    if (targetRole === "admin" && Number(requesterId) !== Number(userId)) {
       return next({
-        status: 404,
-        message: "User not found.",
+        status: 403,
+        message: "Forbidden. Cannot modify another admin.",
       });
     }
-    await user.update({ email, password });
 
     // Include HATEOAS links in the response
     const response = {
-      ...user.toJSON(),
-      links: [{ rel: "self", method: "GET", href: `/users/${user.id}` }],
+      ...targetUser.toJSON(),
+      links: [
+        {
+          rel: "self",
+          method: "GET",
+          href: `/users/${targetUser.id_utilizador}`,
+        },
+      ],
     };
     res.status(200).json(response);
   } catch (error) {
@@ -187,15 +313,44 @@ export const updateUser = async (req, res, next) => {
 export const deleteUser = async (req, res, next) => {
   try {
     const { userId } = req.params;
-    const user = await req.user;
+    const requester = req.user;
 
-    if (!user) {
+    // load target user by id param
+    const targetUser = await User.findByPk(userId);
+    if (!targetUser) {
+      return next({ status: 404, message: "User not found." });
+    }
+
+    // authorization: allow if requester is admin or requester is the same user
+    const requesterRole =
+      requester &&
+      (requester.tipo_utilizador || requester.dataValues?.tipo_utilizador)
+        ? String(
+            requester.tipo_utilizador || requester.dataValues?.tipo_utilizador,
+          ).toLowerCase()
+        : "";
+
+    const requesterId =
+      requester &&
+      (requester.id_utilizador || requester.dataValues?.id_utilizador);
+
+    if (requesterRole !== "admin" && Number(requesterId) !== Number(userId)) {
+      return next({ status: 403, message: "Forbidden." });
+    }
+    // Prevent deleting another admin
+    const targetRoleDel = (
+      targetUser.tipo_utilizador ||
+      targetUser.dataValues?.tipo_utilizador ||
+      ""
+    ).toLowerCase();
+    if (targetRoleDel === "admin" && Number(requesterId) !== Number(userId)) {
       return next({
-        status: 404,
-        message: "User not found.",
+        status: 403,
+        message: "Forbidden. Cannot delete another admin.",
       });
     }
-    await user.destroy();
+
+    await targetUser.destroy();
     res.status(204).send();
   } catch (error) {
     // Handle specific errors: 500
@@ -219,34 +374,34 @@ export const loginUser = async (req, res, next) => {
     const user = await User.findOne({ where: { email } });
 
     if (!user) {
-      return next({
-        status: 401,
-        message: "Invalid credentials.",
-      });
+      return next({ status: 401, message: "Invalid credentials." });
     }
 
-    if (user.password !== password) {
-      return next({
-        status: 401,
-        message: "Invalid credentials.",
-      });
+    const match = await bcrypt.compare(password, user.hashed_password);
+    if (!match) {
+      return next({ status: 401, message: "Invalid credentials." });
     }
+
+    const jwtSecret = process.env.JWT_SECRET || "dev_secret";
+    if (!process.env.JWT_SECRET)
+      console.warn(
+        "Warning: JWT_SECRET not set, using dev_secret (not for production)",
+      );
 
     const token = jwt.sign(
-      { id: user.id, tipo_utilizador: user.tipo_utilizador },
-      process.env.JWT_SECRET,
+      {
+        id: user.id_utilizador,
+        tipo_utilizador: (user.tipo_utilizador || "").toLowerCase(),
+      },
+      jwtSecret,
     );
 
-    // Include HATEOAS links in the response
-    const response = {
+    // Return the requested success message plus the JWT token and role
+    res.status(200).json({
+      message: "User login was a success!",
       token,
-      ...user.toJSON(),
-      links: [
-        { rel: "self", method: "GET", href: `/users/${user.id}` },
-        { rel: "logout", method: "POST", href: "/users/logout" },
-      ],
-    };
-    res.status(200).json(response);
+      role: (user.tipo_utilizador || "").toLowerCase(),
+    });
   } catch (error) {
     // Handle specific errors: 500
     return next({
@@ -267,23 +422,37 @@ export const assignTaskToUser = async (req, res, next) => {
   try {
     const { userId } = req.params;
     const { habitId } = req.body;
-    const user = await req.user;
+    const requester = req.user;
 
-    if (!user) {
-      return next({
-        status: 404,
-        message: "User not found.",
-      });
+    // load target user by id param
+    const targetUser = await User.findByPk(userId);
+    if (!targetUser) {
+      return next({ status: 404, message: "User not found." });
+    }
+
+    // authorization: allow if requester is admin or requester is the same user
+    const requesterRole =
+      requester &&
+      (requester.tipo_utilizador || requester.dataValues?.tipo_utilizador)
+        ? String(
+            requester.tipo_utilizador || requester.dataValues?.tipo_utilizador,
+          ).toLowerCase()
+        : "";
+
+    const requesterId =
+      requester &&
+      (requester.id_utilizador || requester.dataValues?.id_utilizador);
+
+    if (requesterRole !== "admin" && Number(requesterId) !== Number(userId)) {
+      return next({ status: 403, message: "Forbidden." });
     }
 
     const habit = await Habit.findByPk(habitId);
     if (!habit) {
-      return next({
-        status: 404,
-        message: "Habit not found.",
-      });
+      return next({ status: 404, message: "Habit not found." });
     }
-    await user.addHabit(habit);
+
+    await targetUser.addHabit(habit);
 
     // Include HATEOAS links in the response
     const response = {
