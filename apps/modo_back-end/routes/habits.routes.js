@@ -33,10 +33,10 @@ const router = express.Router();
 
 /**
  * GET /
- * Purpose: Return a list of all habits. No authentication required.
+ * Purpose: Return a list of all habits. Requires authentication (admin and clients).
  * Handler: `getAllHabits`
  */
-router.get("/", getAllHabits);
+router.get("/", authenticateUser, getAllHabits);
 
 /**
  * POST /
