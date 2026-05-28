@@ -13,30 +13,72 @@ import { Task } from "../config/db.config.js";
  * Returns HTTP 400 with error details on validation failure.
  */
 export const validateCreateTask = (req, res, next) => {
-  const { nome, tipo_tarefa, localizacao_tarefa, prioridade_tarefa } = req.body;
+  const {
+    nome,
+    nome_tarefa,
+    id_habito,
+    pontos_tarefa,
+    tipo_tarefa,
+    localizacao_tarefa,
+    prioridade_tarefa,
+    duracao_temporizador,
+    quantidade_necessaria,
+  } = req.body;
+
   const errors = {};
 
-  if (!nome || typeof nome !== "string" || nome.trim() === "") {
+  const name = nome_tarefa ?? nome;
+  if (!name || typeof name !== "string" || name.trim() === "") {
     errors.nome = ["Name is mandatory."];
   }
 
-  if (tipo_tarefa && typeof tipo_tarefa !== "string") {
-    errors.tipo_tarefa = ["Invalid task type."];
+  if (
+    id_habito !== undefined &&
+    (!Number.isInteger(Number(id_habito)) || Number(id_habito) <= 0)
+  ) {
+    errors.id_habito = ["Invalid habit ID."];
   }
 
-  if (localizacao_tarefa && typeof localizacao_tarefa !== "string") {
-    errors.localizacao_tarefa = ["Invalid location."];
+  if (pontos_tarefa !== undefined && isNaN(Number(pontos_tarefa))) {
+    errors.pontos_tarefa = ["Invalid pontos_tarefa value."];
   }
 
-  if (prioridade_tarefa && typeof prioridade_tarefa !== "string") {
-    errors.prioridade_tarefa = ["Invalid priority."];
+  if (
+    duracao_temporizador !== undefined &&
+    duracao_temporizador !== null &&
+    isNaN(Number(duracao_temporizador))
+  ) {
+    errors.duracao_temporizador = ["Invalid duracao_temporizador value."];
+  }
+
+  if (
+    quantidade_necessaria !== undefined &&
+    quantidade_necessaria !== null &&
+    isNaN(Number(quantidade_necessaria))
+  ) {
+    errors.quantidade_necessaria = ["Invalid quantidade_necessaria value."];
+  }
+
+  if (tipo_tarefa !== undefined && typeof tipo_tarefa !== "string") {
+    errors.tipo_tarefa = ["Invalid tipo_tarefa."];
+  }
+
+  if (
+    localizacao_tarefa !== undefined &&
+    typeof localizacao_tarefa !== "string"
+  ) {
+    errors.localizacao_tarefa = ["Invalid localizacao_tarefa."];
+  }
+
+  if (
+    prioridade_tarefa !== undefined &&
+    typeof prioridade_tarefa !== "string"
+  ) {
+    errors.prioridade_tarefa = ["Invalid prioridade_tarefa."];
   }
 
   if (Object.keys(errors).length > 0) {
-    return res.status(400).json({
-      description: "Validation failed.",
-      errors,
-    });
+    return res.status(400).json({ description: "Validation failed.", errors });
   }
 
   next();

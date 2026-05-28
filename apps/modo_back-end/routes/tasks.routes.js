@@ -36,10 +36,10 @@ const router = express.Router();
 
 /**
  * GET /
- * Purpose: Return a list of tasks. No authentication required.
+ * Purpose: Return a list of tasks. Requires authentication (admin and clients).
  * Handler: `getAllTasks`
  */
-router.get("/", getAllTasks);
+router.get("/", authenticateUser, getAllTasks);
 
 /**
  * POST /
