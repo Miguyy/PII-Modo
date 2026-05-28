@@ -11,19 +11,44 @@ import { Location } from "../config/db.config.js";
  * Requires numeric `latitude` and `longitude`. `cidade` is optional.
  */
 export const validateLocationPayload = (req, res, next) => {
-  const { latitude, longitude, cidade } = req.body;
+  const body = req.body || {};
+  let { latitude, longitude, cidade, pais } = body;
   const errors = {};
 
-  if (latitude === undefined || typeof latitude !== "number") {
-    errors.latitude = ["Latitude is mandatory and must be a number."];
+  // Helper: accept numeric strings too (coerce later)
+  const isNumeric = (v) =>
+    v !== undefined && v !== null && !Number.isNaN(Number(v));
+
+  if (req.method === "POST") {
+    if (!isNumeric(latitude)) {
+      errors.latitude = ["Latitude is mandatory and must be a number."];
+    }
+    if (!isNumeric(longitude)) {
+      errors.longitude = ["Longitude is mandatory and must be a number."];
+    }
+  } else {
+    // PATCH/PUT: only validate when provided
+    if (latitude !== undefined && !isNumeric(latitude)) {
+      errors.latitude = ["Latitude must be a number."];
+    }
+    if (longitude !== undefined && !isNumeric(longitude)) {
+      errors.longitude = ["Longitude must be a number."];
+    }
   }
 
-  if (longitude === undefined || typeof longitude !== "number") {
-    errors.longitude = ["Longitude is mandatory and must be a number."];
-  }
-
-  if (cidade && typeof cidade !== "string") {
+  if (cidade !== undefined && typeof cidade !== "string") {
     errors.cidade = ["City must be a string."];
+  }
+
+  // Require 'pais' when creating a new location (POST)
+  if (req.method === "POST") {
+    if (!pais || typeof pais !== "string") {
+      errors.pais = [
+        "Country is mandatory when creating a location and must be a string.",
+      ];
+    }
+  } else if (pais !== undefined && typeof pais !== "string") {
+    errors.pais = ["Country must be a string."];
   }
 
   if (Object.keys(errors).length > 0) {
@@ -32,6 +57,10 @@ export const validateLocationPayload = (req, res, next) => {
       errors,
     });
   }
+
+  // Coerce numeric strings to numbers for downstream handlers
+  if (isNumeric(latitude)) req.body.latitude = Number(latitude);
+  if (isNumeric(longitude)) req.body.longitude = Number(longitude);
 
   next();
 };
@@ -43,7 +72,9 @@ export const validateLocationPayload = (req, res, next) => {
  */
 export const checkLocationExists = async (req, res, next) => {
   const { userId } = req.params;
-  const location = await Location.findOne({ where: { userId } });
+  const location = await Location.findOne({
+    where: { id_utilizador: Number(userId) },
+  });
 
   if (!location) {
     return res.status(404).json({
