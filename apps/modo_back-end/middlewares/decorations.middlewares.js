@@ -55,12 +55,12 @@ export const validateCreateDecoration = (req, res, next) => {
  * Validates that the `decorationId` route parameter is a positive integer.
  */
 export const validateDecorationId = (req, res, next) => {
-  const { decorationId } = req.params;
+  const { id } = req.params;
 
-  if (!Number.isInteger(Number(decorationId)) || Number(decorationId) <= 0) {
+  if (!Number.isInteger(Number(id)) || Number(id) <= 0) {
     return res.status(400).json({
       description: "Invalid request.",
-      errors: { decorationId: ["Invalid decoration ID format."] },
+      errors: { id: ["Invalid decoration ID format."] },
     });
   }
   next();
@@ -71,13 +71,13 @@ export const validateDecorationId = (req, res, next) => {
  * Loads a Decoration by `decorationId` and attaches it to `req.decoration`.
  */
 export const checkDecorationExists = async (req, res, next) => {
-  const { decorationId } = req.params;
-  const decoration = await Decoration.findByPk(decorationId);
+  const { id } = req.params;
+  const decoration = await AvatarDecoration.findByPk(id);
 
   if (!decoration) {
     return res.status(404).json({
       description: "Resource not found.",
-      errors: { decorationId: ["Decoration not found."] },
+      errors: { id: ["Decoration not found."] },
     });
   }
 

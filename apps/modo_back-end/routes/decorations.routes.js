@@ -3,6 +3,10 @@ Each route is associated with a specific controller function that handles the co
 
 import express from "express";
 import {
+  authenticateUser,
+  authorizeAdmin,
+} from "../middlewares/users.middlewares.js";
+import {
   createDecoration,
   getAllDecorations,
   updateDecoration,
@@ -11,16 +15,16 @@ import {
 
 const router = express.Router();
 
-// Route to get all available decorations
-router.get("/", getAllDecorations);
+// Route to get all available decorations (requires auth for admin and clients)
+router.get("/", authenticateUser, getAllDecorations);
 
-// Route to create a new decoration
-router.post("/", createDecoration);
+// Route to create a new decoration (admin only)
+router.post("/", authenticateUser, authorizeAdmin, createDecoration);
 
-// Route to update a specific decoration
-router.patch("/:id", updateDecoration);
+// Route to update a specific decoration (admin only)
+router.patch("/:id", authenticateUser, authorizeAdmin, updateDecoration);
 
-// Route to delete a decoration
-router.delete("/:id", deleteDecoration);
+// Route to delete a decoration (admin only)
+router.delete("/:id", authenticateUser, authorizeAdmin, deleteDecoration);
 
 export default router;
