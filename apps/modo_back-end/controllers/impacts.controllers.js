@@ -18,10 +18,12 @@ export const getAllImpacts = async (req, res, next) => {
   try {
     const impacts = await Impact.findAll();
 
-    // Include HATEOAS links in the response
+    // Include HATEOAS links in the response (use model column names)
     const response = impacts.map((impact) => ({
       ...impact.toJSON(),
-      links: [{ rel: "self", method: "GET", href: `/impacts/${impact.id}` }],
+      links: [
+        { rel: "self", method: "GET", href: `/impacts/${impact.id_impacto}` },
+      ],
     }));
     res.status(200).json(response);
   } catch (error) {
@@ -44,23 +46,24 @@ export const getTaskImpacts = async (req, res, next) => {
   try {
     const { taskId } = req.params;
 
-    const impacts = await Impact.findAll({ where: { taskId } });
+    // Use the model column name `id_tarefa` in the WHERE clause
+    const impacts = await Impact.findAll({
+      where: { id_tarefa: Number(taskId) },
+    });
 
+    // Return an empty array if there are no impacts for the task
     if (!impacts || impacts.length === 0) {
-      return next({
-        status: 404,
-        message: "No impacts found for the specified task.",
-      });
+      return res.status(200).json([]);
     }
 
-    // Include HATEOAS links in the response
+    // Include HATEOAS links in the response (use model column names)
     const response = impacts.map((impact) => ({
       ...impact.toJSON(),
       links: [
         {
           rel: "self",
           method: "GET",
-          href: `/tasks/${taskId}/impacts/${impact.id}`,
+          href: `/tasks/${taskId}/impacts/${impact.id_impacto}`,
         },
       ],
     }));
