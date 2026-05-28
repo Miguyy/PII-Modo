@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken";
+/* import jwt from "jsonwebtoken";
 import { User } from "../config/db.config.js";
 
 export const verifyToken = async (req, res, next) => {
@@ -51,3 +51,4 @@ export const requireRole = (role) => {
     next();
   };
 };
+ */
