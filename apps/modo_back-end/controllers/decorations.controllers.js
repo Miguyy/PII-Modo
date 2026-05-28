@@ -6,6 +6,7 @@
 */
 
 import { AvatarDecoration } from "../config/db.config.js";
+import { UserDecorations } from "../config/db.config.js";
 
 /**
  * getAllDecorations(req, res, next)
@@ -13,12 +14,16 @@ import { AvatarDecoration } from "../config/db.config.js";
  */
 export const getAllDecorations = async (req, res, next) => {
   try {
-    const decorations = await Decoration.findAll();
+    const decorations = await AvatarDecoration.findAll();
 
     const response = decorations.map((decoration) => ({
       ...decoration.toJSON(),
       links: [
-        { rel: "self", method: "GET", href: `/decorations/${decoration.id}` },
+        {
+          rel: "self",
+          method: "GET",
+          href: `/avatar-decorations/${decoration.id_decoracao}`,
+        },
       ],
     }));
 
@@ -37,7 +42,7 @@ export const createDecoration = async (req, res, next) => {
     // Security Protection: Extract only the allowed fields
     const { nome_decoracao, nivel_necessario, caminho_decoracao } = req.body;
 
-    const decoration = await Decoration.create({
+    const decoration = await AvatarDecoration.create({
       nome_decoracao,
       nivel_necessario,
       caminho_decoracao,
@@ -46,7 +51,11 @@ export const createDecoration = async (req, res, next) => {
     res.status(201).json({
       ...decoration.toJSON(),
       links: [
-        { rel: "self", method: "GET", href: `/decorations/${decoration.id}` },
+        {
+          rel: "self",
+          method: "GET",
+          href: `/avatar-decorations/${decoration.id_decoracao}`,
+        },
       ],
     });
   } catch (error) {
@@ -88,7 +97,15 @@ export const createDecoration = async (req, res, next) => {
  */
 export const updateDecoration = async (req, res, next) => {
   try {
-    const decoration = req.decoration;
+    const { id } = req.params;
+    const decoration = await AvatarDecoration.findByPk(id);
+
+    if (!decoration) {
+      return res.status(404).json({
+        description: "Resource not found.",
+        errors: { id: ["Decoration not found."] },
+      });
+    }
 
     // Security Protection: Extract only the allowed fields for update
     const { nome_decoracao, nivel_necessario, caminho_decoracao } = req.body;
@@ -102,7 +119,11 @@ export const updateDecoration = async (req, res, next) => {
     res.status(200).json({
       ...updated.toJSON(),
       links: [
-        { rel: "self", method: "GET", href: `/decorations/${decoration.id}` },
+        {
+          rel: "self",
+          method: "GET",
+          href: `/avatar-decorations/${decoration.id_decoracao}`,
+        },
       ],
     });
   } catch (error) {
@@ -125,7 +146,20 @@ export const updateDecoration = async (req, res, next) => {
  */
 export const deleteDecoration = async (req, res, next) => {
   try {
-    const decoration = req.decoration;
+    const { id } = req.params;
+    const decoration = await AvatarDecoration.findByPk(id);
+
+    if (!decoration) {
+      return res.status(404).json({
+        description: "Resource not found.",
+        errors: { id: ["Decoration not found."] },
+      });
+    }
+
+    // remove associations in join table first
+    await UserDecorations.destroy({
+      where: { id_decoracao: decoration.id_decoracao },
+    });
     await decoration.destroy();
     res.status(204).send();
   } catch (error) {

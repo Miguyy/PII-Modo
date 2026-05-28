@@ -27,7 +27,7 @@ app.use("/habits", habitsRouter);
 app.use("/tasks", tasksRouter);
 app.use("/users", userTasksRouter);
 app.use("/impacts", impactsRouter);
-app.use("/users", locationsRouter);
+app.use("/users/:userId/location", locationsRouter);
 app.use("/avatar-decorations", decorationsRouter);
 app.use("/users", userDecorationsRouter);
 app.use("/", notificationsRouter);
