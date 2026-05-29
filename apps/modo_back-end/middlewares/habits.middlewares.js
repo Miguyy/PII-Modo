@@ -14,11 +14,17 @@ import { Habit } from "../config/db.config.js";
  * failure; otherwise calls `next()`.
  */
 export const validateCreateHabit = (req, res, next) => {
-  const { nome, descricao_habito, categoria } = req.body;
+  const { nome, nome_habito, descricao_habito, categoria } = req.body;
   const errors = {};
 
-  if (!nome || typeof nome !== "string" || nome.trim() === "") {
+  // Accept either `nome_habito` (model field) or `nome` (API shorthand)
+  const name = nome_habito ?? nome;
+
+  if (!name || typeof name !== "string" || name.trim() === "") {
     errors.nome = ["Name is mandatory."];
+  } else {
+    // normalize to `nome` so controllers that expect `nome` continue to work
+    req.body.nome = name;
   }
 
   if (descricao_habito && typeof descricao_habito !== "string") {
