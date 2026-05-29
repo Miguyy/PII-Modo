@@ -334,8 +334,12 @@
   <!-- CRUD habits -->
   <section id="habit-management">
     <div class="d-flex flex-row gap-3 align-items-center mb-3 mt-5">
-      <h4 class="mb-0 fw-bold" style="color: #355D4C;">HABIT MANAGEMENT</h4>
-      <button class="btn btn-success ms-auto btn-sm" @click="openAddHabitModal" style="background-color: #355D4C; border-color: #355D4C;">
+      <h4 class="mb-0 fw-bold" style="color: #355d4c">HABIT MANAGEMENT</h4>
+      <button
+        class="btn btn-success ms-auto btn-sm"
+        @click="openAddHabitModal"
+        style="background-color: #355d4c; border-color: #355d4c"
+      >
         <i class="bi bi-plus-lg me-1"></i>Add Habit
       </button>
     </div>
@@ -359,47 +363,72 @@
               <td class="text-muted small">{{ habit.id }}</td>
               <td>
                 <span class="d-block fw-semibold">{{ habit.title }}</span>
-                <small class="text-muted text-truncate d-block" style="max-width: 200px;" :title="habit.description">
+                <small
+                  class="text-muted text-truncate d-block"
+                  style="max-width: 200px"
+                  :title="habit.description"
+                >
                   {{ habit.description || 'No description' }}
                 </small>
               </td>
               <td>
-                <span v-if="habit.category" class="badge bg-light text-secondary border">{{ habit.category }}</span>
+                <span v-if="habit.category" class="badge bg-light text-secondary border">{{
+                  habit.category
+                }}</span>
                 <span v-else class="text-muted small">-</span>
               </td>
               <td>
-                <span class="badge bg-light text-dark border text-capitalize">{{ habit.type }}</span>
+                <span class="badge bg-light text-dark border text-capitalize">{{
+                  habit.type
+                }}</span>
               </td>
               <td>
-                <span :class="{
-                  'badge bg-success-subtle text-success text-capitalize': habit.priority === 'low',
-                  'badge bg-warning-subtle text-warning-emphasis text-capitalize': habit.priority === 'medium',
-                  'badge bg-danger-subtle text-danger text-capitalize': habit.priority === 'high'
-                }">{{ habit.priority }}</span>
+                <span
+                  :class="{
+                    'badge bg-success-subtle text-success text-capitalize':
+                      habit.priority === 'low',
+                    'badge bg-warning-subtle text-warning-emphasis text-capitalize':
+                      habit.priority === 'medium',
+                    'badge bg-danger-subtle text-danger text-capitalize': habit.priority === 'high',
+                  }"
+                  >{{ habit.priority }}</span
+                >
               </td>
               <td class="small text-muted">
                 <div v-if="habit.type === 'check'">
                   <i class="bi bi-check2-square me-1"></i> Simple Check
                 </div>
                 <div v-else-if="habit.type === 'count'">
-                  <i class="bi bi-plus-slash-minus me-1"></i> Target: <strong>{{ habit.target_count }}</strong> <br>
+                  <i class="bi bi-plus-slash-minus me-1"></i> Target:
+                  <strong>{{ habit.target_count }}</strong> <br />
                   <span class="x-small">(Inc: {{ habit.increment_value }})</span>
                 </div>
                 <div v-else-if="habit.type === 'time'">
-                  <i class="bi bi-stopwatch me-1"></i> Target: <strong>{{ habit.target_minutes }} min</strong>
+                  <i class="bi bi-stopwatch me-1"></i> Target:
+                  <strong>{{ habit.target_minutes }} min</strong>
                 </div>
               </td>
               <td>
-                <button class="action-icon action-edit me-2" @click="openEditHabitModal(habit)" title="Edit">
+                <button
+                  class="action-icon action-edit me-2"
+                  @click="openEditHabitModal(habit)"
+                  title="Edit"
+                >
                   <i class="bi bi-pencil" aria-hidden="true"></i>
                 </button>
-                <button class="action-icon action-delete" @click="handleDeleteHabit(habit.id, habit.title)" title="Delete">
+                <button
+                  class="action-icon action-delete"
+                  @click="handleDeleteHabit(habit.id, habit.title)"
+                  title="Delete"
+                >
                   <i><FontAwesomeIcon icon="trash" class="bi bi-trash" /></i>
                 </button>
               </td>
             </tr>
             <tr v-if="habitStore.habits.length === 0">
-              <td colspan="7" class="text-center py-4 text-muted">No habits registered in the system.</td>
+              <td colspan="7" class="text-center py-4 text-muted">
+                No habits registered in the system.
+              </td>
             </tr>
           </tbody>
         </table>
@@ -408,24 +437,36 @@
   </section>
 
   <div v-if="habitModalVisible" class="custom-modal-backdrop">
-    <div class="modal-panel" style="max-width: 500px; width: 100%;">
-      <h5 class="mb-3 fw-bold" style="color: #355D4C;">
+    <div class="modal-panel" style="max-width: 500px; width: 100%">
+      <h5 class="mb-3 fw-bold" style="color: #355d4c">
         {{ isNewHabit ? 'Create New Habit' : 'Edit Habit Settings' }}
       </h5>
 
       <div class="mb-3">
         <label class="form-label">Habit Title</label>
-        <input v-model="editingHabit.title" class="form-control" placeholder="e.g., Exercise, Read books..." />
+        <input
+          v-model="editingHabit.title"
+          class="form-control"
+          placeholder="e.g., Exercise, Read books..."
+        />
       </div>
 
       <div class="row mb-3">
         <div class="col shadow-none">
           <label class="form-label">Category</label>
-          <input v-model="editingHabit.category" class="form-control" placeholder="e.g., Health, Mind" />
+          <input
+            v-model="editingHabit.category"
+            class="form-control"
+            placeholder="e.g., Health, Mind"
+          />
         </div>
         <div class="col">
           <label class="form-label">Description</label>
-          <input v-model="editingHabit.description" class="form-control" placeholder="Optional details..." />
+          <input
+            v-model="editingHabit.description"
+            class="form-control"
+            placeholder="Optional details..."
+          />
         </div>
       </div>
 
@@ -452,11 +493,23 @@
         <div class="row">
           <div class="col">
             <label class="form-label fw-semibold">Target Count</label>
-            <input type="number" v-model.number="editingHabit.target_count" class="form-control" min="1" placeholder="e.g., 10" />
+            <input
+              type="number"
+              v-model.number="editingHabit.target_count"
+              class="form-control"
+              min="1"
+              placeholder="e.g., 10"
+            />
           </div>
           <div class="col">
             <label class="form-label fw-semibold">Increment Value</label>
-            <input type="number" v-model.number="editingHabit.increment_value" class="form-control" min="1" placeholder="1" />
+            <input
+              type="number"
+              v-model.number="editingHabit.increment_value"
+              class="form-control"
+              min="1"
+              placeholder="1"
+            />
           </div>
         </div>
       </div>
@@ -464,13 +517,23 @@
       <div v-if="editingHabit.type === 'time'" class="card p-3 bg-light border-0 mb-3 text-dark">
         <div>
           <label class="form-label fw-semibold">Target Minutes</label>
-          <input type="number" v-model.number="editingHabit.target_minutes" class="form-control" min="1" placeholder="e.g., 30" />
+          <input
+            type="number"
+            v-model.number="editingHabit.target_minutes"
+            class="form-control"
+            min="1"
+            placeholder="e.g., 30"
+          />
         </div>
       </div>
 
       <div class="d-flex justify-content-end gap-2 mt-4">
         <button class="btn btn-outline-secondary" @click="habitModalVisible = false">Cancel</button>
-        <button class="btn btn-success" @click="saveHabit" style="background-color: #355D4C; border-color: #355D4C;">
+        <button
+          class="btn btn-success"
+          @click="saveHabit"
+          style="background-color: #355d4c; border-color: #355d4c"
+        >
           {{ isNewHabit ? 'Create Habit' : 'Save Changes' }}
         </button>
       </div>
@@ -498,9 +561,11 @@
 import { ref, computed, onMounted } from 'vue'
 import NavBar from '../Components/NavBar.vue'
 import { useUserStore } from '@/stores/userStore'
-import { updateUser as apiUpdateUser } from '@/api/modoApi'
+import { useHabitStore } from '@/stores/habitStore'
+import { updateUser as apiUpdateUser, updateHabit as apiUpdateHabit } from '@/api/modoApi'
 
 const userStore = useUserStore()
+const habitStore = useHabitStore()
 
 const search = ref('')
 const perPage = ref(5)
@@ -776,26 +841,29 @@ async function saveHabit() {
         category: editingHabit.value.category || '',
         completed: false,
         points_awarded: false,
-        repeat: { frequency: 'daily', days: [] }
+        repeat: { frequency: 'daily', days: [] },
       }
 
       // Configure type-specific numeric fields required by your Model
       if (payload.type === 'count') {
-        payload.target_count = editingHabit.value.target_count ? Number(editingHabit.value.target_count) : null
+        payload.target_count = editingHabit.value.target_count
+          ? Number(editingHabit.value.target_count)
+          : null
         payload.increment_value = Number(editingHabit.value.increment_value) || 1
       } else if (payload.type === 'time') {
-        payload.target_minutes = editingHabit.value.target_minutes ? Number(editingHabit.value.target_minutes) : null
+        payload.target_minutes = editingHabit.value.target_minutes
+          ? Number(editingHabit.value.target_minutes)
+          : null
       }
 
       // habitStore.addHabit persists it on the API and instantiates "new Habit(created)"
       await habitStore.addHabit(payload)
       showToast('Habit added', `"${payload.title}" was created successfully`)
-
     } else {
       // 2. Update existing habit
       const id = editingHabit.value.id
       const payload = { ...editingHabit.value }
-      
+
       // Ensure strict numeric type casting before sending the updates
       if (payload.type === 'count') {
         payload.target_count = payload.target_count ? Number(payload.target_count) : null
@@ -803,7 +871,7 @@ async function saveHabit() {
       } else if (payload.type === 'time') {
         payload.target_minutes = payload.target_minutes ? Number(payload.target_minutes) : null
         // Re-calculate remaining seconds if the admin changed the planned target duration
-        payload.remaining_seconds = payload.target_minutes * 60 
+        payload.remaining_seconds = payload.target_minutes * 60
       }
 
       // Send update request to the server
