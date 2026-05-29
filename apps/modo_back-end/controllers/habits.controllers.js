@@ -27,7 +27,9 @@ export const getAllHabits = async (req, res, next) => {
     // Include HATEOAS links in the response
     const response = habits.map((habit) => ({
       ...habit.toJSON(),
-      links: [{ rel: "self", method: "GET", href: `/habits/${habit.id}` }],
+      links: [
+        { rel: "self", method: "GET", href: `/habits/${habit.id_habito}` },
+      ],
     }));
     res.status(200).json(response);
   } catch (error) {
@@ -49,14 +51,21 @@ export const getAllHabits = async (req, res, next) => {
 // Controller to create a new habit
 export const createHabit = async (req, res, next) => {
   try {
-    const { nome, descricao_habito, categoria } = req.body;
-    // Validate required fields and create the habit
-    const habit = await Habit.create({ nome, descricao_habito, categoria });
+    const { descricao_habito, categoria } = req.body;
+    const name = req.body.nome ?? req.body.nome_habito;
+    // Validate required fields and create the habit using model column names
+    const habit = await Habit.create({
+      nome_habito: name,
+      descricao_habito,
+      categoria,
+    });
 
     // Include HATEOAS links in the response
     const response = {
       ...habit.toJSON(),
-      links: [{ rel: "self", method: "GET", href: `/habits/${habit.id}` }],
+      links: [
+        { rel: "self", method: "GET", href: `/habits/${habit.id_habito}` },
+      ],
     };
     res.status(201).json(response);
   } catch (error) {
@@ -102,7 +111,9 @@ export const getHabitById = async (req, res, next) => {
     // Include HATEOAS links in the response
     const response = {
       ...habit.toJSON(),
-      links: [{ rel: "self", method: "GET", href: `/habits/${habit.id}` }],
+      links: [
+        { rel: "self", method: "GET", href: `/habits/${habit.id_habito}` },
+      ],
     };
 
     res.status(200).json(response);
@@ -122,21 +133,27 @@ export const getHabitById = async (req, res, next) => {
 export const updateHabit = async (req, res, next) => {
   try {
     const { habitId } = req.params;
-    const { nome } = req.body;
+    const name = req.body.nome ?? req.body.nome_habito;
+    const { descricao_habito, categoria } = req.body;
     const habit = req.habit;
 
     if (!habit) {
       return next({ status: 404, message: "Habit not found." });
     }
 
+    // Support partial updates for nome_habito, descricao_habito and categoria
     await habit.update({
-      nome: nome ?? habit.nome,
+      nome_habito: name ?? habit.nome_habito,
+      descricao_habito: descricao_habito ?? habit.descricao_habito,
+      categoria: categoria ?? habit.categoria,
     });
 
     // Include HATEOAS links in the response
     const response = {
       ...habit.toJSON(),
-      links: [{ rel: "self", method: "GET", href: `/habits/${habit.id}` }],
+      links: [
+        { rel: "self", method: "GET", href: `/habits/${habit.id_habito}` },
+      ],
     };
     res.status(200).json(response);
   } catch (error) {
