@@ -11,6 +11,8 @@ import cloudinary from "../config/cloudinary.config.js";
 // Import users data
 import { User, Habit } from "../config/db.config.js";
 
+const getUploadedFileUrl = (file) => file?.path || file?.secure_url || null;
+
 /**
  * createUser(req, res, next)
  * Creates a new user record using `nome`, `email`, `password`, and
@@ -29,7 +31,6 @@ export const createUser = async (req, res, next) => {
       nivel,
       data_criacao,
       tipo_utilizador,
-      imagem_utilizador,
     } = req.body;
 
     const roleMap = { cliente: "Client", client: "Client", admin: "Admin" };
@@ -38,6 +39,9 @@ export const createUser = async (req, res, next) => {
       : undefined;
 
     const hashed = await bcrypt.hash(password, 10);
+
+    // Get Cloudinary URL if file was uploaded
+    const imagem_utilizador = getUploadedFileUrl(req.file);
 
     const payload = {
       nome,
@@ -261,6 +265,10 @@ export const updateUser = async (req, res, next) => {
     if (password !== undefined)
       updates.hashed_password = await bcrypt.hash(password, 10);
     if (nome !== undefined) updates.nome = nome;
+    // Handle profile picture update if file was uploaded
+    if (req.file) {
+      updates.imagem_utilizador = getUploadedFileUrl(req.file);
+    }
 
     // If a profile image was uploaded as multipart/form-data (field: imagem_utilizador), upload to Cloudinary
     if (req.file && req.file.buffer) {
