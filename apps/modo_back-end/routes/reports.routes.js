@@ -3,6 +3,7 @@ and retrieving a specific report by its ID. Each route is associated with a spec
 The routes are designed to be nested under a user-specific path for creating reports, allowing for operations that are specific to a particular user.*/
 
 import express from "express";
+import { uploadReport } from "../utils/upload.utils.js";
 import { authenticateUser } from "../middlewares/users.middlewares.js";
 import {
   createReport,
@@ -19,6 +20,12 @@ router.get("/reports", authenticateUser, getAllReports);
 router.get("/reports/:id", authenticateUser, getReportById);
 
 // Route to create a new report for a specific user (requires auth)
-router.post("/users/:userId/reports", authenticateUser, createReport);
+// Optionally accepts a report file upload (PDF, images, documents)
+router.post(
+  "/users/:userId/reports",
+  authenticateUser,
+  uploadReport.single("caminho_relatorio"),
+  createReport,
+);
 
 export default router;

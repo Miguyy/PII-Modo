@@ -4,6 +4,7 @@
 */
 
 import { Report } from "../config/db.config.js";
+import cloudinary from "../config/cloudinary.config.js";
 
 /**
  * getAllReports(req, res, next)
@@ -31,9 +32,20 @@ export const getAllReports = async (req, res, next) => {
 export const createReport = async (req, res, next) => {
   try {
     // Security Protection: Extract only the allowed fields
-    const { mes, semana } = req.body;
+    const { mes, semana, conteudo, id_utilizador } = req.body;
 
-    const report = await Report.create({ mes, semana });
+    // Get Cloudinary URL if file was uploaded
+    const caminho_relatorio = req.file
+      ? req.file.secure_url
+      : req.body.caminho_relatorio;
+
+    const report = await Report.create({
+      mes,
+      semana,
+      conteudo: conteudo || "",
+      id_utilizador,
+      caminho_relatorio,
+    });
 
     res.status(201).json({
       ...report.toJSON(),

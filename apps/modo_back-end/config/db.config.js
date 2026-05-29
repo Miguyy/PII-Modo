@@ -15,7 +15,15 @@ The models are synchronized with the database using sequelize.sync() and any err
 
 import { Sequelize, DataTypes } from "sequelize";
 import dotenv from "dotenv";
-dotenv.config();
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config({ path: path.resolve(__dirname, "../../..", ".env") });
+
+const dialect = process.env.DB_DIALECT || "mysql";
 
 const sequelize = new Sequelize(
   process.env.DB_NAME,
@@ -23,7 +31,7 @@ const sequelize = new Sequelize(
   process.env.DB_PASSWORD,
   {
     host: process.env.DB_HOST,
-    dialect: process.env.DB_DIALECT,
+    dialect,
   },
 );
 

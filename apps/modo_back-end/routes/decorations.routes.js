@@ -2,6 +2,7 @@
 Each route is associated with a specific controller function that handles the corresponding operation.*/
 
 import express from "express";
+import { uploadDecoration } from "../utils/upload.utils.js";
 import {
   authenticateUser,
   authorizeAdmin,
@@ -19,10 +20,24 @@ const router = express.Router();
 router.get("/", authenticateUser, getAllDecorations);
 
 // Route to create a new decoration (admin only)
-router.post("/", authenticateUser, authorizeAdmin, createDecoration);
+// Optionally accepts a decoration image file upload
+router.post(
+  "/",
+  authenticateUser,
+  authorizeAdmin,
+  uploadDecoration.single("caminho_decoracao"),
+  createDecoration,
+);
 
 // Route to update a specific decoration (admin only)
-router.patch("/:id", authenticateUser, authorizeAdmin, updateDecoration);
+// Optionally accepts a decoration image file upload
+router.patch(
+  "/:id",
+  authenticateUser,
+  authorizeAdmin,
+  uploadDecoration.single("caminho_decoracao"),
+  updateDecoration,
+);
 
 // Route to delete a decoration (admin only)
 router.delete("/:id", authenticateUser, authorizeAdmin, deleteDecoration);

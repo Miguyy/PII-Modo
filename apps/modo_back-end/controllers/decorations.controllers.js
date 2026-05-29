@@ -7,6 +7,7 @@
 
 import { AvatarDecoration } from "../config/db.config.js";
 import { UserDecorations } from "../config/db.config.js";
+import cloudinary from "../config/cloudinary.config.js";
 
 /**
  * getAllDecorations(req, res, next)
@@ -40,7 +41,22 @@ export const getAllDecorations = async (req, res, next) => {
 export const createDecoration = async (req, res, next) => {
   try {
     // Security Protection: Extract only the allowed fields
-    const { nome_decoracao, nivel_necessario, caminho_decoracao } = req.body;
+    const { nome_decoracao, nivel_necessario } = req.body;
+
+    // Get Cloudinary URL if file was uploaded, otherwise use provided path
+    const caminho_decoracao = req.file
+      ? req.file.secure_url
+      : req.body.caminho_decoracao;
+
+    if (!caminho_decoracao) {
+      return next({
+        status: 400,
+        message: "Validation failed.",
+        errors: {
+          caminho_decoracao: ["Decoration image is required."],
+        },
+      });
+    }
 
     const decoration = await AvatarDecoration.create({
       nome_decoracao,
@@ -108,7 +124,10 @@ export const updateDecoration = async (req, res, next) => {
     }
 
     // Security Protection: Extract only the allowed fields for update
-    const { nome_decoracao, nivel_necessario, caminho_decoracao } = req.body;
+    const { nome_decoracao, nivel_necessario } = req.body;
+    const caminho_decoracao = req.file
+      ? req.file.secure_url
+      : req.body.caminho_decoracao;
 
     const updated = await decoration.update({
       nome_decoracao: nome_decoracao ?? decoration.nome_decoracao,
