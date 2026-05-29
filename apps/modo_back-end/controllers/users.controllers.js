@@ -286,7 +286,7 @@ export const assignTaskToUser = async (req, res, next) => {
 
     // Include HATEOAS links in the response
     const response = {
-      ...user.toJSON(),
+      ...targetUser.toJSON(),
       links: [
         {
           rel: "self",
