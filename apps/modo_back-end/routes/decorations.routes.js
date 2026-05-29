@@ -6,6 +6,7 @@ import {
   authenticateUser,
   authorizeAdmin,
 } from "../middlewares/users.middlewares.js";
+import { uploadReport } from "../utils/upload.utils.js";
 import {
   createDecoration,
   getAllDecorations,
@@ -19,10 +20,22 @@ const router = express.Router();
 router.get("/", authenticateUser, getAllDecorations);
 
 // Route to create a new decoration (admin only)
-router.post("/", authenticateUser, authorizeAdmin, createDecoration);
+router.post(
+  "/",
+  authenticateUser,
+  authorizeAdmin,
+  uploadReport.single("caminho_decoracao"),
+  createDecoration,
+);
 
 // Route to update a specific decoration (admin only)
-router.patch("/:id", authenticateUser, authorizeAdmin, updateDecoration);
+router.patch(
+  "/:id",
+  authenticateUser,
+  authorizeAdmin,
+  uploadReport.single("caminho_decoracao"),
+  updateDecoration,
+);
 
 // Route to delete a decoration (admin only)
 router.delete("/:id", authenticateUser, authorizeAdmin, deleteDecoration);

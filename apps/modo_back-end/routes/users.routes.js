@@ -15,6 +15,7 @@ import {
   authenticateUser,
   authorizeAdmin,
 } from "../middlewares/users.middlewares.js";
+import { uploadReport } from "../utils/upload.utils.js";
 
 // Import controllers for users resources
 import {
@@ -36,7 +37,12 @@ const router = express.Router();
  * Purpose: Register a new user. Validates payload via
  * `validateCreateUser` then calls `createUser`.
  */
-router.post("/", validateCreateUser, createUser);
+router.post(
+  "/",
+  validateCreateUser,
+  uploadReport.single("imagem_utilizador"),
+  createUser,
+);
 
 /**
  * POST /login
@@ -62,7 +68,13 @@ router.get("/:userId", authenticateUser, validateUserId, getUserById);
  * PATCH /:userId
  * Purpose: Update a user. Requires authentication and validates id.
  */
-router.patch("/:userId", authenticateUser, validateUserId, updateUser);
+router.patch(
+  "/:userId",
+  authenticateUser,
+  validateUserId,
+  uploadReport.single("imagem_utilizador"),
+  updateUser,
+);
 
 /**
  * DELETE /:userId

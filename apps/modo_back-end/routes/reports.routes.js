@@ -4,6 +4,7 @@ The routes are designed to be nested under a user-specific path for creating rep
 
 import express from "express";
 import { authenticateUser } from "../middlewares/users.middlewares.js";
+import { uploadReport } from "../utils/upload.utils.js";
 import {
   createReport,
   getAllReports,
@@ -33,6 +34,7 @@ router.get(
 router.post(
   "/users/:userId/reports",
   authenticateUser,
+  uploadReport.single("caminho_relatorio"),
   validateCreateReport,
   createReport,
 );

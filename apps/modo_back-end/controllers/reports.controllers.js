@@ -4,6 +4,7 @@
 */
 
 import { Report } from "../config/db.config.js";
+import cloudinary from "../config/cloudinary.config.js";
 
 /**
  * getAllReports(req, res, next)
@@ -33,8 +34,37 @@ export const getAllReports = async (req, res, next) => {
 export const createReport = async (req, res, next) => {
   try {
     // Security Protection: Extract only the allowed fields
-    const { mes, semana, data_geracao, conteudo, caminho_relatorio } = req.body;
+    const { mes, semana, data_geracao, conteudo } = req.body;
     const { userId } = req.params;
+
+    // If a file was uploaded (multipart/form-data), upload to Cloudinary
+    let caminho_relatorio = req.body.caminho_relatorio;
+    if (req.file && req.file.buffer) {
+      const { Readable } = await import("stream");
+      const uploadFromBuffer = (buffer) =>
+        new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { resource_type: "auto", folder: "Modo/Reports" },
+            (error, result) => {
+              if (error) return reject(error);
+              resolve(result);
+            },
+          );
+
+          const readable = new Readable();
+          readable._read = () => {};
+          readable.push(buffer);
+          readable.push(null);
+          readable.pipe(stream);
+        });
+
+      try {
+        const uploaded = await uploadFromBuffer(req.file.buffer);
+        caminho_relatorio = uploaded?.secure_url ?? caminho_relatorio;
+      } catch (err) {
+        return next({ status: 500, message: "Failed to upload report file." });
+      }
+    }
 
     // create report using model column names
     const report = await Report.create({
