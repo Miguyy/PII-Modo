@@ -7,6 +7,7 @@
 
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
+import cloudinary from "../config/cloudinary.config.js";
 // Import users data
 import { User, Habit } from "../config/db.config.js";
 
@@ -50,7 +51,7 @@ export const createUser = async (req, res, next) => {
       nivel,
       data_criacao_conta: data_criacao,
       tipo_utilizador: mappedRole,
-      imagem_utilizador,
+      imagem_utilizador: final_imagem_utilizador,
     };
 
     // Create user using model column names
@@ -267,6 +268,37 @@ export const updateUser = async (req, res, next) => {
     // Handle profile picture update if file was uploaded
     if (req.file) {
       updates.imagem_utilizador = getUploadedFileUrl(req.file);
+    }
+
+    // If a profile image was uploaded as multipart/form-data (field: imagem_utilizador), upload to Cloudinary
+    if (req.file && req.file.buffer) {
+      const { Readable } = await import("stream");
+      const uploadFromBuffer = (buffer) =>
+        new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { resource_type: "auto", folder: "Modo/user-profiles" },
+            (error, result) => {
+              if (error) return reject(error);
+              resolve(result);
+            },
+          );
+
+          const readable = new Readable();
+          readable._read = () => {};
+          readable.push(buffer);
+          readable.push(null);
+          readable.pipe(stream);
+        });
+
+      try {
+        const uploaded = await uploadFromBuffer(req.file.buffer);
+        updates.imagem_utilizador = uploaded?.secure_url;
+      } catch (err) {
+        return next({
+          status: 500,
+          message: "Failed to upload profile image.",
+        });
+      }
     }
 
     await targetUser.update(updates);

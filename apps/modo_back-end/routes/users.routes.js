@@ -6,7 +6,6 @@
 */
 
 import express from "express";
-import { uploadUserProfile } from "../utils/upload.utils.js";
 
 // Import middlewares for users resources
 import {
@@ -16,6 +15,7 @@ import {
   authenticateUser,
   authorizeAdmin,
 } from "../middlewares/users.middlewares.js";
+import { uploadReport } from "../utils/upload.utils.js";
 
 // Import controllers for users resources
 import {
@@ -36,12 +36,11 @@ const router = express.Router();
  * POST /
  * Purpose: Register a new user. Validates payload via
  * `validateCreateUser` then calls `createUser`.
- * Optionally accepts a profile picture file upload.
  */
 router.post(
   "/",
-  uploadUserProfile.single("imagem_utilizador"),
   validateCreateUser,
+  uploadReport.single("imagem_utilizador"),
   createUser,
 );
 
@@ -68,13 +67,12 @@ router.get("/:userId", authenticateUser, validateUserId, getUserById);
 /**
  * PATCH /:userId
  * Purpose: Update a user. Requires authentication and validates id.
- * Optionally accepts a profile picture file upload.
  */
 router.patch(
   "/:userId",
   authenticateUser,
-  uploadUserProfile.single("imagem_utilizador"),
   validateUserId,
+  uploadReport.single("imagem_utilizador"),
   updateUser,
 );
 

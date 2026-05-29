@@ -43,19 +43,35 @@ export const createDecoration = async (req, res, next) => {
     // Security Protection: Extract only the allowed fields
     const { nome_decoracao, nivel_necessario } = req.body;
 
-    // Get Cloudinary URL if file was uploaded, otherwise use provided path
-    const caminho_decoracao = req.file
-      ? req.file.secure_url
-      : req.body.caminho_decoracao;
+    let caminho_decoracao = req.body.caminho_decoracao;
+    if (req.file && req.file.buffer) {
+      const { Readable } = await import("stream");
+      const uploadFromBuffer = (buffer) =>
+        new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { resource_type: "auto", folder: "avatar_decorations" },
+            (error, result) => {
+              if (error) return reject(error);
+              resolve(result);
+            },
+          );
 
-    if (!caminho_decoracao) {
-      return next({
-        status: 400,
-        message: "Validation failed.",
-        errors: {
-          caminho_decoracao: ["Decoration image is required."],
-        },
-      });
+          const readable = new Readable();
+          readable._read = () => {};
+          readable.push(buffer);
+          readable.push(null);
+          readable.pipe(stream);
+        });
+
+      try {
+        const uploaded = await uploadFromBuffer(req.file.buffer);
+        caminho_decoracao = uploaded?.secure_url ?? caminho_decoracao;
+      } catch (err) {
+        return next({
+          status: 500,
+          message: "Failed to upload decoration file.",
+        });
+      }
     }
 
     const decoration = await AvatarDecoration.create({
@@ -125,14 +141,63 @@ export const updateDecoration = async (req, res, next) => {
 
     // Security Protection: Extract only the allowed fields for update
     const { nome_decoracao, nivel_necessario } = req.body;
-    const caminho_decoracao = req.file
-      ? req.file.secure_url
-      : req.body.caminho_decoracao;
+
+    // Log incoming file and body for debugging when users report upload failures
+    if (req.file) {
+      // eslint-disable-next-line no-console
+      console.log("updateDecoration: req.file present:", {
+        fieldname: req.file.fieldname,
+        mimetype: req.file.mimetype,
+        size: req.file.size,
+        originalname: req.file.originalname,
+      });
+    } else {
+      // eslint-disable-next-line no-console
+      console.log("updateDecoration: no req.file provided");
+    }
+
+    // Determine new caminho_decoracao: prefer uploaded file if present
+    let newCaminho = req.body.caminho_decoracao ?? decoration.caminho_decoracao;
+
+    if (req.file && req.file.buffer) {
+      const { Readable } = await import("stream");
+      const uploadFromBuffer = (buffer) =>
+        new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { resource_type: "auto", folder: "Modo/Decorations" },
+            (error, result) => {
+              if (error) return reject(error);
+              resolve(result);
+            },
+          );
+
+          const readable = new Readable();
+          readable._read = () => {};
+          readable.push(buffer);
+          readable.push(null);
+          readable.pipe(stream);
+        });
+
+      try {
+        const uploaded = await uploadFromBuffer(req.file.buffer);
+        if (uploaded && uploaded.secure_url) {
+          newCaminho = uploaded.secure_url;
+        }
+      } catch (err) {
+        // upload failed: log and return error
+        // eslint-disable-next-line no-console
+        console.error("Cloudinary upload failed in updateDecoration:", err);
+        return next({
+          status: 500,
+          message: "Failed to upload decoration file.",
+        });
+      }
+    }
 
     const updated = await decoration.update({
       nome_decoracao: nome_decoracao ?? decoration.nome_decoracao,
       nivel_necessario: nivel_necessario ?? decoration.nivel_necessario,
-      caminho_decoracao: caminho_decoracao ?? decoration.caminho_decoracao,
+      caminho_decoracao: newCaminho,
     });
 
     res.status(200).json({
