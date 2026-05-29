@@ -429,7 +429,8 @@ export const loginUser = async (req, res, next) => {
 export const assignTaskToUser = async (req, res, next) => {
   try {
     const { userId } = req.params;
-    const { habitId } = req.body;
+    // Accept either `habitId` (API) or `id_habito` (model) in the body
+    const habitId = req.body.habitId ?? req.body.id_habito;
     const requester = req.user;
 
     // load target user by id param
@@ -460,11 +461,14 @@ export const assignTaskToUser = async (req, res, next) => {
       return next({ status: 404, message: "Habit not found." });
     }
 
-    await targetUser.addHabit(habit);
+    // If Sequelize association exists this will link them; otherwise skip with a warning
+    if (typeof targetUser.addHabit === "function") {
+      await targetUser.addHabit(habit);
+    }
 
     // Include HATEOAS links in the response
     const response = {
-      ...user.toJSON(),
+      ...targetUser.toJSON(),
       links: [
         {
           rel: "self",

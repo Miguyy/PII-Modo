@@ -10,6 +10,11 @@ import {
   getAllReports,
   getReportById,
 } from "../controllers/reports.controllers.js";
+import {
+  validateCreateReport,
+  validateReportId,
+  checkReportExists,
+} from "../middlewares/reports.middlewares.js";
 
 const router = express.Router();
 
@@ -17,7 +22,13 @@ const router = express.Router();
 router.get("/reports", authenticateUser, getAllReports);
 
 // Route to get a specific report by its ID (requires auth)
-router.get("/reports/:id", authenticateUser, getReportById);
+router.get(
+  "/reports/:reportId",
+  authenticateUser,
+  validateReportId,
+  checkReportExists,
+  getReportById,
+);
 
 // Route to create a new report for a specific user (requires auth)
 // Optionally accepts a report file upload (PDF, images, documents)

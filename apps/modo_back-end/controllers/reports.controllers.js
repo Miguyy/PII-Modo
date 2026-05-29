@@ -16,7 +16,9 @@ export const getAllReports = async (req, res, next) => {
 
     const response = reports.map((report) => ({
       ...report.toJSON(),
-      links: [{ rel: "self", method: "GET", href: `/reports/${report.id}` }],
+      links: [
+        { rel: "self", method: "GET", href: `/reports/${report.id_relatorio}` },
+      ],
     }));
 
     res.status(200).json(response);
@@ -32,26 +34,34 @@ export const getAllReports = async (req, res, next) => {
 export const createReport = async (req, res, next) => {
   try {
     // Security Protection: Extract only the allowed fields
-    const { mes, semana, conteudo, id_utilizador } = req.body;
+    const { mes, semana, data_geracao, conteudo, caminho_relatorio } = req.body;
+    const { userId } = req.params;
 
-    // Get Cloudinary URL if file was uploaded
-    const caminho_relatorio = req.file
-      ? req.file.secure_url
-      : req.body.caminho_relatorio;
-
+    // create report using model column names
     const report = await Report.create({
+      id_utilizador: userId,
       mes,
       semana,
-      conteudo: conteudo || "",
-      id_utilizador,
+      data_geracao: data_geracao ?? undefined,
+      conteudo,
       caminho_relatorio,
     });
 
     res.status(201).json({
       ...report.toJSON(),
-      links: [{ rel: "self", method: "GET", href: `/reports/${report.id}` }],
+      links: [
+        { rel: "self", method: "GET", href: `/reports/${report.id_relatorio}` },
+      ],
     });
   } catch (error) {
+    if (error.name === "SequelizeValidationError") {
+      return next({
+        status: 400,
+        message: "Validation failed.",
+        errors: { message: [error.message] },
+      });
+    }
+
     if (error.name === "SequelizeUniqueConstraintError") {
       return next({
         status: 409,
@@ -75,7 +85,9 @@ export const getReportById = async (req, res, next) => {
 
     res.status(200).json({
       ...report.toJSON(),
-      links: [{ rel: "self", method: "GET", href: `/reports/${report.id}` }],
+      links: [
+        { rel: "self", method: "GET", href: `/reports/${report.id_relatorio}` },
+      ],
     });
   } catch (error) {
     return next({ status: 500, message: "Internal server error." });
