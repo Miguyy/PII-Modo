@@ -76,3 +76,63 @@ export const getTaskImpacts = async (req, res, next) => {
     });
   }
 };
+
+/**
+ * createImpact(req, res, next)
+ * Creates an Impact record for a given task (taskId param).
+ */
+export const createImpact = async (req, res, next) => {
+  try {
+    const { taskId } = req.params;
+    const { tipo_impacto, valor_por_unidade, unidade } = req.body;
+
+    if (!tipo_impacto || !valor_por_unidade || !unidade) {
+      return next({
+        status: 400,
+        message: "Validation failed.",
+        errors: {
+          tipo_impacto: ["Required"],
+          valor_por_unidade: ["Required"],
+          unidade: ["Required"],
+        },
+      });
+    }
+
+    const value = Number(valor_por_unidade);
+    if (Number.isNaN(value) || value <= 0)
+      return next({ status: 400, message: "Invalid valor_por_unidade." });
+
+    const impact = await Impact.create({
+      id_tarefa: Number(taskId),
+      tipo_impacto,
+      valor_por_unidade: value,
+      unidade,
+    });
+
+    res.status(201).json({
+      ...impact.toJSON(),
+      links: [
+        { rel: "self", method: "GET", href: `/impacts/${impact.id_impacto}` },
+      ],
+    });
+  } catch (error) {
+    return next({ status: 500, message: "Internal server error." });
+  }
+};
+
+/**
+ * deleteImpact(req, res, next)
+ * Deletes an Impact by its id_impacto.
+ */
+export const deleteImpact = async (req, res, next) => {
+  try {
+    const { impactId } = req.params;
+    const impact = await Impact.findByPk(impactId);
+    if (!impact) return next({ status: 404, message: "Impact not found." });
+
+    await impact.destroy();
+    res.status(204).send();
+  } catch (error) {
+    return next({ status: 500, message: "Internal server error." });
+  }
+};
