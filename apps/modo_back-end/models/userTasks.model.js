@@ -39,10 +39,12 @@ export default (sequelize, DataTypes) =>
         allowNull: true,
         validate: {
           isValidEndDate(value) {
+            // Only enforce when the task is marked completed: data_conclusao
+            // must be after data_inicio. Previous logic threw unconditionally
+            // when estado_tarefa === 'Completed'. Fix to validate the date.
             if (
-              this.estado_tarefa === "Completed" ||
-              value === null ||
-              value <= this.data_inicio
+              this.estado_tarefa === "Completed" &&
+              (value === null || value <= this.data_inicio)
             ) {
               throw new Error(
                 "data_conclusao must be after data_inicio when estado_tarefa is 'Completed'",

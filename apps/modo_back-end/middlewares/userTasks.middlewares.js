@@ -44,8 +44,11 @@ export const validateUserTaskIds = (req, res, next) => {
 export const checkUserTaskExists = async (req, res, next) => {
   const { userId, taskId } = req.params;
 
+  // import the join model lazily to avoid circular imports
+  const { UserTasks: UserTask } = await import("../config/db.config.js");
+
   const userTask = await UserTask.findOne({
-    where: { userId, taskId },
+    where: { id_utilizador: Number(userId), id_tarefa: Number(taskId) },
   });
 
   if (!userTask) {

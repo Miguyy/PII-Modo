@@ -6,7 +6,7 @@
 */
 
 // Import user tasks data
-import { UserTasks, User, Task } from "../config/db.config.js";
+import { UserTasks as UserTask, User, Task } from "../config/db.config.js";
 
 /**
  * getAllUserTasks(req, res, next)
@@ -19,27 +19,37 @@ export const getAllUserTasks = async (req, res, next) => {
   try {
     const { userId, habitId } = req.params;
 
-    const userTasks = await UserTask.findAll({
-      where: { userId },
-      include: {
-        model: Task,
-        where: { habitId },
-      },
-    });
-    // Include HATEOAS links in the response
-    const response = userTasks.map((ut) => ({
-      ...ut.toJSON(),
-      links: [
-        {
-          rel: "self",
-          method: "GET",
-          href: `/users/${userId}/tasks/${ut.taskId}`,
-        },
-      ],
-    }));
+    // Query the join table and fetch the Task for each entry to avoid
+    // association/include complexity (keeps behavior simple and explicit).
+    const userTaskWhere = { id_utilizador: Number(userId) };
+
+    const userTasks = await UserTask.findAll({ where: userTaskWhere });
+
+    const response = [];
+    for (const ut of userTasks) {
+      const utJson = ut.toJSON();
+      const task = await Task.findByPk(utJson.id_tarefa);
+      // If a habitId filter was provided, skip tasks that don't belong
+      // to that habit.
+      if (habitId && (!task || task.toJSON().id_habito !== Number(habitId)))
+        continue;
+
+      response.push({
+        ...utJson,
+        task: task ? task.toJSON() : null,
+        links: [
+          {
+            rel: "self",
+            method: "GET",
+            href: `/users/${userId}/tasks/${utJson.id_tarefa}`,
+          },
+        ],
+      });
+    }
 
     res.status(200).json(response);
   } catch (error) {
+    console.error("getAllUserTasks error:", error);
     // Handle specific errors: 500
     return next({ status: 500, message: "Internal server error." });
   }
@@ -58,7 +68,48 @@ export const assignTaskToUser = async (req, res, next) => {
     const { userId } = req.params;
     const { taskId } = req.body;
 
-    if (!taskId || !/^\d+$/.test(taskId)) {
+    // Allow either assigning an existing task by `taskId` or creating
+    // a new task inline (payload contains task fields like `nome_tarefa`).
+    let resolvedTaskId = null;
+
+    if (taskId && /^\d+$/.test(String(taskId))) {
+      resolvedTaskId = Number(taskId);
+    } else if (req.body.nome_tarefa || req.body.nome) {
+      // Create a new Task using provided payload fields
+      const {
+        id_habito,
+        nome_tarefa,
+        nome,
+        pontos_tarefa,
+        tipo_tarefa,
+        localizacao_tarefa,
+        prioridade_tarefa,
+        duracao_temporizador,
+        quantidade_necessaria,
+      } = req.body;
+
+      const name = nome_tarefa ?? nome;
+      if (!name) {
+        return next({
+          status: 400,
+          message: "Validation failed.",
+          errors: { nome: ["Name is mandatory."] },
+        });
+      }
+
+      const created = await Task.create({
+        id_habito: id_habito ?? null,
+        nome_tarefa: name,
+        pontos_tarefa: pontos_tarefa ?? 0,
+        tipo_tarefa,
+        localizacao_tarefa,
+        prioridade_tarefa,
+        duracao_temporizador: duracao_temporizador ?? null,
+        quantidade_necessaria: quantidade_necessaria ?? null,
+      });
+
+      resolvedTaskId = created.toJSON().id_tarefa;
+    } else {
       return next({
         status: 400,
         message: "Validation failed.",
@@ -67,7 +118,10 @@ export const assignTaskToUser = async (req, res, next) => {
     }
 
     const existing = await UserTask.findOne({
-      where: { userId, taskId },
+      where: {
+        id_utilizador: Number(userId),
+        id_tarefa: Number(resolvedTaskId),
+      },
     });
 
     if (existing) {
@@ -79,10 +133,11 @@ export const assignTaskToUser = async (req, res, next) => {
     }
 
     const userTask = await UserTask.create({
-      userId,
-      taskId,
-      progress: 0,
-      completed: false,
+      id_utilizador: Number(userId),
+      id_tarefa: Number(resolvedTaskId),
+      progresso: 0,
+      tarefa_ativa: true,
+      estado_tarefa: "Pending",
     });
 
     // Include HATEOAS links as the response
@@ -92,12 +147,78 @@ export const assignTaskToUser = async (req, res, next) => {
         {
           rel: "self",
           method: "GET",
-          href: `/users/${userId}/tasks/${taskId}`,
+          href: `/users/${userId}/tasks/${resolvedTaskId}`,
         },
       ],
     });
   } catch (error) {
+    console.error("assignTaskToUser error:", error);
     // Handle specific errors: 500
+    return next({ status: 500, message: "Internal server error." });
+  }
+};
+
+/**
+ * assignHabitTasksToUser(req, res, next)
+ * Assigns all tasks belonging to a habit to the specified user.
+ * Accepts `{ habitId }` or `{ id_habito }` in the request body.
+ */
+export const assignHabitTasksToUser = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const habitId = req.body.habitId ?? req.body.id_habito;
+
+    if (!habitId || !/^\d+$/.test(String(habitId))) {
+      return next({
+        status: 400,
+        message: "Validation failed.",
+        errors: { habitId: ["Invalid habit ID."] },
+      });
+    }
+
+    // Find all tasks for the habit
+    const tasks = await Task.findAll({ where: { id_habito: Number(habitId) } });
+
+    if (!tasks || tasks.length === 0) {
+      return next({
+        status: 404,
+        message: "Resource not found.",
+        errors: { habit: ["No tasks found for this habit."] },
+      });
+    }
+
+    const created = [];
+    const skipped = [];
+
+    for (const t of tasks) {
+      const tid = t.toJSON().id_tarefa;
+      const exists = await UserTask.findOne({
+        where: { id_utilizador: Number(userId), id_tarefa: Number(tid) },
+      });
+      if (exists) {
+        skipped.push(tid);
+        continue;
+      }
+
+      const ut = await UserTask.create({
+        id_utilizador: Number(userId),
+        id_tarefa: Number(tid),
+        progresso: 0,
+        tarefa_ativa: true,
+        estado_tarefa: "Pending",
+      });
+      created.push(ut.toJSON());
+    }
+
+    res.status(201).json({
+      description: "Tasks assigned.",
+      created: created.length,
+      skipped: skipped.length,
+      createdItems: created,
+      links: [{ rel: "self", method: "GET", href: `/users/${userId}/tasks` }],
+    });
+  } catch (error) {
+    console.error("assignHabitTasksToUser error:", error);
     return next({ status: 500, message: "Internal server error." });
   }
 };
@@ -112,7 +233,7 @@ export const deleteUserTask = async (req, res, next) => {
   try {
     const { userId, taskId } = req.params;
     const deleted = await UserTask.destroy({
-      where: { userId, taskId },
+      where: { id_utilizador: Number(userId), id_tarefa: Number(taskId) },
     });
 
     if (!deleted) {
@@ -121,6 +242,7 @@ export const deleteUserTask = async (req, res, next) => {
 
     res.status(204).send();
   } catch (error) {
+    console.error("deleteUserTask error:", error);
     // Handle specific errors: 500
     return next({ status: 500, message: "Internal server error." });
   }
@@ -143,11 +265,12 @@ export const getUserTaskById = async (req, res, next) => {
         {
           rel: "self",
           method: "GET",
-          href: `/users/${userTask.userId}/tasks/${userTask.taskId}`,
+          href: `/users/${req.params.userId}/tasks/${req.params.taskId}`,
         },
       ],
     });
   } catch (error) {
+    console.error("getUserTaskById error:", error);
     // Handle specific errors: 500
     return next({ status: 500, message: "Internal server error." });
   }
@@ -163,11 +286,19 @@ export const getUserTaskById = async (req, res, next) => {
 export const updateUserTask = async (req, res, next) => {
   try {
     const userTask = req.userTask;
-    const { progress } = req.body;
+    // Accept both `progress` (EN) and `progresso` (PT) from clients
+    const { progress, progresso } = req.body;
+    const raw = progress ?? progresso;
+    const value = Number(raw);
+    if (Number.isNaN(value)) {
+      return next({
+        status: 400,
+        message: "Validation failed.",
+        errors: { progresso: ["Invalid progress value."] },
+      });
+    }
 
-    await userTask.update({
-      progress: typeof progress === "number" ? progress : userTask.progress,
-    });
+    await userTask.update({ progresso: value });
 
     // Include HATEOAS links in the response
     res.status(200).json({
@@ -176,11 +307,12 @@ export const updateUserTask = async (req, res, next) => {
         {
           rel: "self",
           method: "GET",
-          href: `/users/${userTask.userId}/tasks/${userTask.taskId}`,
+          href: `/users/${req.params.userId}/tasks/${req.params.taskId}`,
         },
       ],
     });
   } catch (error) {
+    console.error("updateUserTask error:", error);
     // Handle specific errors: 500
     return next({ status: 500, message: "Internal server error." });
   }
@@ -197,8 +329,9 @@ export const completeUserTask = async (req, res, next) => {
     const userTask = req.userTask;
 
     await userTask.update({
-      completed: true,
-      progress: 100,
+      estado_tarefa: "Completed",
+      progresso: 100,
+      data_conclusao: new Date(),
     });
 
     // Include HATEOAS links in the response
@@ -208,11 +341,19 @@ export const completeUserTask = async (req, res, next) => {
         {
           rel: "self",
           method: "GET",
-          href: `/users/${userTask.userId}/tasks/${userTask.taskId}`,
+          href: `/users/${req.params.userId}/tasks/${req.params.taskId}`,
         },
       ],
     });
   } catch (error) {
+    console.error("completeUserTask error:", error);
+    if (error.name === "SequelizeValidationError") {
+      return next({
+        status: 400,
+        message: "Validation failed.",
+        errors: { validation: error.errors.map((e) => e.message) },
+      });
+    }
     // Handle specific errors: 500
     return next({ status: 500, message: "Internal server error." });
   }
