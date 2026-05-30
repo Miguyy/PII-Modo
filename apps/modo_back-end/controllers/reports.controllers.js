@@ -124,40 +124,16 @@ export const getReportById = async (req, res, next) => {
 };
 
 /**
- * updateReport(req, res, next)
- * Updates the report instance.
- */
-/* export const updateReport = async (req, res, next) => {
-  try {
-    const report = req.report;
-
-    // Security Protection: Extract only the allowed fields for update
-    const { mes, semana } = req.body;
-
-    const updated = await report.update({
-      mes: mes ?? report.mes,
-      semana: semana ?? report.semana,
-    });
-
-    res.status(200).json({
-      ...updated.toJSON(),
-      links: [{ rel: "self", method: "GET", href: `/reports/${report.id}` }],
-    });
-  } catch (error) {
-    return next({ status: 500, message: "Internal server error." });
-  }
-}; */
-
-/**
  * deleteReport(req, res, next)
  * Deletes the report attached to `req.report`.
  */
-/* export const deleteReport = async (req, res, next) => {
+export const deleteReport = async (req, res, next) => {
   try {
     const report = req.report;
+    if (!report) return next({ status: 404, message: "Report not found." });
     await report.destroy();
     res.status(204).send();
   } catch (error) {
     return next({ status: 500, message: "Internal server error." });
   }
-}; */
+};

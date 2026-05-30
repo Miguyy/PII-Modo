@@ -9,6 +9,7 @@ import {
   createReport,
   getAllReports,
   getReportById,
+  deleteReport,
 } from "../controllers/reports.controllers.js";
 import {
   validateCreateReport,
@@ -28,6 +29,15 @@ router.get(
   validateReportId,
   checkReportExists,
   getReportById,
+);
+
+// Delete a report
+router.delete(
+  "/reports/:reportId",
+  authenticateUser,
+  validateReportId,
+  checkReportExists,
+  deleteReport,
 );
 
 // Route to create a new report for a specific user (requires auth)
