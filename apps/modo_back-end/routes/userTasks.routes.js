@@ -16,11 +16,13 @@ import {
 
 // Import middlewares for users resources
 import { authenticateUser } from "../middlewares/users.middlewares.js";
+import uploadReport from "../utils/upload.utils.js";
 
 // Import controllers for users tasks resources
 import {
   getAllUserTasks,
   assignTaskToUser,
+  assignHabitTasksToUser,
   deleteUserTask,
   getUserTaskById,
   updateUserTask,
@@ -35,8 +37,10 @@ const router = express.Router();
  * Requires authentication and parameter validation.
  * Handler: `getAllUserTasks`
  */
+
+// Support listing all tasks for a user (no habit filter)
 router.get(
-  "/:userId/habits/:habitId/tasks",
+  "/:userId/tasks",
   authenticateUser,
   validateUserTaskIds,
   getAllUserTasks,
@@ -48,11 +52,21 @@ router.get(
  * authentication and parameter validation.
  * Handler: `assignTaskToUser`
  */
+
+// Support assigning a task to a user by taskId in the body
 router.post(
-  "/:userId/habits/:habitId/tasks",
+  "/:userId/tasks",
   authenticateUser,
   validateUserTaskIds,
   assignTaskToUser,
+);
+
+// Assign all tasks from a habit to the user
+router.post(
+  "/:userId/habits",
+  authenticateUser,
+  validateUserTaskIds,
+  assignHabitTasksToUser,
 );
 
 /**
@@ -78,19 +92,20 @@ router.get(
 router.patch(
   "/:userId/tasks/:taskId/progress",
   authenticateUser,
+  uploadReport.none(),
   validateUserTaskIds,
   checkUserTaskExists,
   updateUserTask,
 );
 
 /**
- * DELETE /:userId/habits/:habitId/tasks
+ * DELETE /:userId/tasks/:taskId
  * Purpose: Remove an assigned task from a user. Requires auth and
  * validation.
  * Handler: `deleteUserTask`
  */
 router.delete(
-  "/:userId/habits/:habitId/tasks",
+  "/:userId/tasks/:taskId",
   authenticateUser,
   validateUserTaskIds,
   deleteUserTask,

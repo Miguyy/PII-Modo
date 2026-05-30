@@ -25,8 +25,10 @@ import {
   updateUser,
   deleteUser,
   loginUser,
-  assignTaskToUser,
 } from "../controllers/users.controllers.js";
+
+// Use the userTasks controller to batch-assign habit tasks to a user
+import { assignHabitTasksToUser } from "../controllers/userTasks.controllers.js";
 
 /* import { verifyToken, requireAdmin } from "../utils/auth.utils.js"; */
 
@@ -97,7 +99,7 @@ router.post(
   "/:userId/habits",
   authenticateUser,
   validateUserId,
-  assignTaskToUser,
+  assignHabitTasksToUser,
 );
 
 export default router;
