@@ -12,6 +12,7 @@ import {
   validateLocationPayload,
   checkLocationExists,
 } from "../middlewares/locations.middlewares.js";
+import { deleteLocation } from "../controllers/locations.controllers.js";
 
 // - Use mergeParams: true to access parameters from the parent router (e.g., :userId)
 // - if this router is nested within another.
@@ -32,5 +33,8 @@ router.patch(
   validateLocationPayload,
   updateLocation,
 );
+
+// Delete the user's location
+router.delete("/", authenticateUser, checkLocationExists, deleteLocation);
 
 export default router;
