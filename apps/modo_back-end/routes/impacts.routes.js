@@ -13,7 +13,10 @@ import { validateTaskId } from "../middlewares/impacts.middlewares.js";
 import { authenticateUser } from "../middlewares/users.middlewares.js";
 
 // Import controllers for impacts resources
-import { getAllImpacts } from "../controllers/impacts.controllers.js";
+import {
+  getAllImpacts,
+  deleteImpact,
+} from "../controllers/impacts.controllers.js";
 
 const router = express.Router();
 
@@ -23,5 +26,25 @@ const router = express.Router();
  * Handler: `getAllImpacts`
  */
 router.get("/", authenticateUser, getAllImpacts);
+
+// Delete an impact by id
+router.delete(
+  "/:impactId",
+  authenticateUser,
+  async (req, res, next) => {
+    // simple numeric validation for impactId
+    const { impactId } = req.params;
+    if (!Number.isInteger(Number(impactId)) || Number(impactId) <= 0) {
+      return res
+        .status(400)
+        .json({
+          description: "Invalid request.",
+          errors: { impactId: ["Invalid impact ID format."] },
+        });
+    }
+    next();
+  },
+  deleteImpact,
+);
 
 export default router;
