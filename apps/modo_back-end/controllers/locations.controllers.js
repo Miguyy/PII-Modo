@@ -7,6 +7,29 @@
 import { Location } from "../config/db.config.js";
 
 /**
+ * getAllLocations(req, res, next)
+ * Returns all stored locations across users. Useful for admin views.
+ */
+export const getAllLocations = async (req, res, next) => {
+  try {
+    const locations = await Location.findAll();
+    const response = locations.map((loc) => ({
+      ...loc.toJSON(),
+      links: [
+        {
+          rel: "self",
+          method: "GET",
+          href: `/users/${loc.id_utilizador}/location`,
+        },
+      ],
+    }));
+    res.status(200).json(response);
+  } catch (error) {
+    return next({ status: 500, message: "Internal server error." });
+  }
+};
+
+/**
  * getLocation(req, res, next)
  * Returns the location attached to `req.location` by middleware.
  */
@@ -114,17 +137,13 @@ export const updateLocation = async (req, res, next) => {
   }
 };
 
-/**
- * deleteLocation(req, res, next)
- * Deletes the location attached to `req.location`.
- */
-/* export const deleteLocation = async (req, res, next) => {
+export const deleteLocation = async (req, res, next) => {
   try {
     const location = req.location;
+    if (!location) return next({ status: 404, message: "Location not found." });
     await location.destroy();
     res.status(204).send();
   } catch (error) {
     return next({ status: 500, message: "Internal server error." });
   }
 };
- */
