@@ -42,20 +42,26 @@ export const getAllNotifications = async (req, res, next) => {
   }
 };
 
-/**
- * createNotification(req, res, next)
- * Creates a new notification. Destructures the payload to prevent mass assignment vulnerabilities.
- */
-/* export const createNotification = async (req, res, next) => {
+export const createNotification = async (req, res, next) => {
   try {
-    // Security Protection: Extract only the allowed fields
-    // Note: Adjust 'titulo' and 'mensagem' if your database column names differ
-    const { userId, titulo, mensagem } = req.body;
+    const { userId } = req.params;
+    const { mensagem, tipo_notificacao } = req.body;
+
+    if (!mensagem || !tipo_notificacao) {
+      return next({
+        status: 400,
+        message: "Validation failed.",
+        errors: {
+          mensagem: ["mensagem is required"],
+          tipo_notificacao: ["tipo_notificacao is required"],
+        },
+      });
+    }
 
     const notification = await Notification.create({
-      userId,
-      titulo,
+      id_utilizador: Number(userId),
       mensagem,
+      tipo_notificacao,
       lida: false,
     });
 
@@ -65,7 +71,7 @@ export const getAllNotifications = async (req, res, next) => {
         {
           rel: "self",
           method: "GET",
-          href: `/notifications/${notification.id}`,
+          href: `/notifications/${notification.id_notificacao}`,
         },
       ],
     });
@@ -73,14 +79,12 @@ export const getAllNotifications = async (req, res, next) => {
     return next({ status: 500, message: "Internal server error." });
   }
 };
- */
-/**
- * getNotificationById(req, res, next)
- * Returns the notification attached to `req.notification` by the middleware.
- */
-/* export const getNotificationById = async (req, res, next) => {
+
+export const getNotificationById = async (req, res, next) => {
   try {
     const notification = req.notification;
+    if (!notification)
+      return next({ status: 404, message: "Notification not found." });
 
     res.status(200).json({
       ...notification.toJSON(),
@@ -88,7 +92,7 @@ export const getAllNotifications = async (req, res, next) => {
         {
           rel: "self",
           method: "GET",
-          href: `/notifications/${notification.id}`,
+          href: `/notifications/${notification.id_notificacao}`,
         },
       ],
     });
@@ -96,7 +100,6 @@ export const getAllNotifications = async (req, res, next) => {
     return next({ status: 500, message: "Internal server error." });
   }
 };
- */
 /**
  * updateNotification(req, res, next)
  * Updates the notification state. Restricted to updating only the 'lida' field.
@@ -189,19 +192,24 @@ export const updateNotificationByBody = async (req, res, next) => {
   }
 };
 
-/**
- * deleteNotification(req, res, next)
- * Deletes the notification attached to `req.notification`.
- */
-/* export const deleteNotification = async (req, res, next) => {
+export const deleteNotification = async (req, res, next) => {
   try {
-    const notification = req.notification;
+    let notification = req.notification;
+    const idParam = req.params.notificationId || req.body.id_notificacao;
+    if (!notification) {
+      if (!idParam)
+        return next({
+          status: 400,
+          message: "Missing notification identifier.",
+        });
+      notification = await Notification.findByPk(idParam);
+      if (!notification)
+        return next({ status: 404, message: "Notification not found." });
+    }
 
     await notification.destroy();
-
     res.status(204).send();
   } catch (error) {
     return next({ status: 500, message: "Internal server error." });
   }
 };
- */

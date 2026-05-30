@@ -5,8 +5,11 @@ import express from "express";
 import { authenticateUser } from "../middlewares/users.middlewares.js";
 import {
   getAllNotifications,
+  createNotification,
+  getNotificationById,
   updateNotification,
   updateNotificationByBody,
+  deleteNotification,
 } from "../controllers/notifications.controllers.js";
 import {
   validateNotificationId,
@@ -16,11 +19,30 @@ import {
 
 const router = express.Router();
 
+// GET /notifications - list all notifications (admin view)
+router.get("/notifications", authenticateUser, getAllNotifications);
+
 // Route to get all notifications for a specific user (requires auth)
 router.get(
   "/users/:userId/notifications",
   authenticateUser,
   getAllNotifications,
+);
+
+// Create a notification for a user
+router.post(
+  "/users/:userId/notifications",
+  authenticateUser,
+  createNotification,
+);
+
+// Get a notification by id
+router.get(
+  "/notifications/:notificationId",
+  authenticateUser,
+  validateNotificationId,
+  checkNotificationExists,
+  getNotificationById,
 );
 
 // Route to mark a specific notification as read (requires auth)
@@ -40,6 +62,15 @@ router.patch(
   authenticateUser,
   validateUpdateNotification,
   updateNotificationByBody,
+);
+
+// Delete a notification
+router.delete(
+  "/notifications/:notificationId",
+  authenticateUser,
+  validateNotificationId,
+  checkNotificationExists,
+  deleteNotification,
 );
 
 export default router;
