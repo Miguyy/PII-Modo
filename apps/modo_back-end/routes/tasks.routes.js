@@ -30,7 +30,10 @@ import {
 } from "../controllers/tasks.controllers.js";
 
 // Import controllers for impacts resources to handle the `/tasks/:taskId/impacts` endpoint
-import { getTaskImpacts } from "../controllers/impacts.controllers.js";
+import {
+  getTaskImpacts,
+  createImpact,
+} from "../controllers/impacts.controllers.js";
 
 const router = express.Router();
 
@@ -83,6 +86,15 @@ router.get(
   validateTaskId,
   checkTaskExists,
   getTaskImpacts,
+);
+
+// Create an impact for a specific task
+router.post(
+  "/:taskId/impacts",
+  authenticateUser,
+  validateTaskId,
+  checkTaskExists,
+  createImpact,
 );
 
 /**
