@@ -1,4 +1,4 @@
-const createError = ({ status, description, errors }) => {
+export const createError = ({ status, description, errors }) => {
   const error = new Error(description);
   error.status = status;
   if (errors) {
@@ -6,6 +6,12 @@ const createError = ({ status, description, errors }) => {
   }
   return error;
 };
+
+export const forbiddenError = (description = "Forbidden.") =>
+  createError({ status: 403, description });
+
+export const unauthorizedError = (description = "Unauthorized.") =>
+  createError({ status: 401, description });
 
 export const validationError = (errors, description = "Validation failed") =>
   createError({
