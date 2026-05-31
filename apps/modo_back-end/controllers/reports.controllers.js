@@ -12,7 +12,19 @@ import cloudinary from "../config/cloudinary.config.js";
  */
 export const getAllReports = async (req, res, next) => {
   try {
-    const reports = await Report.findAll();
+    // If no user filter provided, only admin can access all reports
+    const requester = req.user;
+    const requesterRole = (
+      (requester &&
+        (requester.tipo_utilizador || requester.dataValues?.tipo_utilizador)) ||
+      ""
+    ).toLowerCase();
+    const { userId } = req.query;
+    if (!userId && requesterRole !== "admin")
+      return next({ status: 403, message: "Forbidden." });
+
+    const where = userId ? { id_utilizador: Number(userId) } : {};
+    const reports = await Report.findAll({ where });
 
     const response = reports.map((report) => ({
       ...report.toJSON(),
@@ -66,6 +78,21 @@ export const createReport = async (req, res, next) => {
       }
     }
 
+    // Authorization: only admin or the user themself may create a report for a user
+    const requester = req.user;
+    const requesterRole = (
+      (requester &&
+        (requester.tipo_utilizador || requester.dataValues?.tipo_utilizador)) ||
+      ""
+    ).toLowerCase();
+    if (
+      requesterRole !== "admin" &&
+      Number(requester.id_utilizador || requester.dataValues?.id_utilizador) !==
+        Number(userId)
+    ) {
+      return next({ status: 403, message: "Forbidden." });
+    }
+
     // create report using model column names
     const report = await Report.create({
       id_utilizador: userId,
@@ -111,6 +138,22 @@ export const createReport = async (req, res, next) => {
 export const getReportById = async (req, res, next) => {
   try {
     const report = req.report;
+
+    // Authorization: only admin or owner may fetch this report
+    const requester = req.user;
+    const requesterRole = (
+      (requester &&
+        (requester.tipo_utilizador || requester.dataValues?.tipo_utilizador)) ||
+      ""
+    ).toLowerCase();
+    const requesterId =
+      requester &&
+      (requester.id_utilizador || requester.dataValues?.id_utilizador);
+    if (
+      requesterRole !== "admin" &&
+      Number(requesterId) !== Number(report.id_utilizador)
+    )
+      return next({ status: 403, message: "Forbidden." });
 
     res.status(200).json({
       ...report.toJSON(),
