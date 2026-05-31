@@ -83,6 +83,15 @@ export const getTaskImpacts = async (req, res, next) => {
  */
 export const createImpact = async (req, res, next) => {
   try {
+    const requester = req.user;
+    const requesterRole = (
+      (requester &&
+        (requester.tipo_utilizador || requester.dataValues?.tipo_utilizador)) ||
+      ""
+    ).toLowerCase();
+    if (requesterRole !== "admin") {
+      return next({ status: 403, message: "Forbidden." });
+    }
     const { taskId } = req.params;
     const { tipo_impacto, valor_por_unidade, unidade } = req.body;
 
@@ -126,6 +135,15 @@ export const createImpact = async (req, res, next) => {
  */
 export const deleteImpact = async (req, res, next) => {
   try {
+    const requester = req.user;
+    const requesterRole = (
+      (requester &&
+        (requester.tipo_utilizador || requester.dataValues?.tipo_utilizador)) ||
+      ""
+    ).toLowerCase();
+    if (requesterRole !== "admin") {
+      return next({ status: 403, message: "Forbidden." });
+    }
     const { impactId } = req.params;
     const impact = await Impact.findByPk(impactId);
     if (!impact) return next({ status: 404, message: "Impact not found." });
