@@ -37,6 +37,23 @@ export const getLocation = async (req, res, next) => {
   try {
     const location = req.location;
 
+    // Authorization: only admin or the owner can view this location
+    const requester = req.user;
+    const requesterRole = (
+      (requester &&
+        (requester.tipo_utilizador || requester.dataValues?.tipo_utilizador)) ||
+      ""
+    ).toLowerCase();
+    const requesterId =
+      requester &&
+      (requester.id_utilizador || requester.dataValues?.id_utilizador);
+    if (
+      requesterRole !== "admin" &&
+      Number(requesterId) !== Number(location.id_utilizador)
+    ) {
+      return next({ status: 403, message: "Forbidden." });
+    }
+
     res.status(200).json({
       ...location.toJSON(),
       links: [
@@ -59,6 +76,20 @@ export const getLocation = async (req, res, next) => {
 export const createLocation = async (req, res, next) => {
   try {
     const { userId } = req.params;
+
+    // Only admin or the owner may create a location for the user
+    const requester = req.user;
+    const requesterRole = (
+      (requester &&
+        (requester.tipo_utilizador || requester.dataValues?.tipo_utilizador)) ||
+      ""
+    ).toLowerCase();
+    const requesterId =
+      requester &&
+      (requester.id_utilizador || requester.dataValues?.id_utilizador);
+    if (requesterRole !== "admin" && Number(requesterId) !== Number(userId)) {
+      return next({ status: 403, message: "Forbidden." });
+    }
 
     // Security Protection: Extract only the allowed fields
     const { latitude, longitude, cidade, pais } = req.body || {};
@@ -112,6 +143,23 @@ export const updateLocation = async (req, res, next) => {
   try {
     const location = req.location;
 
+    // Only admin or owner may update location
+    const requester = req.user;
+    const requesterRole = (
+      (requester &&
+        (requester.tipo_utilizador || requester.dataValues?.tipo_utilizador)) ||
+      ""
+    ).toLowerCase();
+    const requesterId =
+      requester &&
+      (requester.id_utilizador || requester.dataValues?.id_utilizador);
+    if (
+      requesterRole !== "admin" &&
+      Number(requesterId) !== Number(location.id_utilizador)
+    ) {
+      return next({ status: 403, message: "Forbidden." });
+    }
+
     // Security Protection: Extract only the allowed fields for update
     const { latitude, longitude, cidade, pais } = req.body || {};
 
@@ -141,6 +189,18 @@ export const deleteLocation = async (req, res, next) => {
   try {
     const location = req.location;
     if (!location) return next({ status: 404, message: "Location not found." });
+
+    // Only admin can delete locations
+    const requester = req.user;
+    const requesterRole = (
+      (requester &&
+        (requester.tipo_utilizador || requester.dataValues?.tipo_utilizador)) ||
+      ""
+    ).toLowerCase();
+    if (requesterRole !== "admin") {
+      return next({ status: 403, message: "Forbidden." });
+    }
+
     await location.destroy();
     res.status(204).send();
   } catch (error) {
