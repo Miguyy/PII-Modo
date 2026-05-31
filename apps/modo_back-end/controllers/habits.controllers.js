@@ -7,6 +7,7 @@
 
 // Import habits data
 import { Habit } from "../config/db.config.js";
+import { Op } from "sequelize";
 import {
   validationError,
   notFoundError,
@@ -23,21 +24,55 @@ import {
  */
 // Controller to get all habits
 export const getAllHabits = async (req, res, next) => {
-  // Extract query parameters for filtering, sorting, and pagination
-  const { nome, sort, page = 1, limit = 10 } = req.query; // TODO: Implement filtering and sorting when the DB/Sequelize are ready
-
+  const {
+    q,
+    sort = "id_habito",
+    order = "ASC",
+    page = 1,
+    limit = 5,
+  } = req.query;
   try {
-    const habits = await Habit.findAll();
-    console.log(`Found ${habits.length} habits in the database.`);
+    const parsedPage = Math.max(Number(page) || 1, 1);
+    const parsedLimit = Math.min(Math.max(Number(limit) || 5, 1), 100);
+    const offset = (parsedPage - 1) * parsedLimit;
 
-    // Include HATEOAS links in the response
-    const response = habits.map((habit) => ({
+    const safeSortFields = new Set(["id_habito", "nome_habito", "categoria"]);
+    const sortField = safeSortFields.has(sort) ? sort : "id_habito";
+    const sortOrder = String(order).toUpperCase() === "DESC" ? "DESC" : "ASC";
+
+    const where = {};
+    if (q) {
+      where[Op.or] = [
+        { nome_habito: { [Op.like]: `%${q}%` } },
+        { categoria: { [Op.like]: `%${q}%` } },
+      ];
+    }
+
+    const { rows, count } = await Habit.findAndCountAll({
+      where,
+      order: [[sortField, sortOrder]],
+      limit: parsedLimit,
+      offset,
+    });
+
+    const response = rows.map((habit) => ({
       ...habit.toJSON(),
       links: [
         { rel: "self", method: "GET", href: `/habits/${habit.id_habito}` },
       ],
     }));
-    res.status(200).json(response);
+
+    res
+      .status(200)
+      .json({
+        meta: {
+          total: count,
+          page: parsedPage,
+          limit: parsedLimit,
+          pages: Math.ceil(count / parsedLimit),
+        },
+        data: response,
+      });
   } catch (error) {
     return next(genericError());
   }

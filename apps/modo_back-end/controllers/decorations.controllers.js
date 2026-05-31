@@ -6,6 +6,7 @@
 */
 
 import { AvatarDecoration } from "../config/db.config.js";
+import { Op } from "sequelize";
 import { UserDecorations } from "../config/db.config.js";
 import {
   conflictError,
@@ -20,9 +21,38 @@ import cloudinary from "../config/cloudinary.config.js";
  */
 export const getAllDecorations = async (req, res, next) => {
   try {
-    const decorations = await AvatarDecoration.findAll();
+    const {
+      q,
+      sort = "id_decoracao",
+      order = "ASC",
+      page = 1,
+      limit = 10,
+    } = req.query;
+    const parsedPage = Math.max(Number(page) || 1, 1);
+    const parsedLimit = Math.min(Math.max(Number(limit) || 10, 1), 200);
+    const offset = (parsedPage - 1) * parsedLimit;
 
-    const response = decorations.map((decoration) => ({
+    const safeSortFields = new Set([
+      "id_decoracao",
+      "nome_decoracao",
+      "nivel_necessario",
+    ]);
+    const sortField = safeSortFields.has(sort) ? sort : "id_decoracao";
+    const sortOrder = String(order).toUpperCase() === "DESC" ? "DESC" : "ASC";
+
+    const where = {};
+    if (q) {
+      where[Op.or] = [{ nome_decoracao: { [Op.like]: `%${q}%` } }];
+    }
+
+    const { rows, count } = await AvatarDecoration.findAndCountAll({
+      where,
+      order: [[sortField, sortOrder]],
+      limit: parsedLimit,
+      offset,
+    });
+
+    const response = rows.map((decoration) => ({
       ...decoration.toJSON(),
       links: [
         {
@@ -33,7 +63,17 @@ export const getAllDecorations = async (req, res, next) => {
       ],
     }));
 
-    res.status(200).json(response);
+    res
+      .status(200)
+      .json({
+        meta: {
+          total: count,
+          page: parsedPage,
+          limit: parsedLimit,
+          pages: Math.ceil(count / parsedLimit),
+        },
+        data: response,
+      });
   } catch (error) {
     return next(genericError());
   }

@@ -10,6 +10,7 @@ import bcrypt from "bcryptjs";
 import cloudinary from "../config/cloudinary.config.js";
 // Import users data
 import { User, Habit } from "../config/db.config.js";
+import { Op } from "sequelize";
 import {
   validationError,
   forbiddenError,
@@ -116,23 +117,66 @@ export const createUser = async (req, res, next) => {
  */
 // Controller to get all users
 export const getAllUsers = async (req, res, next) => {
-  // Extract pagination and filtering parameters from query string
-  const { page = 1, limit = 5, role } = req.query; // TODO: Implement filtering when the DB/Sequelize are ready
+  const {
+    page = 1,
+    limit = 5,
+    role,
+    sort = "id_utilizador",
+    order = "ASC",
+    q,
+  } = req.query;
 
   try {
-    const users = await User.findAll();
-    console.log(`Found ${users.length} users in the database.`);
+    const parsedPage = Math.max(Number(page) || 1, 1);
+    const parsedLimit = Math.min(Math.max(Number(limit) || 5, 1), 100);
+    const offset = (parsedPage - 1) * parsedLimit;
 
-    // Include HATEOAS links in the response
-    const response = users.map((user) => ({
+    const safeSortFields = new Set([
+      "id_utilizador",
+      "nome",
+      "email",
+      "nivel",
+      "pontos",
+      "data_criacao_conta",
+    ]);
+    const sortField = safeSortFields.has(sort) ? sort : "id_utilizador";
+    const sortOrder = String(order).toUpperCase() === "DESC" ? "DESC" : "ASC";
+
+    const where = {};
+    if (role) where.tipo_utilizador = role;
+    if (q) {
+      where[Op.or] = [
+        { nome: { [Op.like]: `%${q}%` } },
+        { email: { [Op.like]: `%${q}%` } },
+      ];
+    }
+
+    const { rows, count } = await User.findAndCountAll({
+      where,
+      order: [[sortField, sortOrder]],
+      limit: parsedLimit,
+      offset,
+    });
+
+    const response = rows.map((user) => ({
       ...user.toJSON(),
       links: [
         { rel: "self", method: "GET", href: `/users/${user.id_utilizador}` },
       ],
     }));
-    res.status(200).json(response);
+
+    res
+      .status(200)
+      .json({
+        meta: {
+          total: count,
+          page: parsedPage,
+          limit: parsedLimit,
+          pages: Math.ceil(count / parsedLimit),
+        },
+        data: response,
+      });
   } catch (error) {
-    // Handle specific errors: 500
     return next(genericError());
   }
 };

@@ -7,6 +7,7 @@
 
 // Import tasks data
 import { Task } from "../config/db.config.js";
+import { Op } from "sequelize";
 import {
   validationError,
   conflictError,
@@ -22,19 +23,39 @@ import {
 // Controller to get all tasks
 export const getAllTasks = async (req, res, next) => {
   const {
-    tipo_tarefa,
-    localizacao_tarefa,
-    prioridade_tarefa,
-    sort, // TODO: Implement sorting and filtering
-    page = 1, // after we have sequelize and DB implemented
-    limit = 10,
+    q,
+    sort = "id_tarefa",
+    order = "ASC",
+    page = 1,
+    limit = 5,
   } = req.query;
-
   try {
-    const tasks = await Task.findAll();
+    const parsedPage = Math.max(Number(page) || 1, 1);
+    const parsedLimit = Math.min(Math.max(Number(limit) || 5, 1), 100);
+    const offset = (parsedPage - 1) * parsedLimit;
 
-    // Include HATEOAS links in the response
-    const response = tasks.map((task) => ({
+    const safeSortFields = new Set([
+      "id_tarefa",
+      "nome_tarefa",
+      "pontos_tarefa",
+      "prioridade_tarefa",
+    ]);
+    const sortField = safeSortFields.has(sort) ? sort : "id_tarefa";
+    const sortOrder = String(order).toUpperCase() === "DESC" ? "DESC" : "ASC";
+
+    const where = {};
+    if (q) {
+      where[Op.or] = [{ nome_tarefa: { [Op.like]: `%${q}%` } }];
+    }
+
+    const { rows, count } = await Task.findAndCountAll({
+      where,
+      order: [[sortField, sortOrder]],
+      limit: parsedLimit,
+      offset,
+    });
+
+    const response = rows.map((task) => ({
       ...task.toJSON(),
       links: [
         {
@@ -45,7 +66,17 @@ export const getAllTasks = async (req, res, next) => {
       ],
     }));
 
-    res.status(200).json(response);
+    res
+      .status(200)
+      .json({
+        meta: {
+          total: count,
+          page: parsedPage,
+          limit: parsedLimit,
+          pages: Math.ceil(count / parsedLimit),
+        },
+        data: response,
+      });
   } catch (error) {
     return next(genericError());
   }
