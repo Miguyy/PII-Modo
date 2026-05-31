@@ -235,6 +235,170 @@
           </table>
         </div>
       </div>
+
+      <!-- CRUD habits -->
+      <section id="habit-management">
+        <div class="d-flex flex-row gap-3 align-items-center mb-3 mt-5">
+          <div style="max-width: 1100px; width: 100%; margin: 0 auto">
+            <div class="d-flex align-items-center justify-content-between gap-3">
+              <div class="d-flex align-items-center gap-3" style="flex: 1">
+                <div class="input-group input-group-sm search-group flex-grow-1">
+                  <span class="input-group-text bg-white border-end-0 search-icon">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      fill="#355D4C"
+                      viewBox="0 0 16 16"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85zm-5.242 1.156a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"
+                      />
+                    </svg>
+                  </span>
+                  <input
+                    v-model="habitSearch"
+                    class="form-control form-control-sm border-start-0 search-input"
+                    placeholder="Search habits..."
+                    aria-label="Search habits..."
+                  />
+                </div>
+
+                <div class="total-badge flex-shrink-0 align-self-center">
+                  Total: <strong>{{ filteredHabits.length }}</strong>
+                </div>
+
+                <button class="btn btn-add-decoration flex-shrink-0" @click="openAddHabitModal">
+                  <i class="bi bi-plus-lg me-1"></i>Add
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card shadow-sm border-0 mb-5">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 admin-table">
+              <thead>
+                <tr>
+                  <th style="width: 80px" class="sortable" @click="toggleHabitSort('id')">
+                    ID
+                    <span class="sort-indicator" v-if="habitSortKey === 'id'">{{
+                      habitSortDir === 'asc' ? '▲' : '▼'
+                    }}</span>
+                  </th>
+                  <th class="sortable" @click="toggleHabitSort('title')">
+                    Title
+                    <span class="sort-indicator" v-if="habitSortKey === 'title'">{{
+                      habitSortDir === 'asc' ? '▲' : '▼'
+                    }}</span>
+                  </th>
+                  <th class="sortable" @click="toggleHabitSort('category')">
+                    Category
+                    <span class="sort-indicator" v-if="habitSortKey === 'category'">{{
+                      habitSortDir === 'asc' ? '▲' : '▼'
+                    }}</span>
+                  </th>
+                  <th style="width: 100px" class="sortable" @click="toggleHabitSort('type')">
+                    Type
+                    <span class="sort-indicator" v-if="habitSortKey === 'type'">{{
+                      habitSortDir === 'asc' ? '▲' : '▼'
+                    }}</span>
+                  </th>
+                  <th style="width: 100px" class="sortable" @click="toggleHabitSort('priority')">
+                    Priority
+                    <span class="sort-indicator" v-if="habitSortKey === 'priority'">{{
+                      habitSortDir === 'asc' ? '▲' : '▼'
+                    }}</span>
+                  </th>
+                  <th style="width: 160px" class="sortable" @click="toggleHabitSort('goal')">
+                    Goal Details
+                    <span class="sort-indicator" v-if="habitSortKey === 'goal'">{{
+                      habitSortDir === 'asc' ? '▲' : '▼'
+                    }}</span>
+                  </th>
+                  <th style="width: 120px">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="habit in filteredHabits" :key="habit.id">
+                  <td class="text-muted small">{{ habit.id }}</td>
+                  <td>
+                    <span class="d-block fw-semibold">{{ habit.title }}</span>
+                    <small
+                      class="text-muted text-truncate d-block"
+                      style="max-width: 200px"
+                      :title="habit.description"
+                    >
+                      {{ habit.description || 'No description' }}
+                    </small>
+                  </td>
+                  <td>
+                    <span v-if="habit.category" class="badge bg-light text-secondary border">{{
+                      habit.category
+                    }}</span>
+                    <span v-else class="text-muted small">-</span>
+                  </td>
+                  <td>
+                    <span class="badge bg-light text-dark border text-capitalize">{{
+                      habit.type
+                    }}</span>
+                  </td>
+                  <td>
+                    <span
+                      :class="{
+                        'badge bg-success-subtle text-success text-capitalize':
+                          habit.priority === 'low',
+                        'badge bg-warning-subtle text-warning-emphasis text-capitalize':
+                          habit.priority === 'medium',
+                        'badge bg-danger-subtle text-danger text-capitalize':
+                          habit.priority === 'high',
+                      }"
+                      >{{ habit.priority }}</span
+                    >
+                  </td>
+                  <td class="small text-muted">
+                    <div v-if="habit.type === 'check'">
+                      <i class="bi bi-check2-square me-1"></i> Simple Check
+                    </div>
+                    <div v-else-if="habit.type === 'count'">
+                      <i class="bi bi-plus-slash-minus me-1"></i> Target:
+                      <strong>{{ habit.target_count }}</strong> <br />
+                      <span class="x-small">(Inc: {{ habit.increment_value }})</span>
+                    </div>
+                    <div v-else-if="habit.type === 'time'">
+                      <i class="bi bi-stopwatch me-1"></i> Target:
+                      <strong>{{ habit.target_minutes }} min</strong>
+                    </div>
+                  </td>
+                  <td>
+                    <button
+                      class="action-icon action-edit me-2"
+                      @click="openEditHabitModal(habit)"
+                      title="Edit"
+                    >
+                      <i class="bi bi-pencil" aria-hidden="true"></i>
+                    </button>
+                    <button
+                      class="action-icon action-delete"
+                      @click="handleDeleteHabit(habit.id, habit.title)"
+                      title="Delete"
+                    >
+                      <i><FontAwesomeIcon icon="trash" class="bi bi-trash" /></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr v-if="filteredHabits.length === 0">
+                  <td colspan="7" class="text-center py-4 text-muted">
+                    No habits registered in the system.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
     </div>
   </div>
 
@@ -331,111 +495,7 @@
     </div>
   </div>
 
-  <!-- CRUD habits -->
-  <section id="habit-management">
-    <div class="d-flex flex-row gap-3 align-items-center mb-3 mt-5">
-      <h4 class="mb-0 fw-bold" style="color: #355d4c">HABIT MANAGEMENT</h4>
-      <button
-        class="btn btn-success ms-auto btn-sm"
-        @click="openAddHabitModal"
-        style="background-color: #355d4c; border-color: #355d4c"
-      >
-        <i class="bi bi-plus-lg me-1"></i>Add Habit
-      </button>
-    </div>
-
-    <div class="card shadow-sm border-0 mb-5">
-      <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0 admin-table">
-          <thead>
-            <tr>
-              <th style="width: 80px">ID</th>
-              <th>Title</th>
-              <th>Category</th>
-              <th style="width: 100px">Type</th>
-              <th style="width: 100px">Priority</th>
-              <th style="width: 160px">Goal Details</th>
-              <th style="width: 120px">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="habit in habitStore.habits" :key="habit.id">
-              <td class="text-muted small">{{ habit.id }}</td>
-              <td>
-                <span class="d-block fw-semibold">{{ habit.title }}</span>
-                <small
-                  class="text-muted text-truncate d-block"
-                  style="max-width: 200px"
-                  :title="habit.description"
-                >
-                  {{ habit.description || 'No description' }}
-                </small>
-              </td>
-              <td>
-                <span v-if="habit.category" class="badge bg-light text-secondary border">{{
-                  habit.category
-                }}</span>
-                <span v-else class="text-muted small">-</span>
-              </td>
-              <td>
-                <span class="badge bg-light text-dark border text-capitalize">{{
-                  habit.type
-                }}</span>
-              </td>
-              <td>
-                <span
-                  :class="{
-                    'badge bg-success-subtle text-success text-capitalize':
-                      habit.priority === 'low',
-                    'badge bg-warning-subtle text-warning-emphasis text-capitalize':
-                      habit.priority === 'medium',
-                    'badge bg-danger-subtle text-danger text-capitalize': habit.priority === 'high',
-                  }"
-                  >{{ habit.priority }}</span
-                >
-              </td>
-              <td class="small text-muted">
-                <div v-if="habit.type === 'check'">
-                  <i class="bi bi-check2-square me-1"></i> Simple Check
-                </div>
-                <div v-else-if="habit.type === 'count'">
-                  <i class="bi bi-plus-slash-minus me-1"></i> Target:
-                  <strong>{{ habit.target_count }}</strong> <br />
-                  <span class="x-small">(Inc: {{ habit.increment_value }})</span>
-                </div>
-                <div v-else-if="habit.type === 'time'">
-                  <i class="bi bi-stopwatch me-1"></i> Target:
-                  <strong>{{ habit.target_minutes }} min</strong>
-                </div>
-              </td>
-              <td>
-                <button
-                  class="action-icon action-edit me-2"
-                  @click="openEditHabitModal(habit)"
-                  title="Edit"
-                >
-                  <i class="bi bi-pencil" aria-hidden="true"></i>
-                </button>
-                <button
-                  class="action-icon action-delete"
-                  @click="handleDeleteHabit(habit.id, habit.title)"
-                  title="Delete"
-                >
-                  <i><FontAwesomeIcon icon="trash" class="bi bi-trash" /></i>
-                </button>
-              </td>
-            </tr>
-            <tr v-if="habitStore.habits.length === 0">
-              <td colspan="7" class="text-center py-4 text-muted">
-                No habits registered in the system.
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </section>
-
+  <!-- CRUD habits (moved into container above) -->
   <div v-if="habitModalVisible" class="custom-modal-backdrop">
     <div class="modal-panel" style="max-width: 500px; width: 100%">
       <h5 class="mb-3 fw-bold" style="color: #355d4c">
@@ -570,6 +630,71 @@ const habitStore = useHabitStore()
 const search = ref('')
 const perPage = ref(5)
 const currentPage = ref(1)
+const habitSearch = ref('')
+
+// Habit sorting
+const habitSortKey = ref('id')
+const habitSortDir = ref('asc')
+
+function toggleHabitSort(key) {
+  if (habitSortKey.value === key) {
+    habitSortDir.value = habitSortDir.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    habitSortKey.value = key
+    habitSortDir.value = 'asc'
+  }
+}
+
+const filteredHabits = computed(() => {
+  const q = (habitSearch.value || '').trim().toLowerCase()
+  let list = (habitStore.habits || []).slice()
+  if (q) {
+    list = list.filter((h) => {
+      const title = (h.title || '').toString().toLowerCase()
+      const desc = (h.description || '').toString().toLowerCase()
+      const cat = (h.category || '').toString().toLowerCase()
+      return title.includes(q) || desc.includes(q) || cat.includes(q)
+    })
+  }
+
+  // sort
+  const key = habitSortKey.value
+  const dir = habitSortDir.value === 'asc' ? 1 : -1
+
+  list.sort((a, b) => {
+    const va = a == null ? '' : a[key]
+    const vb = b == null ? '' : b[key]
+
+    if (key === 'id') {
+      const na = Number(va) || 0
+      const nb = Number(vb) || 0
+      return (na - nb) * dir
+    }
+
+    if (key === 'goal') {
+      const goalValue = (h) => {
+        if (!h) return ''
+        if (h.type === 'check') return 'check'
+        if (h.type === 'count') return `count:${h.target_count || 0}`
+        if (h.type === 'time') return `time:${h.target_minutes || 0}`
+        return ''
+      }
+      const ga = goalValue(a).toString().toLowerCase()
+      const gb = goalValue(b).toString().toLowerCase()
+      if (ga < gb) return -1 * dir
+      if (ga > gb) return 1 * dir
+      return 0
+    }
+
+    const sa = (va || '').toString().toLowerCase()
+    const sb = (vb || '').toString().toLowerCase()
+    if (sa < sb) return -1 * dir
+    if (sa > sb) return 1 * dir
+    return 0
+  })
+
+  return list
+})
 
 // Default avatar decorations with level requirements (every 5 levels unlocks a new one)
 const defaultDecorations = [
