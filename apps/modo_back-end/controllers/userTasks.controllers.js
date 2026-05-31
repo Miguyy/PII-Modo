@@ -25,6 +25,12 @@ import {
 export const getAllUserTasks = async (req, res, next) => {
   try {
     const { userId, habitId } = req.params;
+    const {
+      page = 1,
+      limit = 5,
+      sort = "id_tarefa",
+      order = "ASC",
+    } = req.query;
 
     // Authorization: only admin or the owner can list user tasks
     const requester = req.user;
@@ -40,18 +46,31 @@ export const getAllUserTasks = async (req, res, next) => {
       return next(forbiddenError());
     }
 
-    // Query the join table and fetch the Task for each entry to avoid
-    // association/include complexity (keeps behavior simple and explicit).
-    const userTaskWhere = { id_utilizador: Number(userId) };
+    // Query with pagination and optional sorting
+    const parsedPage = Math.max(Number(page) || 1, 1);
+    const parsedLimit = Math.min(Math.max(Number(limit) || 5, 1), 100);
+    const offset = (parsedPage - 1) * parsedLimit;
 
-    const userTasks = await UserTask.findAll({ where: userTaskWhere });
+    const safeSortFields = new Set(["id_tarefa", "progresso", "estado_tarefa"]);
+    const sortField = safeSortFields.has(sort) ? sort : "id_tarefa";
+    const sortOrder = String(order).toUpperCase() === "DESC" ? "DESC" : "ASC";
+
+    const userTaskWhere = { id_utilizador: Number(userId) };
+    if (habitId) {
+      // We'll filter later when populating tasks to avoid join complexity
+    }
+
+    const { rows, count } = await UserTask.findAndCountAll({
+      where: userTaskWhere,
+      order: [[sortField, sortOrder]],
+      limit: parsedLimit,
+      offset,
+    });
 
     const response = [];
-    for (const ut of userTasks) {
+    for (const ut of rows) {
       const utJson = ut.toJSON();
       const task = await Task.findByPk(utJson.id_tarefa);
-      // If a habitId filter was provided, skip tasks that don't belong
-      // to that habit.
       if (habitId && (!task || task.toJSON().id_habito !== Number(habitId)))
         continue;
 
@@ -68,7 +87,17 @@ export const getAllUserTasks = async (req, res, next) => {
       });
     }
 
-    res.status(200).json(response);
+    res
+      .status(200)
+      .json({
+        meta: {
+          total: count,
+          page: parsedPage,
+          limit: parsedLimit,
+          pages: Math.ceil(count / parsedLimit),
+        },
+        data: response,
+      });
   } catch (error) {
     console.error("getAllUserTasks error:", error);
     return next(genericError());

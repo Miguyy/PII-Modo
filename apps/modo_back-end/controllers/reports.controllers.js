@@ -26,20 +26,54 @@ export const getAllReports = async (req, res, next) => {
         (requester.tipo_utilizador || requester.dataValues?.tipo_utilizador)) ||
       ""
     ).toLowerCase();
-    const { userId } = req.query;
+    const {
+      userId,
+      page = 1,
+      limit = 10,
+      sort = "id_relatorio",
+      order = "DESC",
+    } = req.query;
     if (!userId && requesterRole !== "admin") return next(forbiddenError());
 
-    const where = userId ? { id_utilizador: Number(userId) } : {};
-    const reports = await Report.findAll({ where });
+    const parsedPage = Math.max(Number(page) || 1, 1);
+    const parsedLimit = Math.min(Math.max(Number(limit) || 10, 1), 200);
+    const offset = (parsedPage - 1) * parsedLimit;
 
-    const response = reports.map((report) => ({
+    const safeSortFields = new Set([
+      "id_relatorio",
+      "mes",
+      "semana",
+      "data_geracao",
+    ]);
+    const sortField = safeSortFields.has(sort) ? sort : "id_relatorio";
+    const sortOrder = String(order).toUpperCase() === "ASC" ? "ASC" : "DESC";
+
+    const where = userId ? { id_utilizador: Number(userId) } : {};
+    const { rows, count } = await Report.findAndCountAll({
+      where,
+      order: [[sortField, sortOrder]],
+      limit: parsedLimit,
+      offset,
+    });
+
+    const response = rows.map((report) => ({
       ...report.toJSON(),
       links: [
         { rel: "self", method: "GET", href: `/reports/${report.id_relatorio}` },
       ],
     }));
 
-    res.status(200).json(response);
+    res
+      .status(200)
+      .json({
+        meta: {
+          total: count,
+          page: parsedPage,
+          limit: parsedLimit,
+          pages: Math.ceil(count / parsedLimit),
+        },
+        data: response,
+      });
   } catch (error) {
     return next(genericError());
   }
@@ -153,7 +187,7 @@ export const getReportById = async (req, res, next) => {
       requesterRole !== "admin" &&
       Number(requesterId) !== Number(report.id_utilizador)
     )
-      return next({ status: 403, message: "Forbidden." });
+      return next(forbiddenError());
 
     res.status(200).json({
       ...report.toJSON(),
@@ -162,7 +196,7 @@ export const getReportById = async (req, res, next) => {
       ],
     });
   } catch (error) {
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };
 
@@ -173,10 +207,10 @@ export const getReportById = async (req, res, next) => {
 export const deleteReport = async (req, res, next) => {
   try {
     const report = req.report;
-    if (!report) return next({ status: 404, message: "Report not found." });
+    if (!report) return next(notFoundError("Report", req.params.reportId));
     await report.destroy();
     res.status(204).send();
   } catch (error) {
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };
