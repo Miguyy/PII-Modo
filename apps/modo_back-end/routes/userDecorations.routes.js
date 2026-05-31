@@ -5,10 +5,12 @@ The routes are designed to be nested under a user-specific path, allowing for op
 
 import express from "express";
 import { authenticateUser } from "../middlewares/users.middlewares.js";
+import uploadReport from "../utils/upload.utils.js";
 import {
   updateUserDecoration,
   getAllUserDecorations,
   assignDecorationToUser,
+  updateUserDecorationByBody,
 } from "../controllers/userDecorations.controllers.js";
 
 const router = express.Router();
@@ -34,7 +36,16 @@ router.get(
 router.patch(
   "/:userId/avatar-decorations/:decorationId",
   authenticateUser,
+  uploadReport.none(),
   updateUserDecoration,
+);
+
+// Patch by body when there's no decorationId (e.g., current stored id_decoracao is null)
+router.patch(
+  "/:userId/avatar-decorations",
+  authenticateUser,
+  uploadReport.none(),
+  updateUserDecorationByBody,
 );
 
 export default router;

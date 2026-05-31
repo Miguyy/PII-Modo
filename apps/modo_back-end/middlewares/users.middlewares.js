@@ -175,3 +175,32 @@ export const authorizeAdmin = (req, res, next) => {
   }
   next();
 };
+
+/**
+ * authorizeOwnerOrAdmin(req, res, next)
+ * Allows access if the authenticated user is the target user (owner)
+ * or if they have admin role. Expects a `userId` route param.
+ */
+export const authorizeOwnerOrAdmin = (req, res, next) => {
+  const requester = req.user;
+  const requesterRole = (
+    (requester &&
+      (requester.tipo_utilizador || requester.dataValues?.tipo_utilizador)) ||
+    ""
+  ).toLowerCase();
+  const requesterId =
+    requester &&
+    (requester.id_utilizador || requester.dataValues?.id_utilizador);
+  const { userId } = req.params;
+
+  if (requesterRole === "admin") return next();
+
+  if (!requesterId || !userId || Number(requesterId) !== Number(userId)) {
+    return res.status(403).json({
+      description: "Forbidden.",
+      errors: { access: ["You do not have permission."] },
+    });
+  }
+
+  next();
+};

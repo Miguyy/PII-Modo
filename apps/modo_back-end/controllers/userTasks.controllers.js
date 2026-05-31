@@ -19,6 +19,20 @@ export const getAllUserTasks = async (req, res, next) => {
   try {
     const { userId, habitId } = req.params;
 
+    // Authorization: only admin or the owner can list user tasks
+    const requester = req.user;
+    const requesterRole = (
+      (requester &&
+        (requester.tipo_utilizador || requester.dataValues?.tipo_utilizador)) ||
+      ""
+    ).toLowerCase();
+    const requesterId =
+      requester &&
+      (requester.id_utilizador || requester.dataValues?.id_utilizador);
+    if (requesterRole !== "admin" && Number(requesterId) !== Number(userId)) {
+      return next({ status: 403, message: "Forbidden." });
+    }
+
     // Query the join table and fetch the Task for each entry to avoid
     // association/include complexity (keeps behavior simple and explicit).
     const userTaskWhere = { id_utilizador: Number(userId) };
@@ -67,6 +81,20 @@ export const assignTaskToUser = async (req, res, next) => {
   try {
     const { userId } = req.params;
     const { taskId } = req.body;
+
+    // Authorization: owner or admin may assign tasks to the user
+    const requester = req.user;
+    const requesterRole = (
+      (requester &&
+        (requester.tipo_utilizador || requester.dataValues?.tipo_utilizador)) ||
+      ""
+    ).toLowerCase();
+    const requesterId =
+      requester &&
+      (requester.id_utilizador || requester.dataValues?.id_utilizador);
+    if (requesterRole !== "admin" && Number(requesterId) !== Number(userId)) {
+      return next({ status: 403, message: "Forbidden." });
+    }
 
     // Allow either assigning an existing task by `taskId` or creating
     // a new task inline (payload contains task fields like `nome_tarefa`).
@@ -168,6 +196,20 @@ export const assignHabitTasksToUser = async (req, res, next) => {
     const { userId } = req.params;
     const habitId = req.body.habitId ?? req.body.id_habito;
 
+    // Authorization: owner or admin may batch-assign habit tasks
+    const requester = req.user;
+    const requesterRole = (
+      (requester &&
+        (requester.tipo_utilizador || requester.dataValues?.tipo_utilizador)) ||
+      ""
+    ).toLowerCase();
+    const requesterId =
+      requester &&
+      (requester.id_utilizador || requester.dataValues?.id_utilizador);
+    if (requesterRole !== "admin" && Number(requesterId) !== Number(userId)) {
+      return next({ status: 403, message: "Forbidden." });
+    }
+
     if (!habitId || !/^\d+$/.test(String(habitId))) {
       return next({
         status: 400,
@@ -232,6 +274,19 @@ export const assignHabitTasksToUser = async (req, res, next) => {
 export const deleteUserTask = async (req, res, next) => {
   try {
     const { userId, taskId } = req.params;
+    // Authorization: owner or admin may delete user tasks
+    const requester = req.user;
+    const requesterRole = (
+      (requester &&
+        (requester.tipo_utilizador || requester.dataValues?.tipo_utilizador)) ||
+      ""
+    ).toLowerCase();
+    const requesterId =
+      requester &&
+      (requester.id_utilizador || requester.dataValues?.id_utilizador);
+    if (requesterRole !== "admin" && Number(requesterId) !== Number(userId)) {
+      return next({ status: 403, message: "Forbidden." });
+    }
     const deleted = await UserTask.destroy({
       where: { id_utilizador: Number(userId), id_tarefa: Number(taskId) },
     });
@@ -257,6 +312,23 @@ export const deleteUserTask = async (req, res, next) => {
 export const getUserTaskById = async (req, res, next) => {
   try {
     const userTask = req.userTask;
+
+    // Authorization: owner or admin may fetch this user task
+    const requester = req.user;
+    const requesterRole = (
+      (requester &&
+        (requester.tipo_utilizador || requester.dataValues?.tipo_utilizador)) ||
+      ""
+    ).toLowerCase();
+    const requesterId =
+      requester &&
+      (requester.id_utilizador || requester.dataValues?.id_utilizador);
+    if (
+      requesterRole !== "admin" &&
+      Number(requesterId) !== Number(req.params.userId)
+    ) {
+      return next({ status: 403, message: "Forbidden." });
+    }
 
     // Include HATEOAS links in the response
     res.status(200).json({
@@ -286,6 +358,22 @@ export const getUserTaskById = async (req, res, next) => {
 export const updateUserTask = async (req, res, next) => {
   try {
     const userTask = req.userTask;
+    // Authorization: owner or admin may update progress
+    const requester = req.user;
+    const requesterRole = (
+      (requester &&
+        (requester.tipo_utilizador || requester.dataValues?.tipo_utilizador)) ||
+      ""
+    ).toLowerCase();
+    const requesterId =
+      requester &&
+      (requester.id_utilizador || requester.dataValues?.id_utilizador);
+    if (
+      requesterRole !== "admin" &&
+      Number(requesterId) !== Number(req.params.userId)
+    ) {
+      return next({ status: 403, message: "Forbidden." });
+    }
     // Accept both `progress` (EN) and `progresso` (PT) from clients
     const { progress, progresso } = req.body;
     const raw = progress ?? progresso;
@@ -327,6 +415,23 @@ export const updateUserTask = async (req, res, next) => {
 export const completeUserTask = async (req, res, next) => {
   try {
     const userTask = req.userTask;
+
+    // Authorization: owner or admin may complete the task
+    const requester = req.user;
+    const requesterRole = (
+      (requester &&
+        (requester.tipo_utilizador || requester.dataValues?.tipo_utilizador)) ||
+      ""
+    ).toLowerCase();
+    const requesterId =
+      requester &&
+      (requester.id_utilizador || requester.dataValues?.id_utilizador);
+    if (
+      requesterRole !== "admin" &&
+      Number(requesterId) !== Number(req.params.userId)
+    ) {
+      return next({ status: 403, message: "Forbidden." });
+    }
 
     await userTask.update({
       estado_tarefa: "Completed",

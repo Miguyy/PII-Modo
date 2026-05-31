@@ -51,7 +51,7 @@ export const createUser = async (req, res, next) => {
       nivel,
       data_criacao_conta: data_criacao,
       tipo_utilizador: mappedRole,
-      imagem_utilizador: final_imagem_utilizador,
+      imagem_utilizador: imagem_utilizador,
     };
 
     // Create user using model column names
