@@ -7,7 +7,12 @@ import {
   getLocation,
   updateLocation,
 } from "../controllers/locations.controllers.js";
-import { authenticateUser } from "../middlewares/users.middlewares.js";
+import {
+  authenticateUser,
+  authorizeAdmin,
+  authorizeOwnerOrAdmin,
+} from "../middlewares/users.middlewares.js";
+import uploadReport from "../utils/upload.utils.js";
 import {
   validateLocationPayload,
   checkLocationExists,
@@ -18,23 +23,35 @@ import { deleteLocation } from "../controllers/locations.controllers.js";
 // - if this router is nested within another.
 const router = express.Router({ mergeParams: true });
 
-// Route to create a new location for a specific user (requires auth)
-router.post("/", authenticateUser, validateLocationPayload, createLocation);
+// Route to create a new location for a specific user (admin only)
+router.post(
+  "/",
+  authenticateUser,
+  authorizeOwnerOrAdmin,
+  validateLocationPayload,
+  createLocation,
+);
 
 // Route to get the current location for a specific user (requires auth)
 router.get("/", authenticateUser, checkLocationExists, getLocation);
 
-// Route to update the location for a user (requires auth)
-// PATCH / updates the user's attached location
+// Route to update the location for a user (accept form-data; owner or admin)
 router.patch(
   "/",
   authenticateUser,
+  uploadReport.none(),
   checkLocationExists,
   validateLocationPayload,
   updateLocation,
 );
 
-// Delete the user's location
-router.delete("/", authenticateUser, checkLocationExists, deleteLocation);
+// Delete the user's location (admin only)
+router.delete(
+  "/",
+  authenticateUser,
+  authorizeAdmin,
+  checkLocationExists,
+  deleteLocation,
+);
 
 export default router;
