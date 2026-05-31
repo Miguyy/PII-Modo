@@ -20,7 +20,10 @@ import userDecorationsRouter from "./routes/userDecorations.routes.js";
 import notificationsRouter from "./routes/notifications.routes.js";
 import reportsRouter from "./routes/reports.routes.js";
 import locationsRouter from "./routes/locations.routes.js";
-import { authenticateUser } from "./middlewares/users.middlewares.js";
+import {
+  authenticateUser,
+  authorizeAdmin,
+} from "./middlewares/users.middlewares.js";
 import { getAllLocations } from "./controllers/locations.controllers.js";
 
 // Routes
@@ -31,7 +34,7 @@ app.use("/users", userTasksRouter);
 app.use("/impacts", impactsRouter);
 app.use("/users/:userId/location", locationsRouter);
 // Global locations listing (admin)
-app.get("/locations", authenticateUser, getAllLocations);
+app.get("/locations", authenticateUser, authorizeAdmin, getAllLocations);
 app.use("/avatar-decorations", decorationsRouter);
 app.use("/users", userDecorationsRouter);
 app.use("/", notificationsRouter);
