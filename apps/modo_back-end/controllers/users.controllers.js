@@ -10,6 +10,15 @@ import bcrypt from "bcryptjs";
 import cloudinary from "../config/cloudinary.config.js";
 // Import users data
 import { User, Habit } from "../config/db.config.js";
+import {
+  validationError,
+  forbiddenError,
+  notFoundError,
+  conflictError,
+  genericError,
+  unauthorizedError,
+  sequelizeValidationError,
+} from "../utils/errors.utils.js";
 
 const getUploadedFileUrl = (file) => file?.path || file?.secure_url || null;
 
@@ -86,39 +95,16 @@ export const createUser = async (req, res, next) => {
     console.error(error);
     // Handle specific errors: 400, 409 and 500
     if (error.name === "SequelizeValidationError") {
-      const errors = {};
-
-      error.errors.forEach((e) => {
-        if (e.path === "email") {
-          errors.email = ["Email is mandatory.", "Email must be valid."];
-        }
-        if (e.path === "hashed_password" || e.path === "password") {
-          errors.password = [
-            "Password must have between 12 and 15 characters.",
-            "Password must include uppercase, lowercase, numbers and special characters.",
-          ];
-        }
-      });
-
-      return next({
-        status: 400,
-        message: "Validation failed.",
-        errors,
-      });
+      return next(sequelizeValidationError(error.errors));
     }
 
     if (error.name === "SequelizeUniqueConstraintError") {
-      return next({
-        status: 409,
-        message: "Resource conflict.",
-        errors: { email: ["A user with this email already exists."] },
-      });
+      return next(
+        conflictError({ email: ["A user with this email already exists."] }),
+      );
     }
 
-    return next({
-      status: 500,
-      message: "Internal server error.",
-    });
+    return next(genericError());
   }
 };
 
@@ -147,10 +133,7 @@ export const getAllUsers = async (req, res, next) => {
     res.status(200).json(response);
   } catch (error) {
     // Handle specific errors: 500
-    return next({
-      status: 500,
-      message: "Internal server error.",
-    });
+    return next(genericError());
   }
 };
 
@@ -170,7 +153,7 @@ export const getUserById = async (req, res, next) => {
     // load target user by id param
     const targetUser = await User.findByPk(userId);
     if (!targetUser) {
-      return next({ status: 404, message: "User not found." });
+      return next(notFoundError("User", userId));
     }
 
     // authorization: allow if requester is admin or requester is the same user
@@ -187,7 +170,7 @@ export const getUserById = async (req, res, next) => {
       (requester.id_utilizador || requester.dataValues?.id_utilizador);
 
     if (requesterRole !== "admin" && Number(requesterId) !== Number(userId)) {
-      return next({ status: 403, message: "Forbidden." });
+      return next(forbiddenError());
     }
 
     // Prevent modifying another admin: admins may not modify/delete other admins
@@ -197,10 +180,7 @@ export const getUserById = async (req, res, next) => {
       ""
     ).toLowerCase();
     if (targetRole === "admin" && Number(requesterId) !== Number(userId)) {
-      return next({
-        status: 403,
-        message: "Forbidden. Cannot modify another admin.",
-      });
+      return next(forbiddenError("Forbidden. Cannot modify another admin."));
     }
 
     // Include HATEOAS links in the response
@@ -217,10 +197,7 @@ export const getUserById = async (req, res, next) => {
     res.status(200).json(response);
   } catch (error) {
     // Handle specific errors: 500
-    return next({
-      status: 500,
-      message: "Internal server error.",
-    });
+    return next(genericError());
   }
 };
 
@@ -240,7 +217,7 @@ export const updateUser = async (req, res, next) => {
     // load target user by id param
     const targetUser = await User.findByPk(userId);
     if (!targetUser) {
-      return next({ status: 404, message: "User not found." });
+      return next(notFoundError("User", userId));
     }
 
     // authorization: allow if requester is admin or requester is the same user
@@ -257,7 +234,7 @@ export const updateUser = async (req, res, next) => {
       (requester.id_utilizador || requester.dataValues?.id_utilizador);
 
     if (requesterRole !== "admin" && Number(requesterId) !== Number(userId)) {
-      return next({ status: 403, message: "Forbidden." });
+      return next(forbiddenError());
     }
 
     const updates = {};
@@ -294,10 +271,7 @@ export const updateUser = async (req, res, next) => {
         const uploaded = await uploadFromBuffer(req.file.buffer);
         updates.imagem_utilizador = uploaded?.secure_url;
       } catch (err) {
-        return next({
-          status: 500,
-          message: "Failed to upload profile image.",
-        });
+        return next(genericError("Failed to upload profile image."));
       }
     }
 
@@ -310,10 +284,7 @@ export const updateUser = async (req, res, next) => {
       ""
     ).toLowerCase();
     if (targetRole === "admin" && Number(requesterId) !== Number(userId)) {
-      return next({
-        status: 403,
-        message: "Forbidden. Cannot modify another admin.",
-      });
+      return next(forbiddenError("Forbidden. Cannot modify another admin."));
     }
 
     // Include HATEOAS links in the response
@@ -331,16 +302,11 @@ export const updateUser = async (req, res, next) => {
   } catch (error) {
     // Handle specific errors: 409 and 500
     if (error.name === "SequelizeUniqueConstraintError") {
-      return next({
-        status: 409,
-        message: "Resource conflict.",
-        errors: { email: ["A user with this email already exists."] },
-      });
+      return next(
+        conflictError({ email: ["A user with this email already exists."] }),
+      );
     }
-    return next({
-      status: 500,
-      message: "Internal server error.",
-    });
+    return next(genericError());
   }
 };
 
@@ -358,7 +324,7 @@ export const deleteUser = async (req, res, next) => {
     // load target user by id param
     const targetUser = await User.findByPk(userId);
     if (!targetUser) {
-      return next({ status: 404, message: "User not found." });
+      return next(notFoundError("User", userId));
     }
 
     // authorization: allow if requester is admin or requester is the same user
@@ -375,7 +341,7 @@ export const deleteUser = async (req, res, next) => {
       (requester.id_utilizador || requester.dataValues?.id_utilizador);
 
     if (requesterRole !== "admin" && Number(requesterId) !== Number(userId)) {
-      return next({ status: 403, message: "Forbidden." });
+      return next(forbiddenError());
     }
     // Prevent deleting another admin
     const targetRoleDel = (
@@ -384,20 +350,14 @@ export const deleteUser = async (req, res, next) => {
       ""
     ).toLowerCase();
     if (targetRoleDel === "admin" && Number(requesterId) !== Number(userId)) {
-      return next({
-        status: 403,
-        message: "Forbidden. Cannot delete another admin.",
-      });
+      return next(forbiddenError("Forbidden. Cannot delete another admin."));
     }
 
     await targetUser.destroy();
     res.status(204).send();
   } catch (error) {
     // Handle specific errors: 500
-    return next({
-      status: 500,
-      message: "Internal server error.",
-    });
+    return next(genericError());
   }
 };
 
@@ -414,12 +374,12 @@ export const loginUser = async (req, res, next) => {
     const user = await User.findOne({ where: { email } });
 
     if (!user) {
-      return next({ status: 401, message: "Invalid credentials." });
+      return next(unauthorizedError("Invalid credentials."));
     }
 
     const match = await bcrypt.compare(password, user.hashed_password);
     if (!match) {
-      return next({ status: 401, message: "Invalid credentials." });
+      return next(unauthorizedError("Invalid credentials."));
     }
 
     const jwtSecret = process.env.JWT_SECRET || "dev_secret";
@@ -444,10 +404,7 @@ export const loginUser = async (req, res, next) => {
     });
   } catch (error) {
     // Handle specific errors: 500
-    return next({
-      status: 500,
-      message: "Internal server error.",
-    });
+    return next(genericError());
   }
 };
 
@@ -468,7 +425,7 @@ export const assignTaskToUser = async (req, res, next) => {
     // load target user by id param
     const targetUser = await User.findByPk(userId);
     if (!targetUser) {
-      return next({ status: 404, message: "User not found." });
+      return next(notFoundError("User", userId));
     }
 
     // authorization: allow if requester is admin or requester is the same user
@@ -485,12 +442,12 @@ export const assignTaskToUser = async (req, res, next) => {
       (requester.id_utilizador || requester.dataValues?.id_utilizador);
 
     if (requesterRole !== "admin" && Number(requesterId) !== Number(userId)) {
-      return next({ status: 403, message: "Forbidden." });
+      return next(forbiddenError());
     }
 
     const habit = await Habit.findByPk(habitId);
     if (!habit) {
-      return next({ status: 404, message: "Habit not found." });
+      return next(notFoundError("Habit", habitId));
     }
 
     // If Sequelize association exists this will link them; otherwise skip with a warning
@@ -517,9 +474,6 @@ export const assignTaskToUser = async (req, res, next) => {
     res.status(200).json(response);
   } catch (error) {
     // Handle specific errors: 500
-    return next({
-      status: 500,
-      message: "Internal server error.",
-    });
+    return next(genericError());
   }
 };

@@ -7,6 +7,12 @@
 
 // Import impacts data
 import { Impact } from "../config/db.config.js";
+import {
+  validationError,
+  forbiddenError,
+  notFoundError,
+  genericError,
+} from "../utils/errors.utils.js";
 
 /**
  * getAllImpacts(req, res, next)
@@ -27,11 +33,7 @@ export const getAllImpacts = async (req, res, next) => {
     }));
     res.status(200).json(response);
   } catch (error) {
-    // Handle specific errors: 500
-    return next({
-      status: 500,
-      message: "Internal server error.",
-    });
+    return next(genericError());
   }
 };
 
@@ -69,11 +71,7 @@ export const getTaskImpacts = async (req, res, next) => {
     }));
     res.status(200).json(response);
   } catch (error) {
-    // Handle specific errors: 400, 401, 403, 404 and 500
-    return next({
-      status: 500,
-      message: "Internal server error.",
-    });
+    return next(genericError());
   }
 };
 
@@ -90,26 +88,26 @@ export const createImpact = async (req, res, next) => {
       ""
     ).toLowerCase();
     if (requesterRole !== "admin") {
-      return next({ status: 403, message: "Forbidden." });
+      return next(forbiddenError());
     }
     const { taskId } = req.params;
     const { tipo_impacto, valor_por_unidade, unidade } = req.body;
 
     if (!tipo_impacto || !valor_por_unidade || !unidade) {
-      return next({
-        status: 400,
-        message: "Validation failed.",
-        errors: {
+      return next(
+        validationError({
           tipo_impacto: ["Required"],
           valor_por_unidade: ["Required"],
           unidade: ["Required"],
-        },
-      });
+        }),
+      );
     }
 
     const value = Number(valor_por_unidade);
     if (Number.isNaN(value) || value <= 0)
-      return next({ status: 400, message: "Invalid valor_por_unidade." });
+      return next(
+        validationError({ valor_por_unidade: ["Invalid valor_por_unidade."] }),
+      );
 
     const impact = await Impact.create({
       id_tarefa: Number(taskId),
@@ -125,7 +123,7 @@ export const createImpact = async (req, res, next) => {
       ],
     });
   } catch (error) {
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };
 
@@ -142,15 +140,15 @@ export const deleteImpact = async (req, res, next) => {
       ""
     ).toLowerCase();
     if (requesterRole !== "admin") {
-      return next({ status: 403, message: "Forbidden." });
+      return next(forbiddenError());
     }
     const { impactId } = req.params;
     const impact = await Impact.findByPk(impactId);
-    if (!impact) return next({ status: 404, message: "Impact not found." });
+    if (!impact) return next(notFoundError("Impact", impactId));
 
     await impact.destroy();
     res.status(204).send();
   } catch (error) {
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };

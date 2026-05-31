@@ -7,6 +7,12 @@
 
 // Import habits data
 import { Habit } from "../config/db.config.js";
+import {
+  validationError,
+  notFoundError,
+  conflictError,
+  genericError,
+} from "../utils/errors.utils.js";
 
 /**
  * getAllHabits(req, res, next)
@@ -33,11 +39,7 @@ export const getAllHabits = async (req, res, next) => {
     }));
     res.status(200).json(response);
   } catch (error) {
-    // Handle specific errors: 500
-    return next({
-      status: 500,
-      message: "Internal server error.",
-    });
+    return next(genericError());
   }
 };
 
@@ -69,25 +71,15 @@ export const createHabit = async (req, res, next) => {
     };
     res.status(201).json(response);
   } catch (error) {
-    // Handle specific errors: 400, 409 and 500
     if (error.name === "SequelizeValidationError") {
-      return next({
-        status: 400,
-        message: "Validation error.",
-        errors: { nome: ["Name is mandatory."] },
-      });
+      return next(validationError({ nome: ["Name is mandatory."] }));
     }
     if (error.name === "SequelizeUniqueConstraintError") {
-      return next({
-        status: 409,
-        message: "Resource conflict.",
-        errors: { nome: ["A habit with this name already exists."] },
-      });
+      return next(
+        conflictError({ nome: ["A habit with this name already exists."] }),
+      );
     }
-    return next({
-      status: 500,
-      message: "Internal server error.",
-    });
+    return next(genericError());
   }
 };
 
@@ -105,7 +97,7 @@ export const getHabitById = async (req, res, next) => {
     const habit = req.habit;
 
     if (!habit) {
-      return next({ status: 404, message: "Habit not found." });
+      return next(notFoundError("Habit", habitId));
     }
 
     // Include HATEOAS links in the response
@@ -118,8 +110,7 @@ export const getHabitById = async (req, res, next) => {
 
     res.status(200).json(response);
   } catch (error) {
-    // Handle specific errors: 500
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };
 
@@ -138,7 +129,7 @@ export const updateHabit = async (req, res, next) => {
     const habit = req.habit;
 
     if (!habit) {
-      return next({ status: 404, message: "Habit not found." });
+      return next(notFoundError("Habit", habitId));
     }
 
     // Support partial updates for nome_habito, descricao_habito and categoria
@@ -157,18 +148,12 @@ export const updateHabit = async (req, res, next) => {
     };
     res.status(200).json(response);
   } catch (error) {
-    // Handle specific errors: 409 and 500
     if (error.name === "SequelizeUniqueConstraintError") {
-      return next({
-        status: 409,
-        message: "Resource conflict.",
-        errors: { nome: ["A habit with this name already exists."] },
-      });
+      return next(
+        conflictError({ nome: ["A habit with this name already exists."] }),
+      );
     }
-    return next({
-      status: 500,
-      message: "Internal server error.",
-    });
+    return next(genericError());
   }
 };
 
@@ -184,12 +169,11 @@ export const deleteHabit = async (req, res, next) => {
     const habit = req.habit;
 
     if (!habit) {
-      return next({ status: 404, message: "Habit not found." });
+      return next(notFoundError("Habit", habitId));
     }
     await habit.destroy();
     res.status(204).send();
   } catch (error) {
-    // Handle specific errors: 500
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };

@@ -7,6 +7,11 @@
 
 // Import tasks data
 import { Task } from "../config/db.config.js";
+import {
+  validationError,
+  conflictError,
+  genericError,
+} from "../utils/errors.utils.js";
 
 /**
  * getAllTasks(req, res, next)
@@ -42,8 +47,7 @@ export const getAllTasks = async (req, res, next) => {
 
     res.status(200).json(response);
   } catch (error) {
-    // Handle specific errors: 500
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };
 
@@ -70,11 +74,7 @@ export const createTask = async (req, res, next) => {
 
     const name = nome_tarefa ?? nome;
     if (!name) {
-      return next({
-        status: 400,
-        message: "Validation failed.",
-        errors: { nome: ["Name is mandatory."] },
-      });
+      return next(validationError({ nome: ["Name is mandatory."] }));
     }
 
     const task = await Task.create({
@@ -100,22 +100,18 @@ export const createTask = async (req, res, next) => {
     });
   } catch (error) {
     if (error.name === "SequelizeValidationError") {
-      return next({
-        status: 400,
-        message: "Validation failed.",
-        errors: { validation: error.errors.map((e) => e.message) },
-      });
+      return next(
+        validationError({ validation: error.errors.map((e) => e.message) }),
+      );
     }
 
     if (error.name === "SequelizeUniqueConstraintError") {
-      return next({
-        status: 409,
-        message: "Resource conflict.",
-        errors: { nome: ["A task with this name already exists."] },
-      });
+      return next(
+        conflictError({ nome: ["A task with this name already exists."] }),
+      );
     }
 
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };
 
@@ -145,8 +141,7 @@ export const getTaskById = async (req, res, next) => {
 
     res.status(200).json(response);
   } catch (error) {
-    // Handle specific errors: 500
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };
 
@@ -280,7 +275,7 @@ export const updateTask = async (req, res, next) => {
     }
 
     if (Object.keys(errors).length > 0) {
-      return next({ status: 400, message: "Validation failed.", errors });
+      return next(validationError(errors));
     }
 
     const updated = await task.update(payload);
@@ -297,22 +292,18 @@ export const updateTask = async (req, res, next) => {
     });
   } catch (error) {
     if (error.name === "SequelizeValidationError") {
-      return next({
-        status: 400,
-        message: "Validation failed.",
-        errors: { validation: error.errors.map((e) => e.message) },
-      });
+      return next(
+        validationError({ validation: error.errors.map((e) => e.message) }),
+      );
     }
     // Handle specific errors: 409 and 500
     if (error.name === "SequelizeUniqueConstraintError") {
-      return next({
-        status: 409,
-        message: "Resource conflict.",
-        errors: { nome: ["A task with this name already exists."] },
-      });
+      return next(
+        conflictError({ nome: ["A task with this name already exists."] }),
+      );
     }
 
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };
 
@@ -331,7 +322,6 @@ export const deleteTask = async (req, res, next) => {
 
     res.status(204).send();
   } catch (error) {
-    // Handle specific errors: 500
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };
