@@ -41,6 +41,8 @@ const router = express.Router();
  */
 router.post(
   "/",
+  authenticateUser,
+  authorizeAdmin,
   validateCreateUser,
   uploadReport.single("imagem_utilizador"),
   createUser,

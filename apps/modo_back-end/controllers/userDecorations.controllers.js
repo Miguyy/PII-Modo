@@ -13,6 +13,20 @@ export const getAllUserDecorations = async (req, res, next) => {
   try {
     const { userId } = req.params;
 
+    // Authorization: only admin or the owner can list decorations
+    const requester = req.user;
+    const requesterRole = (
+      (requester &&
+        (requester.tipo_utilizador || requester.dataValues?.tipo_utilizador)) ||
+      ""
+    ).toLowerCase();
+    const requesterId =
+      requester &&
+      (requester.id_utilizador || requester.dataValues?.id_utilizador);
+    if (requesterRole !== "admin" && Number(requesterId) !== Number(userId)) {
+      return next({ status: 403, message: "Forbidden." });
+    }
+
     const userDecorations = await UserDecorations.findAll({
       where: { id_utilizador: userId },
     });
@@ -30,6 +44,7 @@ export const getAllUserDecorations = async (req, res, next) => {
 
     res.status(200).json(response);
   } catch (error) {
+    console.error(error);
     return next({ status: 500, message: "Internal server error." });
   }
 };
@@ -76,6 +91,21 @@ export const assignDecorationToUser = async (req, res, next) => {
       where: { id_utilizador: userId },
     });
     if (anyForUser) {
+      // If the user row exists but has a null decoration, allow creating by setting that row.
+      if (anyForUser.id_decoracao === null) {
+        await anyForUser.update({ id_decoracao: id_decoracao });
+        return res.status(200).json({
+          ...anyForUser.toJSON(),
+          links: [
+            {
+              rel: "self",
+              method: "GET",
+              href: `/users/${userId}/avatar-decorations/${id_decoracao}`,
+            },
+          ],
+        });
+      }
+
       return next({
         status: 409,
         message: "Resource conflict.",
@@ -103,37 +133,11 @@ export const assignDecorationToUser = async (req, res, next) => {
       ],
     });
   } catch (error) {
+    console.error(error);
     return next({ status: 500, message: "Internal server error." });
   }
 };
 
-/**
- * getUserDecorationById(req, res, next)
- * Returns the `req.userDecoration` record attached by middleware.
- */
-/* export const getUserDecorationById = async (req, res, next) => {
-  try {
-    const userDecoration = req.userDecoration;
-
-    res.status(200).json({
-      ...userDecoration.toJSON(),
-      links: [
-        {
-          rel: "self",
-          method: "GET",
-          href: `/users/${userDecoration.userId}/avatar-decorations/${userDecoration.decorationId}`,
-        },
-      ],
-    });
-  } catch (error) {
-    return next({ status: 500, message: "Internal server error." });
-  }
-}; */
-
-/**
- * updateUserDecoration(req, res, next)
- * Updates the `ativo` state of a user's decoration (e.g., equipping it).
- */
 export const updateUserDecoration = async (req, res, next) => {
   try {
     const { userId, decorationId } = req.params;
@@ -156,10 +160,53 @@ export const updateUserDecoration = async (req, res, next) => {
     const userDecoration = await UserDecorations.findOne({
       where: { id_utilizador: userId, id_decoracao: decorationId },
     });
-    if (!userDecoration)
+    if (!userDecoration) {
+      // If there is a user row but its id_decoracao is null, guide client to use body-PATCH
+      const anyForUser = await UserDecorations.findOne({
+        where: { id_utilizador: userId },
+      });
+      if (anyForUser && anyForUser.id_decoracao === null) {
+        return next({
+          status: 400,
+          message:
+            "Current decoration is null. Use PATCH /:userId/avatar-decorations with body { id_decoracao }.",
+        });
+      }
       return next({ status: 404, message: "User decoration not found." });
+    }
 
     const { id_decoracao } = req.body;
+
+    // allow unsetting the decoration with null
+    if (
+      id_decoracao === null ||
+      id_decoracao === "null" ||
+      id_decoracao === ""
+    ) {
+      try {
+        await userDecoration.update({ id_decoracao: null });
+        return res.status(200).json({
+          ...userDecoration.toJSON(),
+          links: [
+            {
+              rel: "self",
+              method: "GET",
+              href: `/users/${userDecoration.id_utilizador}/avatar-decorations/${userDecoration.id_decoracao}`,
+            },
+          ],
+        });
+      } catch (err) {
+        // If DB does not allow null for id_decoracao, remove the row instead
+        if (err?.parent?.code === "ER_BAD_NULL_ERROR") {
+          await userDecoration.destroy();
+          return res
+            .status(200)
+            .json({ id_utilizador: Number(userId), id_decoracao: null });
+        }
+        throw err;
+      }
+    }
+
     if (!id_decoracao || Number(id_decoracao) <= 0)
       return next({ status: 400, message: "Invalid id_decoracao." });
 
@@ -186,6 +233,100 @@ export const updateUserDecoration = async (req, res, next) => {
       ],
     });
   } catch (error) {
+    console.error(error);
+    return next({ status: 500, message: "Internal server error." });
+  }
+};
+
+/**
+ * updateUserDecorationByBody(req, res, next)
+ * Allows updating the user's decoration by sending `{ id_decoracao }` in the body.
+ * This is useful when the current stored `id_decoracao` is null and there is
+ * no decorationId route param to target.
+ */
+export const updateUserDecorationByBody = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+
+    // authorization: only the user themself or admin can update decorations
+    const requester = req.user;
+    const requesterRole = (
+      (requester &&
+        (requester.tipo_utilizador || requester.dataValues?.tipo_utilizador)) ||
+      ""
+    ).toLowerCase();
+    const requesterId =
+      requester &&
+      (requester.id_utilizador || requester.dataValues?.id_utilizador);
+    if (requesterRole !== "admin" && Number(requesterId) !== Number(userId)) {
+      return next({ status: 403, message: "Forbidden." });
+    }
+
+    // Find the existing UserDecorations row for this user
+    const userDecoration = await UserDecorations.findOne({
+      where: { id_utilizador: Number(userId) },
+    });
+    if (!userDecoration)
+      return next({ status: 404, message: "User decoration not found." });
+
+    const { id_decoracao } = req.body;
+
+    // allow unsetting the decoration with null
+    if (
+      id_decoracao === null ||
+      id_decoracao === "null" ||
+      id_decoracao === ""
+    ) {
+      try {
+        await userDecoration.update({ id_decoracao: null });
+        return res.status(200).json({
+          ...userDecoration.toJSON(),
+          links: [
+            {
+              rel: "self",
+              method: "GET",
+              href: `/users/${userDecoration.id_utilizador}/avatar-decorations/${userDecoration.id_decoracao}`,
+            },
+          ],
+        });
+      } catch (err) {
+        if (err?.parent?.code === "ER_BAD_NULL_ERROR") {
+          await userDecoration.destroy();
+          return res
+            .status(200)
+            .json({ id_utilizador: Number(userId), id_decoracao: null });
+        }
+        throw err;
+      }
+    }
+
+    if (!id_decoracao || Number(id_decoracao) <= 0)
+      return next({ status: 400, message: "Invalid id_decoracao." });
+
+    // ensure there's no conflict (another row with same user and id_decoracao)
+    const conflict = await UserDecorations.findOne({
+      where: { id_utilizador: Number(userId), id_decoracao },
+    });
+    if (conflict)
+      return next({
+        status: 409,
+        message: "User already has that decoration.",
+      });
+
+    await userDecoration.update({ id_decoracao });
+
+    res.status(200).json({
+      ...userDecoration.toJSON(),
+      links: [
+        {
+          rel: "self",
+          method: "GET",
+          href: `/users/${userDecoration.id_utilizador}/avatar-decorations/${userDecoration.id_decoracao}`,
+        },
+      ],
+    });
+  } catch (error) {
+    console.error(error);
     return next({ status: 500, message: "Internal server error." });
   }
 };

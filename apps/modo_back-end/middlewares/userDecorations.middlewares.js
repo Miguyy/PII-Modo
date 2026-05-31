@@ -63,9 +63,10 @@ export const validateUpdateUserDecoration = (req, res, next) => {
 export const checkUserDecorationExists = async (req, res, next) => {
   const { userId, decorationId } = req.params;
 
-  const userDecoration = await UserDecoration.findOne({
-    where: { userId, decorationId },
-  });
+  const where = { id_utilizador: Number(userId) };
+  if (decorationId) where.id_decoracao = Number(decorationId);
+
+  const userDecoration = await UserDecorations.findOne({ where });
 
   if (!userDecoration) {
     return res.status(404).json({
