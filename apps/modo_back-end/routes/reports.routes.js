@@ -3,7 +3,10 @@ and retrieving a specific report by its ID. Each route is associated with a spec
 The routes are designed to be nested under a user-specific path for creating reports, allowing for operations that are specific to a particular user.*/
 
 import express from "express";
-import { authenticateUser } from "../middlewares/users.middlewares.js";
+import {
+  authenticateUser,
+  authorizeAdmin,
+} from "../middlewares/users.middlewares.js";
 import { uploadReport } from "../utils/upload.utils.js";
 import {
   createReport,
@@ -19,8 +22,8 @@ import {
 
 const router = express.Router();
 
-// Route to get all reports (use ?userId=X to filter by user) (requires auth)
-router.get("/reports", authenticateUser, getAllReports);
+// Route to get all reports (use ?userId=X to filter by user) (admin only for global list)
+router.get("/reports", authenticateUser, authorizeAdmin, getAllReports);
 
 // Route to get a specific report by its ID (requires auth)
 router.get(
@@ -35,6 +38,7 @@ router.get(
 router.delete(
   "/reports/:reportId",
   authenticateUser,
+  authorizeAdmin,
   validateReportId,
   checkReportExists,
   deleteReport,
