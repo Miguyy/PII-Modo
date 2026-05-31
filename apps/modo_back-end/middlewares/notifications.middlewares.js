@@ -29,11 +29,24 @@ export const validateNotificationId = (req, res, next) => {
  * Validates the payload when updating a notification (e.g., marking as read).
  */
 export const validateUpdateNotification = (req, res, next) => {
-  const { lida } = req.body;
+  let { lida } = req.body;
   const errors = {};
 
-  if (lida === undefined || typeof lida !== "boolean") {
+  // Accept boolean or boolean-like values (e.g., "true"/"false" from form-data)
+  if (lida === undefined) {
     errors.lida = ["'lida' is mandatory and must be a boolean value."];
+  } else {
+    if (typeof lida === "string") {
+      const lowered = lida.toLowerCase();
+      if (lowered === "true") lida = true;
+      else if (lowered === "false") lida = false;
+    }
+    if (typeof lida !== "boolean") {
+      errors.lida = ["'lida' is mandatory and must be a boolean value."];
+    } else {
+      // replace body value with coerced boolean
+      req.body.lida = lida;
+    }
   }
 
   if (Object.keys(errors).length > 0) {

@@ -2,7 +2,10 @@
 Each route is associated with a specific controller function that handles the corresponding operation.*/
 
 import express from "express";
-import { authenticateUser } from "../middlewares/users.middlewares.js";
+import {
+  authenticateUser,
+  authorizeAdmin,
+} from "../middlewares/users.middlewares.js";
 import {
   getAllNotifications,
   createNotification,
@@ -16,11 +19,17 @@ import {
   checkNotificationExists,
   validateUpdateNotification,
 } from "../middlewares/notifications.middlewares.js";
+import uploadReport from "../utils/upload.utils.js";
 
 const router = express.Router();
 
 // GET /notifications - list all notifications (admin view)
-router.get("/notifications", authenticateUser, getAllNotifications);
+router.get(
+  "/notifications",
+  authenticateUser,
+  authorizeAdmin,
+  getAllNotifications,
+);
 
 // Route to get all notifications for a specific user (requires auth)
 router.get(
@@ -33,6 +42,7 @@ router.get(
 router.post(
   "/users/:userId/notifications",
   authenticateUser,
+  authorizeAdmin,
   createNotification,
 );
 
@@ -50,6 +60,7 @@ router.get(
 router.patch(
   "/notifications/:notificationId",
   authenticateUser,
+  uploadReport.none(),
   validateNotificationId,
   checkNotificationExists,
   validateUpdateNotification,
@@ -68,6 +79,7 @@ router.patch(
 router.delete(
   "/notifications/:notificationId",
   authenticateUser,
+  authorizeAdmin,
   validateNotificationId,
   checkNotificationExists,
   deleteNotification,
