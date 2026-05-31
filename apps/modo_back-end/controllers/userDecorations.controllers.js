@@ -4,6 +4,13 @@
 */
 
 import { UserDecorations } from "../config/db.config.js";
+import {
+  validationError,
+  forbiddenError,
+  notFoundError,
+  conflictError,
+  genericError,
+} from "../utils/errors.utils.js";
 
 /**
  * getAllUserDecorations(req, res, next)
@@ -24,7 +31,7 @@ export const getAllUserDecorations = async (req, res, next) => {
       requester &&
       (requester.id_utilizador || requester.dataValues?.id_utilizador);
     if (requesterRole !== "admin" && Number(requesterId) !== Number(userId)) {
-      return next({ status: 403, message: "Forbidden." });
+      return next(forbiddenError());
     }
 
     const userDecorations = await UserDecorations.findAll({
@@ -45,7 +52,7 @@ export const getAllUserDecorations = async (req, res, next) => {
     res.status(200).json(response);
   } catch (error) {
     console.error(error);
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };
 
@@ -71,7 +78,7 @@ export const assignDecorationToUser = async (req, res, next) => {
       requester &&
       (requester.id_utilizador || requester.dataValues?.id_utilizador);
     if (requesterRole !== "admin" && Number(requesterId) !== Number(userId)) {
-      return next({ status: 403, message: "Forbidden." });
+      return next(forbiddenError());
     }
 
     const existing = await UserDecorations.findOne({
@@ -79,11 +86,11 @@ export const assignDecorationToUser = async (req, res, next) => {
     });
 
     if (existing) {
-      return next({
-        status: 409,
-        message: "Resource conflict.",
-        errors: { userDecoration: ["Decoration already assigned to user."] },
-      });
+      return next(
+        conflictError({
+          userDecoration: ["Decoration already assigned to user."],
+        }),
+      );
     }
 
     // If there's already any record for this user, don't overwrite it here.
@@ -106,15 +113,13 @@ export const assignDecorationToUser = async (req, res, next) => {
         });
       }
 
-      return next({
-        status: 409,
-        message: "Resource conflict.",
-        errors: {
+      return next(
+        conflictError({
           userDecoration: [
             "User already has a decoration. Use PATCH to change it.",
           ],
-        },
-      });
+        }),
+      );
     }
 
     const userDecoration = await UserDecorations.create({
@@ -134,7 +139,7 @@ export const assignDecorationToUser = async (req, res, next) => {
     });
   } catch (error) {
     console.error(error);
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };
 
@@ -153,7 +158,7 @@ export const updateUserDecoration = async (req, res, next) => {
       requester &&
       (requester.id_utilizador || requester.dataValues?.id_utilizador);
     if (requesterRole !== "admin" && Number(requesterId) !== Number(userId)) {
-      return next({ status: 403, message: "Forbidden." });
+      return next(forbiddenError());
     }
 
     // The PATCH is intended to change the decoration for the user: old -> new
@@ -166,13 +171,15 @@ export const updateUserDecoration = async (req, res, next) => {
         where: { id_utilizador: userId },
       });
       if (anyForUser && anyForUser.id_decoracao === null) {
-        return next({
-          status: 400,
-          message:
-            "Current decoration is null. Use PATCH /:userId/avatar-decorations with body { id_decoracao }.",
-        });
+        return next(
+          validationError({
+            id_decoracao: [
+              "Current decoration is null. Use PATCH /:userId/avatar-decorations with body { id_decoracao }.",
+            ],
+          }),
+        );
       }
-      return next({ status: 404, message: "User decoration not found." });
+      return next(notFoundError("UserDecoration", `${userId}:${decorationId}`));
     }
 
     const { id_decoracao } = req.body;
@@ -208,17 +215,18 @@ export const updateUserDecoration = async (req, res, next) => {
     }
 
     if (!id_decoracao || Number(id_decoracao) <= 0)
-      return next({ status: 400, message: "Invalid id_decoracao." });
+      return next(validationError({ id_decoracao: ["Invalid id_decoracao."] }));
 
     // ensure there's no conflict (another row with same user and id_decoracao)
     const conflict = await UserDecorations.findOne({
       where: { id_utilizador: userId, id_decoracao },
     });
     if (conflict)
-      return next({
-        status: 409,
-        message: "User already has that decoration.",
-      });
+      return next(
+        conflictError({
+          userDecoration: ["User already has that decoration."],
+        }),
+      );
 
     await userDecoration.update({ id_decoracao });
 
@@ -234,7 +242,7 @@ export const updateUserDecoration = async (req, res, next) => {
     });
   } catch (error) {
     console.error(error);
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };
 

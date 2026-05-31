@@ -5,6 +5,13 @@
 
 import { Report } from "../config/db.config.js";
 import cloudinary from "../config/cloudinary.config.js";
+import {
+  validationError,
+  forbiddenError,
+  notFoundError,
+  conflictError,
+  genericError,
+} from "../utils/errors.utils.js";
 
 /**
  * getAllReports(req, res, next)
@@ -20,8 +27,7 @@ export const getAllReports = async (req, res, next) => {
       ""
     ).toLowerCase();
     const { userId } = req.query;
-    if (!userId && requesterRole !== "admin")
-      return next({ status: 403, message: "Forbidden." });
+    if (!userId && requesterRole !== "admin") return next(forbiddenError());
 
     const where = userId ? { id_utilizador: Number(userId) } : {};
     const reports = await Report.findAll({ where });
@@ -35,7 +41,7 @@ export const getAllReports = async (req, res, next) => {
 
     res.status(200).json(response);
   } catch (error) {
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };
 
@@ -74,7 +80,7 @@ export const createReport = async (req, res, next) => {
         const uploaded = await uploadFromBuffer(req.file.buffer);
         caminho_relatorio = uploaded?.secure_url ?? caminho_relatorio;
       } catch (err) {
-        return next({ status: 500, message: "Failed to upload report file." });
+        return next(genericError("Failed to upload report file."));
       }
     }
 
@@ -90,7 +96,7 @@ export const createReport = async (req, res, next) => {
       Number(requester.id_utilizador || requester.dataValues?.id_utilizador) !==
         Number(userId)
     ) {
-      return next({ status: 403, message: "Forbidden." });
+      return next(forbiddenError());
     }
 
     // create report using model column names
@@ -111,23 +117,17 @@ export const createReport = async (req, res, next) => {
     });
   } catch (error) {
     if (error.name === "SequelizeValidationError") {
-      return next({
-        status: 400,
-        message: "Validation failed.",
-        errors: { message: [error.message] },
-      });
+      return next(validationError({ message: [error.message] }));
     }
 
     if (error.name === "SequelizeUniqueConstraintError") {
-      return next({
-        status: 409,
-        message: "Resource conflict.",
-        errors: {
+      return next(
+        conflictError({
           report: ["A report for this specific period already exists."],
-        },
-      });
+        }),
+      );
     }
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };
 

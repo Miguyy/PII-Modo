@@ -7,6 +7,13 @@
 
 // Import user tasks data
 import { UserTasks as UserTask, User, Task } from "../config/db.config.js";
+import {
+  validationError,
+  forbiddenError,
+  notFoundError,
+  conflictError,
+  genericError,
+} from "../utils/errors.utils.js";
 
 /**
  * getAllUserTasks(req, res, next)
@@ -30,7 +37,7 @@ export const getAllUserTasks = async (req, res, next) => {
       requester &&
       (requester.id_utilizador || requester.dataValues?.id_utilizador);
     if (requesterRole !== "admin" && Number(requesterId) !== Number(userId)) {
-      return next({ status: 403, message: "Forbidden." });
+      return next(forbiddenError());
     }
 
     // Query the join table and fetch the Task for each entry to avoid
@@ -64,8 +71,7 @@ export const getAllUserTasks = async (req, res, next) => {
     res.status(200).json(response);
   } catch (error) {
     console.error("getAllUserTasks error:", error);
-    // Handle specific errors: 500
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };
 
@@ -93,7 +99,7 @@ export const assignTaskToUser = async (req, res, next) => {
       requester &&
       (requester.id_utilizador || requester.dataValues?.id_utilizador);
     if (requesterRole !== "admin" && Number(requesterId) !== Number(userId)) {
-      return next({ status: 403, message: "Forbidden." });
+      return next(forbiddenError());
     }
 
     // Allow either assigning an existing task by `taskId` or creating
@@ -118,11 +124,7 @@ export const assignTaskToUser = async (req, res, next) => {
 
       const name = nome_tarefa ?? nome;
       if (!name) {
-        return next({
-          status: 400,
-          message: "Validation failed.",
-          errors: { nome: ["Name is mandatory."] },
-        });
+        return next(validationError({ nome: ["Name is mandatory."] }));
       }
 
       const created = await Task.create({
@@ -138,11 +140,7 @@ export const assignTaskToUser = async (req, res, next) => {
 
       resolvedTaskId = created.toJSON().id_tarefa;
     } else {
-      return next({
-        status: 400,
-        message: "Validation failed.",
-        errors: { taskId: ["Invalid task ID."] },
-      });
+      return next(validationError({ taskId: ["Invalid task ID."] }));
     }
 
     const existing = await UserTask.findOne({
@@ -153,11 +151,9 @@ export const assignTaskToUser = async (req, res, next) => {
     });
 
     if (existing) {
-      return next({
-        status: 409,
-        message: "Resource conflict.",
-        errors: { userTask: ["Task already assigned to user."] },
-      });
+      return next(
+        conflictError({ userTask: ["Task already assigned to user."] }),
+      );
     }
 
     const userTask = await UserTask.create({
@@ -181,8 +177,7 @@ export const assignTaskToUser = async (req, res, next) => {
     });
   } catch (error) {
     console.error("assignTaskToUser error:", error);
-    // Handle specific errors: 500
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };
 
@@ -207,26 +202,18 @@ export const assignHabitTasksToUser = async (req, res, next) => {
       requester &&
       (requester.id_utilizador || requester.dataValues?.id_utilizador);
     if (requesterRole !== "admin" && Number(requesterId) !== Number(userId)) {
-      return next({ status: 403, message: "Forbidden." });
+      return next(forbiddenError());
     }
 
     if (!habitId || !/^\d+$/.test(String(habitId))) {
-      return next({
-        status: 400,
-        message: "Validation failed.",
-        errors: { habitId: ["Invalid habit ID."] },
-      });
+      return next(validationError({ habitId: ["Invalid habit ID."] }));
     }
 
     // Find all tasks for the habit
     const tasks = await Task.findAll({ where: { id_habito: Number(habitId) } });
 
     if (!tasks || tasks.length === 0) {
-      return next({
-        status: 404,
-        message: "Resource not found.",
-        errors: { habit: ["No tasks found for this habit."] },
-      });
+      return next(notFoundError("HabitTasks", habitId));
     }
 
     const created = [];
@@ -261,7 +248,7 @@ export const assignHabitTasksToUser = async (req, res, next) => {
     });
   } catch (error) {
     console.error("assignHabitTasksToUser error:", error);
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };
 
@@ -285,21 +272,20 @@ export const deleteUserTask = async (req, res, next) => {
       requester &&
       (requester.id_utilizador || requester.dataValues?.id_utilizador);
     if (requesterRole !== "admin" && Number(requesterId) !== Number(userId)) {
-      return next({ status: 403, message: "Forbidden." });
+      return next(forbiddenError());
     }
     const deleted = await UserTask.destroy({
       where: { id_utilizador: Number(userId), id_tarefa: Number(taskId) },
     });
 
     if (!deleted) {
-      return next({ status: 404, message: "Resource not found." });
+      return next(notFoundError("UserTask", `${userId}-${taskId}`));
     }
 
     res.status(204).send();
   } catch (error) {
     console.error("deleteUserTask error:", error);
-    // Handle specific errors: 500
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };
 
@@ -327,7 +313,7 @@ export const getUserTaskById = async (req, res, next) => {
       requesterRole !== "admin" &&
       Number(requesterId) !== Number(req.params.userId)
     ) {
-      return next({ status: 403, message: "Forbidden." });
+      return next(forbiddenError());
     }
 
     // Include HATEOAS links in the response
@@ -343,8 +329,7 @@ export const getUserTaskById = async (req, res, next) => {
     });
   } catch (error) {
     console.error("getUserTaskById error:", error);
-    // Handle specific errors: 500
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };
 
@@ -372,18 +357,14 @@ export const updateUserTask = async (req, res, next) => {
       requesterRole !== "admin" &&
       Number(requesterId) !== Number(req.params.userId)
     ) {
-      return next({ status: 403, message: "Forbidden." });
+      return next(forbiddenError());
     }
     // Accept both `progress` (EN) and `progresso` (PT) from clients
     const { progress, progresso } = req.body;
     const raw = progress ?? progresso;
     const value = Number(raw);
     if (Number.isNaN(value)) {
-      return next({
-        status: 400,
-        message: "Validation failed.",
-        errors: { progresso: ["Invalid progress value."] },
-      });
+      return next(validationError({ progresso: ["Invalid progress value."] }));
     }
 
     await userTask.update({ progresso: value });
@@ -401,8 +382,7 @@ export const updateUserTask = async (req, res, next) => {
     });
   } catch (error) {
     console.error("updateUserTask error:", error);
-    // Handle specific errors: 500
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };
 
@@ -430,7 +410,7 @@ export const completeUserTask = async (req, res, next) => {
       requesterRole !== "admin" &&
       Number(requesterId) !== Number(req.params.userId)
     ) {
-      return next({ status: 403, message: "Forbidden." });
+      return next(forbiddenError());
     }
 
     await userTask.update({
@@ -453,13 +433,10 @@ export const completeUserTask = async (req, res, next) => {
   } catch (error) {
     console.error("completeUserTask error:", error);
     if (error.name === "SequelizeValidationError") {
-      return next({
-        status: 400,
-        message: "Validation failed.",
-        errors: { validation: error.errors.map((e) => e.message) },
-      });
+      return next(
+        validationError({ validation: error.errors.map((e) => e.message) }),
+      );
     }
-    // Handle specific errors: 500
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };

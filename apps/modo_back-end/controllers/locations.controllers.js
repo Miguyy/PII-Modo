@@ -5,6 +5,12 @@
 */
 
 import { Location } from "../config/db.config.js";
+import {
+  validationError,
+  forbiddenError,
+  notFoundError,
+  genericError,
+} from "../utils/errors.utils.js";
 
 /**
  * getAllLocations(req, res, next)
@@ -25,7 +31,7 @@ export const getAllLocations = async (req, res, next) => {
     }));
     res.status(200).json(response);
   } catch (error) {
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };
 
@@ -51,7 +57,7 @@ export const getLocation = async (req, res, next) => {
       requesterRole !== "admin" &&
       Number(requesterId) !== Number(location.id_utilizador)
     ) {
-      return next({ status: 403, message: "Forbidden." });
+      return next(forbiddenError());
     }
 
     res.status(200).json({
@@ -65,7 +71,7 @@ export const getLocation = async (req, res, next) => {
       ],
     });
   } catch (error) {
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };
 
@@ -88,7 +94,7 @@ export const createLocation = async (req, res, next) => {
       requester &&
       (requester.id_utilizador || requester.dataValues?.id_utilizador);
     if (requesterRole !== "admin" && Number(requesterId) !== Number(userId)) {
-      return next({ status: 403, message: "Forbidden." });
+      return next(forbiddenError());
     }
 
     // Security Protection: Extract only the allowed fields
@@ -105,15 +111,13 @@ export const createLocation = async (req, res, next) => {
       where: { id_utilizador: Number(userId) },
     });
     if (existing) {
-      return next({
-        status: 409,
-        message: "Resource conflict.",
-        errors: {
+      return next(
+        validationError({
           location: [
             "Location already exists for this user. Use PUT/PATCH to update.",
           ],
-        },
-      });
+        }),
+      );
     }
 
     const location = await Location.create({
@@ -131,7 +135,7 @@ export const createLocation = async (req, res, next) => {
       ],
     });
   } catch (error) {
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };
 
@@ -157,7 +161,7 @@ export const updateLocation = async (req, res, next) => {
       requesterRole !== "admin" &&
       Number(requesterId) !== Number(location.id_utilizador)
     ) {
-      return next({ status: 403, message: "Forbidden." });
+      return next(forbiddenError());
     }
 
     // Security Protection: Extract only the allowed fields for update
@@ -181,14 +185,14 @@ export const updateLocation = async (req, res, next) => {
       ],
     });
   } catch (error) {
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };
 
 export const deleteLocation = async (req, res, next) => {
   try {
     const location = req.location;
-    if (!location) return next({ status: 404, message: "Location not found." });
+    if (!location) return next(notFoundError("Location", req.params.userId));
 
     // Only admin can delete locations
     const requester = req.user;
@@ -198,12 +202,12 @@ export const deleteLocation = async (req, res, next) => {
       ""
     ).toLowerCase();
     if (requesterRole !== "admin") {
-      return next({ status: 403, message: "Forbidden." });
+      return next(forbiddenError());
     }
 
     await location.destroy();
     res.status(204).send();
   } catch (error) {
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };

@@ -7,6 +7,11 @@
 
 import { AvatarDecoration } from "../config/db.config.js";
 import { UserDecorations } from "../config/db.config.js";
+import {
+  conflictError,
+  notFoundError,
+  genericError,
+} from "../utils/errors.utils.js";
 import cloudinary from "../config/cloudinary.config.js";
 
 /**
@@ -30,7 +35,7 @@ export const getAllDecorations = async (req, res, next) => {
 
     res.status(200).json(response);
   } catch (error) {
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };
 
@@ -67,10 +72,7 @@ export const createDecoration = async (req, res, next) => {
         const uploaded = await uploadFromBuffer(req.file.buffer);
         caminho_decoracao = uploaded?.secure_url ?? caminho_decoracao;
       } catch (err) {
-        return next({
-          status: 500,
-          message: "Failed to upload decoration file.",
-        });
+        return next(genericError("Failed to upload decoration file."));
       }
     }
 
@@ -92,15 +94,13 @@ export const createDecoration = async (req, res, next) => {
     });
   } catch (error) {
     if (error.name === "SequelizeUniqueConstraintError") {
-      return next({
-        status: 409,
-        message: "Resource conflict.",
-        errors: {
+      return next(
+        conflictError({
           nome_decoracao: ["A decoration with this name already exists."],
-        },
-      });
+        }),
+      );
     }
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };
 
@@ -133,10 +133,7 @@ export const updateDecoration = async (req, res, next) => {
     const decoration = await AvatarDecoration.findByPk(id);
 
     if (!decoration) {
-      return res.status(404).json({
-        description: "Resource not found.",
-        errors: { id: ["Decoration not found."] },
-      });
+      return next(notFoundError("Decoration", id));
     }
 
     // Security Protection: Extract only the allowed fields for update
@@ -187,10 +184,7 @@ export const updateDecoration = async (req, res, next) => {
         // upload failed: log and return error
         // eslint-disable-next-line no-console
         console.error("Cloudinary upload failed in updateDecoration:", err);
-        return next({
-          status: 500,
-          message: "Failed to upload decoration file.",
-        });
+        return next(genericError("Failed to upload decoration file."));
       }
     }
 
@@ -212,15 +206,13 @@ export const updateDecoration = async (req, res, next) => {
     });
   } catch (error) {
     if (error.name === "SequelizeUniqueConstraintError") {
-      return next({
-        status: 409,
-        message: "Resource conflict.",
-        errors: {
+      return next(
+        conflictError({
           nome_decoracao: ["A decoration with this name already exists."],
-        },
-      });
+        }),
+      );
     }
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };
 
@@ -234,10 +226,7 @@ export const deleteDecoration = async (req, res, next) => {
     const decoration = await AvatarDecoration.findByPk(id);
 
     if (!decoration) {
-      return res.status(404).json({
-        description: "Resource not found.",
-        errors: { id: ["Decoration not found."] },
-      });
+      return next(notFoundError("Decoration", id));
     }
 
     // remove associations in join table first
@@ -247,6 +236,6 @@ export const deleteDecoration = async (req, res, next) => {
     await decoration.destroy();
     res.status(204).send();
   } catch (error) {
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };

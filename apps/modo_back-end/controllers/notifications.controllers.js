@@ -5,6 +5,12 @@
 */
 
 import { Notification } from "../config/db.config.js";
+import {
+  validationError,
+  forbiddenError,
+  notFoundError,
+  genericError,
+} from "../utils/errors.utils.js";
 
 /**
  * getAllNotifications(req, res, next)
@@ -24,8 +30,7 @@ export const getAllNotifications = async (req, res, next) => {
     const requesterId =
       requester &&
       (requester.id_utilizador || requester.dataValues?.id_utilizador);
-    if (!userId && requesterRole !== "admin")
-      return next({ status: 403, message: "Forbidden." });
+    if (!userId && requesterRole !== "admin") return next(forbiddenError());
 
     const whereClause = userId ? { id_utilizador: Number(userId) } : {};
 
@@ -46,7 +51,7 @@ export const getAllNotifications = async (req, res, next) => {
     if (userId) {
       // If requester is not admin, ensure they only request their own notifications
       if (requesterRole !== "admin" && Number(requesterId) !== Number(userId)) {
-        return next({ status: 403, message: "Forbidden." });
+        return next(forbiddenError());
       }
       return res
         .status(200)
@@ -55,7 +60,7 @@ export const getAllNotifications = async (req, res, next) => {
 
     res.status(200).json(response);
   } catch (error) {
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };
 
@@ -68,20 +73,17 @@ export const createNotification = async (req, res, next) => {
         (requester.tipo_utilizador || requester.dataValues?.tipo_utilizador)) ||
       ""
     ).toLowerCase();
-    if (requesterRole !== "admin")
-      return next({ status: 403, message: "Forbidden." });
+    if (requesterRole !== "admin") return next(forbiddenError());
     const { userId } = req.params;
     const { mensagem, tipo_notificacao } = req.body;
 
     if (!mensagem || !tipo_notificacao) {
-      return next({
-        status: 400,
-        message: "Validation failed.",
-        errors: {
+      return next(
+        validationError({
           mensagem: ["mensagem is required"],
           tipo_notificacao: ["tipo_notificacao is required"],
-        },
-      });
+        }),
+      );
     }
 
     const notification = await Notification.create({
@@ -102,7 +104,7 @@ export const createNotification = async (req, res, next) => {
       ],
     });
   } catch (error) {
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };
 
@@ -110,7 +112,7 @@ export const getNotificationById = async (req, res, next) => {
   try {
     const notification = req.notification;
     if (!notification)
-      return next({ status: 404, message: "Notification not found." });
+      return next(notFoundError("Notification", req.params.notificationId));
 
     // Authorization: only admin or owner can fetch this notification
     const requester = req.user;
@@ -126,7 +128,7 @@ export const getNotificationById = async (req, res, next) => {
       requesterRole !== "admin" &&
       Number(requesterId) !== Number(notification.id_utilizador)
     ) {
-      return next({ status: 403, message: "Forbidden." });
+      return next(forbiddenError());
     }
 
     res.status(200).json({
@@ -140,7 +142,7 @@ export const getNotificationById = async (req, res, next) => {
       ],
     });
   } catch (error) {
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };
 /**
@@ -156,13 +158,13 @@ export const updateNotification = async (req, res, next) => {
 
     if (!notification) {
       if (!idParam)
-        return next({
-          status: 400,
-          message: "Missing notification identifier.",
-        });
+        return next(
+          validationError({
+            id_notificacao: ["Missing notification identifier."],
+          }),
+        );
       notification = await Notification.findByPk(idParam);
-      if (!notification)
-        return next({ status: 404, message: "Notification not found." });
+      if (!notification) return next(notFoundError("Notification", idParam));
     }
 
     // Only allow updating a small, safe set of fields
@@ -181,14 +183,11 @@ export const updateNotification = async (req, res, next) => {
     if (requesterRole !== "admin") {
       // ensure non-admin only modifies their own notification
       if (Number(requesterId) !== Number(notification.id_utilizador)) {
-        return next({ status: 403, message: "Forbidden." });
+        return next(forbiddenError());
       }
       // non-admins may only change 'lida'
       if (mensagem !== undefined || tipo_notificacao !== undefined) {
-        return next({
-          status: 403,
-          message: "Forbidden. Cannot modify this field.",
-        });
+        return next(forbiddenError("Forbidden. Cannot modify this field."));
       }
     }
 
@@ -212,7 +211,7 @@ export const updateNotification = async (req, res, next) => {
       ],
     });
   } catch (error) {
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };
 
@@ -225,15 +224,16 @@ export const updateNotificationByBody = async (req, res, next) => {
       !Number.isInteger(Number(id_notificacao)) ||
       Number(id_notificacao) <= 0
     ) {
-      return next({
-        status: 400,
-        message: "Invalid or missing id_notificacao.",
-      });
+      return next(
+        validationError({
+          id_notificacao: ["Invalid or missing id_notificacao."],
+        }),
+      );
     }
 
     const notification = await Notification.findByPk(id_notificacao);
     if (!notification)
-      return next({ status: 404, message: "Notification not found." });
+      return next(notFoundError("Notification", id_notificacao));
 
     // authorization: non-admins may only update their own notifications
     const requester = req.user;
@@ -249,7 +249,7 @@ export const updateNotificationByBody = async (req, res, next) => {
       requesterRole !== "admin" &&
       Number(requesterId) !== Number(notification.id_utilizador)
     ) {
-      return next({ status: 403, message: "Forbidden." });
+      return next(forbiddenError());
     }
 
     const updated = await notification.update({
@@ -272,7 +272,7 @@ export const updateNotificationByBody = async (req, res, next) => {
       ],
     });
   } catch (error) {
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };
 
@@ -282,13 +282,13 @@ export const deleteNotification = async (req, res, next) => {
     const idParam = req.params.notificationId || req.body.id_notificacao;
     if (!notification) {
       if (!idParam)
-        return next({
-          status: 400,
-          message: "Missing notification identifier.",
-        });
+        return next(
+          validationError({
+            id_notificacao: ["Missing notification identifier."],
+          }),
+        );
       notification = await Notification.findByPk(idParam);
-      if (!notification)
-        return next({ status: 404, message: "Notification not found." });
+      if (!notification) return next(notFoundError("Notification", idParam));
     }
 
     // Only admin may delete notifications
@@ -298,12 +298,11 @@ export const deleteNotification = async (req, res, next) => {
         (requester.tipo_utilizador || requester.dataValues?.tipo_utilizador)) ||
       ""
     ).toLowerCase();
-    if (requesterRole !== "admin")
-      return next({ status: 403, message: "Forbidden." });
+    if (requesterRole !== "admin") return next(forbiddenError());
 
     await notification.destroy();
     res.status(204).send();
   } catch (error) {
-    return next({ status: 500, message: "Internal server error." });
+    return next(genericError());
   }
 };
