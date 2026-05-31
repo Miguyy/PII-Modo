@@ -14,6 +14,19 @@ export const getAllNotifications = async (req, res, next) => {
   try {
     const userId = req.params.userId || req.query.userId;
 
+    // Authorization: if requesting global list (no userId) require admin
+    const requester = req.user;
+    const requesterRole = (
+      (requester &&
+        (requester.tipo_utilizador || requester.dataValues?.tipo_utilizador)) ||
+      ""
+    ).toLowerCase();
+    const requesterId =
+      requester &&
+      (requester.id_utilizador || requester.dataValues?.id_utilizador);
+    if (!userId && requesterRole !== "admin")
+      return next({ status: 403, message: "Forbidden." });
+
     const whereClause = userId ? { id_utilizador: Number(userId) } : {};
 
     const notifications = await Notification.findAll({ where: whereClause });
@@ -31,6 +44,10 @@ export const getAllNotifications = async (req, res, next) => {
 
     // If a specific user was requested, return the user id and their notifications
     if (userId) {
+      // If requester is not admin, ensure they only request their own notifications
+      if (requesterRole !== "admin" && Number(requesterId) !== Number(userId)) {
+        return next({ status: 403, message: "Forbidden." });
+      }
       return res
         .status(200)
         .json({ id_utilizador: Number(userId), notifications: response });
@@ -44,6 +61,15 @@ export const getAllNotifications = async (req, res, next) => {
 
 export const createNotification = async (req, res, next) => {
   try {
+    // Only admin may create notifications
+    const requester = req.user;
+    const requesterRole = (
+      (requester &&
+        (requester.tipo_utilizador || requester.dataValues?.tipo_utilizador)) ||
+      ""
+    ).toLowerCase();
+    if (requesterRole !== "admin")
+      return next({ status: 403, message: "Forbidden." });
     const { userId } = req.params;
     const { mensagem, tipo_notificacao } = req.body;
 
@@ -86,6 +112,23 @@ export const getNotificationById = async (req, res, next) => {
     if (!notification)
       return next({ status: 404, message: "Notification not found." });
 
+    // Authorization: only admin or owner can fetch this notification
+    const requester = req.user;
+    const requesterRole = (
+      (requester &&
+        (requester.tipo_utilizador || requester.dataValues?.tipo_utilizador)) ||
+      ""
+    ).toLowerCase();
+    const requesterId =
+      requester &&
+      (requester.id_utilizador || requester.dataValues?.id_utilizador);
+    if (
+      requesterRole !== "admin" &&
+      Number(requesterId) !== Number(notification.id_utilizador)
+    ) {
+      return next({ status: 403, message: "Forbidden." });
+    }
+
     res.status(200).json({
       ...notification.toJSON(),
       links: [
@@ -124,6 +167,30 @@ export const updateNotification = async (req, res, next) => {
 
     // Only allow updating a small, safe set of fields
     const { lida, mensagem, tipo_notificacao } = req.body;
+
+    // If requester is not admin, only allow toggling `lida`
+    const requester = req.user;
+    const requesterRole = (
+      (requester &&
+        (requester.tipo_utilizador || requester.dataValues?.tipo_utilizador)) ||
+      ""
+    ).toLowerCase();
+    const requesterId =
+      requester &&
+      (requester.id_utilizador || requester.dataValues?.id_utilizador);
+    if (requesterRole !== "admin") {
+      // ensure non-admin only modifies their own notification
+      if (Number(requesterId) !== Number(notification.id_utilizador)) {
+        return next({ status: 403, message: "Forbidden." });
+      }
+      // non-admins may only change 'lida'
+      if (mensagem !== undefined || tipo_notificacao !== undefined) {
+        return next({
+          status: 403,
+          message: "Forbidden. Cannot modify this field.",
+        });
+      }
+    }
 
     const updated = await notification.update({
       lida: lida === undefined ? notification.lida : lida,
@@ -168,6 +235,23 @@ export const updateNotificationByBody = async (req, res, next) => {
     if (!notification)
       return next({ status: 404, message: "Notification not found." });
 
+    // authorization: non-admins may only update their own notifications
+    const requester = req.user;
+    const requesterRole = (
+      (requester &&
+        (requester.tipo_utilizador || requester.dataValues?.tipo_utilizador)) ||
+      ""
+    ).toLowerCase();
+    const requesterId =
+      requester &&
+      (requester.id_utilizador || requester.dataValues?.id_utilizador);
+    if (
+      requesterRole !== "admin" &&
+      Number(requesterId) !== Number(notification.id_utilizador)
+    ) {
+      return next({ status: 403, message: "Forbidden." });
+    }
+
     const updated = await notification.update({
       lida: lida === undefined ? notification.lida : lida,
       mensagem: mensagem === undefined ? notification.mensagem : mensagem,
@@ -206,6 +290,16 @@ export const deleteNotification = async (req, res, next) => {
       if (!notification)
         return next({ status: 404, message: "Notification not found." });
     }
+
+    // Only admin may delete notifications
+    const requester = req.user;
+    const requesterRole = (
+      (requester &&
+        (requester.tipo_utilizador || requester.dataValues?.tipo_utilizador)) ||
+      ""
+    ).toLowerCase();
+    if (requesterRole !== "admin")
+      return next({ status: 403, message: "Forbidden." });
 
     await notification.destroy();
     res.status(204).send();
