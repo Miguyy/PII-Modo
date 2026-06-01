@@ -120,8 +120,17 @@ export const validateUserId = (req, res, next) => {
  */
 export const authenticateUser = async (req, res, next) => {
   const authHeader = req.headers.authorization;
+  let token = null;
 
-  if (!authHeader) {
+  if (authHeader) {
+    token = authHeader.startsWith("Bearer ")
+      ? authHeader.split(" ")[1]
+      : authHeader;
+  } else if (req.cookies && req.cookies.token) {
+    token = req.cookies.token;
+  }
+
+  if (!token) {
     return res.status(401).json({
       description: "Missing or invalid authentication token",
       errors: { token: ["Authentication token is required."] },
@@ -129,30 +138,62 @@ export const authenticateUser = async (req, res, next) => {
   }
 
   try {
-    const token = authHeader.startsWith("Bearer ")
-      ? authHeader.split(" ")[1]
-      : authHeader;
     const jwtSecret = process.env.JWT_SECRET || "dev_secret";
     if (!process.env.JWT_SECRET)
       console.warn(
         "Warning: JWT_SECRET not set, using dev_secret (not for production)",
       );
-
     const decoded = jwt.verify(token, jwtSecret);
 
-    // Load full user instance from DB so controllers can use user.toJSON(), etc.
     const userInstance = await User.findByPk(decoded.id);
     if (!userInstance) {
       return res.status(401).json({ description: "Invalid token." });
     }
 
-    req.user = userInstance; // attach model instance
-
+    req.user = userInstance;
     next();
   } catch (err) {
-    return res.status(401).json({
-      description: "Invalid token.",
-    });
+    return res.status(401).json({ description: "Invalid token." });
+  }
+};
+
+/**
+ * authenticateOptional(req, res, next)
+ * Like `authenticateUser` but does not require a token. If a
+ * Bearer token is provided it is validated and `req.user` is set;
+ * if no token is present the request proceeds unauthenticated.
+ */
+export const authenticateOptional = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  let token = null;
+
+  if (authHeader) {
+    token = authHeader.startsWith("Bearer ")
+      ? authHeader.split(" ")[1]
+      : authHeader;
+  } else if (req.cookies && req.cookies.token) {
+    token = req.cookies.token;
+  }
+
+  if (!token) return next();
+
+  try {
+    const jwtSecret = process.env.JWT_SECRET || "dev_secret";
+    if (!process.env.JWT_SECRET)
+      console.warn(
+        "Warning: JWT_SECRET not set, using dev_secret (not for production)",
+      );
+    const decoded = jwt.verify(token, jwtSecret);
+
+    const userInstance = await User.findByPk(decoded.id);
+    if (!userInstance) {
+      return res.status(401).json({ description: "Invalid token." });
+    }
+
+    req.user = userInstance;
+    return next();
+  } catch (err) {
+    return res.status(401).json({ description: "Invalid token." });
   }
 };
 

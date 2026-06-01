@@ -44,9 +44,22 @@ export const createUser = async (req, res, next) => {
     } = req.body;
 
     const roleMap = { cliente: "Client", client: "Client", admin: "Admin" };
-    const mappedRole = tipo_utilizador
+    let mappedRole = tipo_utilizador
       ? roleMap[tipo_utilizador.toLowerCase()] || tipo_utilizador
       : undefined;
+
+    // If the request is unauthenticated or requester is not admin,
+    // force any new registration to be a Client. Admins (authenticated)
+    // may create users with elevated roles.
+    const requester = req.user;
+    const requesterRole = requester
+      ? String(
+          requester.tipo_utilizador || requester.dataValues?.tipo_utilizador,
+        ).toLowerCase()
+      : "";
+    if (!requester || requesterRole !== "admin") {
+      mappedRole = "Client";
+    }
 
     const hashed = await bcrypt.hash(password, 10);
 
@@ -76,22 +89,28 @@ export const createUser = async (req, res, next) => {
       ],
       message: "User registration was a success!",
     };
-    // Also sign a token and return it (auto-login on registration)
-    const jwtSecret = process.env.JWT_SECRET || "dev_secret";
-    if (!process.env.JWT_SECRET)
-      console.warn(
-        "Warning: JWT_SECRET not set, using dev_secret (not for production)",
+    // Auto-sign a token only for self-registration (unauthenticated
+    // requests). If an admin created the user we do not return a token.
+    if (!requester) {
+      const jwtSecret = process.env.JWT_SECRET || "dev_secret";
+      if (!process.env.JWT_SECRET)
+        console.warn(
+          "Warning: JWT_SECRET not set, using dev_secret (not for production)",
+        );
+
+      const token = jwt.sign(
+        {
+          id: user.id_utilizador,
+          tipo_utilizador: (user.tipo_utilizador || "").toLowerCase(),
+        },
+        jwtSecret,
       );
 
-    const token = jwt.sign(
-      {
-        id: user.id_utilizador,
-        tipo_utilizador: (user.tipo_utilizador || "").toLowerCase(),
-      },
-      jwtSecret,
-    );
+      return res.status(201).json({ token, ...response });
+    }
 
-    res.status(201).json({ token, ...response });
+    // Admin-created user: return created resource without auto-login
+    res.status(201).json(response);
   } catch (error) {
     console.error(error);
     // Handle specific errors: 400, 409 and 500
@@ -280,6 +299,45 @@ export const updateUser = async (req, res, next) => {
     }
 
     const updates = {};
+    // Handle role change rules: only admins may promote a Client -> Admin.
+    if (
+      req.body &&
+      Object.prototype.hasOwnProperty.call(req.body, "tipo_utilizador")
+    ) {
+      const requested = req.body.tipo_utilizador;
+      const roleMap = { cliente: "Client", client: "Client", admin: "Admin" };
+      const requestedRole = requested
+        ? roleMap[requested.toLowerCase()] || requested
+        : undefined;
+
+      const targetCurrentRole = (
+        targetUser.tipo_utilizador ||
+        targetUser.dataValues?.tipo_utilizador ||
+        ""
+      ).toLowerCase();
+
+      // Prevent modifying another admin at all
+      if (
+        targetCurrentRole === "admin" &&
+        Number(requesterId) !== Number(userId)
+      ) {
+        return next(forbiddenError("Forbidden. Cannot modify another admin."));
+      }
+
+      // If attempting to change role
+      if (requestedRole && requestedRole !== targetUser.tipo_utilizador) {
+        // Only allow promoting a client to admin and only by an admin requester
+        if (
+          requestedRole === "Admin" &&
+          targetCurrentRole === "client" &&
+          requesterRole === "admin"
+        ) {
+          updates.tipo_utilizador = requestedRole;
+        } else {
+          return next(forbiddenError("Forbidden. Role change not permitted."));
+        }
+      }
+    }
     if (email !== undefined) updates.email = email;
     if (password !== undefined)
       updates.hashed_password = await bcrypt.hash(password, 10);
@@ -318,16 +376,6 @@ export const updateUser = async (req, res, next) => {
     }
 
     await targetUser.update(updates);
-
-    // Prevent modifying another admin: admins may not modify/delete other admins
-    const targetRole = (
-      targetUser.tipo_utilizador ||
-      targetUser.dataValues?.tipo_utilizador ||
-      ""
-    ).toLowerCase();
-    if (targetRole === "admin" && Number(requesterId) !== Number(userId)) {
-      return next(forbiddenError("Forbidden. Cannot modify another admin."));
-    }
 
     // Include HATEOAS links in the response
     const response = {
@@ -505,6 +553,12 @@ export const resetPassword = async (req, res, next) => {
  * success; persistent token revocation is out-of-scope for now.
  */
 export const logout = async (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+  });
+  res.json({ message: "Logged out" });
   res.status(200).json({ message: "Logged out." });
 };
 
@@ -542,6 +596,23 @@ export const loginUser = async (req, res, next) => {
       },
       jwtSecret,
     );
+
+    // After token is created
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax", // adjust to strict if needed
+      maxAge: 15 * 60 * 1000, // 15 minutes
+    };
+
+    res.cookie("token", token, cookieOptions);
+
+    // Return user metadata (role/id) but you DON'T need to expose token to client
+    res.json({
+      message: "Login successful",
+      id_utilizador: user.id_utilizador,
+      tipo_utilizador: user.tipo_utilizador,
+    });
 
     // Return the requested success message plus the JWT token and role
     res.status(200).json({

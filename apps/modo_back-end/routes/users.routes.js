@@ -13,6 +13,7 @@ import {
   validateLoginUser,
   validateUserId,
   authenticateUser,
+  authenticateOptional,
   authorizeAdmin,
   authorizeOwnerOrAdmin,
 } from "../middlewares/users.middlewares.js";
@@ -43,10 +44,12 @@ const router = express.Router();
  * Purpose: Register a new user. Validates payload via
  * `validateCreateUser` then calls `createUser`.
  */
+// Public registration: clients may self-register. If a Bearer token is
+// present it will be validated (optional auth) so admins can create
+// users with elevated roles.
 router.post(
   "/",
-  authenticateUser,
-  authorizeAdmin,
+  authenticateOptional,
   validateCreateUser,
   uploadReport.single("imagem_utilizador"),
   createUser,
@@ -79,6 +82,7 @@ router.get("/:userId", authenticateUser, validateUserId, getUserById);
 router.patch(
   "/:userId",
   authenticateUser,
+  authorizeOwnerOrAdmin,
   validateUserId,
   uploadReport.single("imagem_utilizador"),
   updateUser,
