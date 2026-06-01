@@ -1,6 +1,8 @@
 // Import express
 import express from "express";
 import "dotenv/config";
+import cors from "cors";
+import cookieParser from "cookie-parser";
 
 // Create an express app
 const app = express();
@@ -8,6 +10,19 @@ const host = process.env.HOST || "localhost";
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
+// Enable CORS for the frontend during development. Set FRONTEND_URL
+// in env to restrict in other environments.
+const frontendOrigin = process.env.FRONTEND_URL || "http://localhost:5173";
+app.use(
+  cors({
+    origin: frontendOrigin,
+    methods: ["GET", "POST", "PATCH", "DELETE"],
+    credentials: true,
+  }),
+);
+
+app.use(cookieParser());
+// Answer preflight requests for all routes
 
 // Routers
 import usersRouter from "./routes/users.routes.js";
