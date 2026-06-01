@@ -165,17 +165,15 @@ export const getAllUsers = async (req, res, next) => {
       ],
     }));
 
-    res
-      .status(200)
-      .json({
-        meta: {
-          total: count,
-          page: parsedPage,
-          limit: parsedLimit,
-          pages: Math.ceil(count / parsedLimit),
-        },
-        data: response,
-      });
+    res.status(200).json({
+      meta: {
+        total: count,
+        page: parsedPage,
+        limit: parsedLimit,
+        pages: Math.ceil(count / parsedLimit),
+      },
+      data: response,
+    });
   } catch (error) {
     return next(genericError());
   }
@@ -397,12 +395,117 @@ export const deleteUser = async (req, res, next) => {
       return next(forbiddenError("Forbidden. Cannot delete another admin."));
     }
 
+    // Remove dependent records that belong to the user so foreign
+    // key constraints won't prevent deletion. This explicitly removes
+    // user assignments, decorations, notifications, reports and
+    // locations. The database relationships are already defined with
+    // CASCADE but we ensure removal here to satisfy the NOTE that
+    // active tasks/habits/decorations/notifications should not block
+    // deletion.
+    const { UserTasks, UserDecorations, Notification, Report, Location } =
+      await import("../config/db.config.js");
+
+    await Promise.all([
+      UserTasks.destroy({ where: { id_utilizador: Number(userId) } }),
+      UserDecorations.destroy({ where: { id_utilizador: Number(userId) } }),
+      Notification.destroy({ where: { id_utilizador: Number(userId) } }),
+      Report.destroy({ where: { id_utilizador: Number(userId) } }),
+      Location.destroy({ where: { id_utilizador: Number(userId) } }),
+    ]);
+
+    // Finally remove the user record itself
     await targetUser.destroy();
+
     res.status(204).send();
   } catch (error) {
     // Handle specific errors: 500
     return next(genericError());
   }
+};
+
+/**
+ * forgotPassword(req, res, next)
+ * Generates a short-lived reset token for the provided email. In a
+ * production system this would be emailed to the user; for now we
+ * return the token in the response for development/testing.
+ */
+export const forgotPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body || {};
+    if (!email) return next(validationError({ email: ["Email is required"] }));
+
+    const user = await User.findOne({ where: { email } });
+
+    // Always return success to avoid leaking whether an email exists
+    if (!user) {
+      return res
+        .status(200)
+        .json({ message: "If the email exists, a reset token was issued." });
+    }
+
+    const jwtSecret = process.env.JWT_SECRET || "dev_secret";
+    const token = jwt.sign(
+      { id: user.id_utilizador, purpose: "reset" },
+      jwtSecret,
+      { expiresIn: "1h" },
+    );
+
+    // TODO: send token via email; return token for now
+    res.status(200).json({ message: "Reset token generated.", token });
+  } catch (error) {
+    return next(genericError());
+  }
+};
+
+// NOTE: token verification endpoint removed; `resetPassword` now
+// accepts the token either in the request body (`token`) or as a
+// route param (`/forgot-password/:token`) and performs the reset.
+
+/**
+ * resetPassword(req, res, next)
+ * Accepts `{ token, password }` in the body, verifies the token and
+ * updates the user's password.
+ */
+export const resetPassword = async (req, res, next) => {
+  try {
+    const token = (req.body && req.body.token) || req.params.token;
+    const { password } = req.body || {};
+
+    if (!token || !password)
+      return next(
+        validationError({ token: ["Token and password are required"] }),
+      );
+
+    const jwtSecret = process.env.JWT_SECRET || "dev_secret";
+    let payload;
+    try {
+      payload = jwt.verify(token, jwtSecret);
+    } catch (err) {
+      return next(unauthorizedError("Invalid or expired token."));
+    }
+
+    if (payload.purpose !== "reset")
+      return next(validationError({ token: ["Invalid token purpose"] }));
+
+    const user = await User.findByPk(payload.id);
+    if (!user) return next(notFoundError("User", payload.id));
+
+    const hashed = await bcrypt.hash(password, 10);
+    await user.update({ hashed_password: hashed });
+
+    res.status(200).json({ message: "Password reset successfully." });
+  } catch (error) {
+    return next(genericError());
+  }
+};
+
+/**
+ * logout(req, res)
+ * Stateless JWT logout - instruct client to discard token. We return
+ * success; persistent token revocation is out-of-scope for now.
+ */
+export const logout = async (req, res) => {
+  res.status(200).json({ message: "Logged out." });
 };
 
 /**

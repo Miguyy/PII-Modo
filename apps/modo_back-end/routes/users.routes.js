@@ -14,6 +14,7 @@ import {
   validateUserId,
   authenticateUser,
   authorizeAdmin,
+  authorizeOwnerOrAdmin,
 } from "../middlewares/users.middlewares.js";
 import { uploadReport } from "../utils/upload.utils.js";
 
@@ -25,6 +26,9 @@ import {
   updateUser,
   deleteUser,
   loginUser,
+  forgotPassword,
+  resetPassword,
+  logout,
 } from "../controllers/users.controllers.js";
 
 // Use the userTasks controller to batch-assign habit tasks to a user
@@ -87,10 +91,19 @@ router.patch(
 router.delete(
   "/:userId",
   authenticateUser,
-  authorizeAdmin,
   validateUserId,
+  authorizeOwnerOrAdmin,
   deleteUser,
 );
+
+// Password reset flow
+router.post("/forgot-password", forgotPassword);
+// Reset in one step: token may be in params or body
+router.post("/forgot-password/:token", resetPassword);
+router.post("/reset-password", resetPassword);
+
+// Logout (stateless JWT) - client should discard token
+router.post("/logout", authenticateUser, logout);
 
 /**
  * POST /:userId/habits
