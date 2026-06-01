@@ -26,10 +26,11 @@
         id="reg-password-user"
       />
 
-      <button @click="registerUser" style="font-weight: bold; font-size: 18px">Sign In</button>
+      <button @click="handleRegister" style="font-weight: bold; font-size: 18px">Sign Up</button>
 
       <p class="register-login">
         Already have an account?
+
         <a
           href="/login"
           style="text-decoration: none; font-family: Heebo; font-weight: bold; color: #f19640"
@@ -38,11 +39,10 @@
       </p>
     </div>
 
-    <!-- Toast notification -->
     <Transition name="toast-slide">
       <div v-if="toast.visible" class="toast-notification">
         <div class="toast-icon">
-          <FontAwesomeIcon icon="info-circle" />
+          <font-awesome-icon icon="info-circle" />
         </div>
         <div class="toast-content">
           <strong>{{ toast.title }}</strong>
@@ -54,91 +54,97 @@
 </template>
 
 <script>
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { faInfoCircle } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import { createUser } from '../api/services/users.services'
+import { login } from '../api/services/auth.services'
 import { useUserStore } from '../stores/userStore'
+
+library.add(faInfoCircle)
 
 export default {
   name: 'RegisterView',
+
+  components: { FontAwesomeIcon },
+
   data() {
     return {
       name: '',
       email: '',
       password: '',
-      userStore: null,
       toast: { visible: false, title: '', message: '', timeout: null },
     }
   },
-  created() {
-    this.userStore = useUserStore()
 
-    const storedUsers = localStorage.getItem('users')
-    if (storedUsers && (!this.userStore.users || this.userStore.users.length === 0)) {
-      try {
-        this.userStore.users = JSON.parse(storedUsers)
-        const maxId = this.userStore.users.reduce((max, u) => Math.max(max, Number(u.id)), -1)
-        this.userStore.nextId = maxId + 1
-      } catch {
-        console.log('Failed to parse users from localStorage')
-      }
-    }
-
-    this.userStore.fetchUsers().catch(() => {})
-  },
   methods: {
-    async registerUser() {
+    async handleRegister() {
       if (!this.name || !this.email || !this.password) {
         this.showToast('Missing fields', 'Please fill in all fields.', 3000)
         return
       }
 
-      const passwordChar = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/
-      if (!passwordChar.test(this.password)) {
-        this.showToast(
-          'Weak password',
-          'Password must be at least 8 characters and include uppercase, lowercase, number, and special character.',
-          4500,
-        )
-        return
-      }
-
-      if (this.userStore.users.some((user) => user.email === this.email)) {
-        this.showToast('Email in use', 'Email is already registered.', 3000)
+      // Client-side validation mirrors the backend validateCreateUser middleware:
+      // 12–15 chars, uppercase, lowercase, digit, special character
+      const pwdErrors = this.validatePassword(this.password)
+      if (pwdErrors.length) {
+        this.showToast('Weak password', pwdErrors[0], 4500)
         return
       }
 
       try {
-        await this.userStore.addUser({
-          name: this.name,
-          email: this.email,
-          password: this.password,
-          avatar: null,
-          points: 0,
-          priority: 1,
-        })
+        // POST /users — body matches what validateCreateUser + createUser expect:
+        //   nome, email, password, tipo_utilizador
+        // The controller hashes the password and returns a JWT on success.
+        const data = await createUser(
+          {
+            nome: this.name,
+            email: this.email,
+            password: this.password,
+            tipo_utilizador: 'client',
+          },
+          null, // no admin token — requires a public register route on the backend
+        )
 
-        localStorage.setItem('users', JSON.stringify(this.userStore.users))
-
-        // Show toast instead of alert
-        this.showToast('Account created', 'User registered successfully!', 2500)
-
-        // Clear inputs
+        // After successful registration, send user to login instead
+        // of auto-signing them in. Backend may return a token in dev,
+        // but we avoid using it here to require explicit login.
+        this.showToast('Account created', 'Please log in to continue.', 2500)
         this.name = ''
         this.email = ''
         this.password = ''
 
-        // Navigate to login after a short delay so the toast is visible briefly
-        setTimeout(() => this.$router.push('/login'), 2000)
-      } catch (e) {
-        console.error(e)
-        this.showToast('Registration failed', 'Failed to register user.', 3000)
+        setTimeout(() => this.$router.push('/login'), 1500)
+      } catch (err) {
+        // Surface field-level errors returned by validateCreateUser (400)
+        // or the conflict error for duplicate email (409)
+        const fieldErrors = err.errors || {}
+        const firstField = Object.values(fieldErrors)[0]
+        const msg =
+          (Array.isArray(firstField) ? firstField[0] : firstField) ||
+          err.message ||
+          'Registration failed. Please try again.'
+        this.showToast('Registration failed', msg, 4000)
       }
     },
-    // Toast helper (simple local toast matching HabitManagerView)
+
+    // Mirrors the exact rules in validateCreateUser middleware
+    validatePassword(pw) {
+      const errors = []
+      if (pw.length < 12 || pw.length > 15)
+        errors.push('Password must be between 12 and 15 characters.')
+      if (!/[A-Z]/.test(pw)) errors.push('Password must contain at least one uppercase letter.')
+      if (!/[a-z]/.test(pw)) errors.push('Password must contain at least one lowercase letter.')
+      if (!/[0-9]/.test(pw)) errors.push('Password must contain at least one digit.')
+      if (!/[!@#$%^&*(),.?":{}|<>]/.test(pw))
+        errors.push('Password must contain at least one special character.')
+      return errors
+    },
+
     showToast(title, message, duration = 3000) {
-      if (!this.toast) this.toast = { visible: false, title: '', message: '', timeout: null }
       this.toast.title = title
       this.toast.message = message
       this.toast.visible = true
-
       if (this.toast.timeout) clearTimeout(this.toast.timeout)
       this.toast.timeout = setTimeout(() => {
         this.toast.visible = false
