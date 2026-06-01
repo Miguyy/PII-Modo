@@ -62,18 +62,16 @@ const router = createRouter({
 })
 
 /* Navigation Guards */
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, from) => {
   const userStore = useUserStore()
-  if (to.meta.requiresLogin && !userStore.loggedUserId) {
-    next('/login')
-    return
+  if (to.meta.requiresLogin && !userStore.isAuthenticated) {
+    return { name: 'login' }
   }
 
   if (to.meta.requiresAdmin && !userStore.isAdmin) {
-    next({ name: '/home' })
-    return
+    return { name: 'home' }
   }
 
-  next()
+  return true
 })
 export default router

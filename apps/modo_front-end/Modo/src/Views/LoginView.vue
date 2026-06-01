@@ -24,10 +24,11 @@
         id="login-password-user"
       />
 
-      <button @click.prevent="loginUser" style="font-weight: bold; font-size: 18px">Login</button>
+      <button @click.prevent="handleLogin" style="font-weight: bold; font-size: 18px">Login</button>
 
       <p class="login-register">
         Don't have an account?
+
         <a
           href="/signin"
           style="text-decoration: none; font-family: Heebo; font-weight: bold; color: #f19640"
@@ -37,11 +38,10 @@
     </div>
   </div>
 
-  <!-- Toast notification -->
   <Transition name="toast-slide">
     <div v-if="toast.visible" class="toast-notification">
       <div class="toast-icon">
-        <FontAwesomeIcon icon="info-circle" />
+        <font-awesome-icon icon="info-circle" />
       </div>
       <div class="toast-content">
         <strong>{{ toast.title }}</strong>
@@ -52,63 +52,63 @@
 </template>
 
 <script>
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { faInfoCircle } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { useUserStore } from '../stores/userStore'
+
+library.add(faInfoCircle)
 
 export default {
   name: 'LoginView',
+
+  components: { FontAwesomeIcon },
+
   data() {
     return {
       email: '',
       password: '',
-      userStore: null,
       toast: { visible: false, title: '', message: '', timeout: null },
     }
   },
-  created() {
-    this.userStore = useUserStore()
-    const storedUsers = localStorage.getItem('users')
-    if (storedUsers && (!this.userStore.users || this.userStore.users.length === 0)) {
-      try {
-        this.userStore.users = JSON.parse(storedUsers)
-      } catch {
-        console.log('Failed to parse users from localStorage')
-      }
-    }
 
-    this.userStore.fetchUsers().catch(() => {})
-  },
   methods: {
-    async loginUser() {
+    async handleLogin() {
       if (!this.email || !this.password) {
         this.showToast('Missing fields', 'Please fill in both email and password.', 3000)
         return
       }
 
-      const ok = await this.userStore.loginByEmail(this.email, this.password)
+      const store = useUserStore()
 
-      if (!ok) {
-        this.showToast('Login failed', 'Invalid email or password.', 3000)
-        return
-      }
+      try {
+        // store.login calls POST /users/login via auth.services.js,
+        // then GET /users/:id to populate currentUser
+        await store.login(this.email, this.password)
 
-      const user = this.userStore.currentUser
+        this.showToast('Login successful', 'Welcome back!', 2000)
 
-      this.showToast('Login successful', 'Welcome back!', 2000)
-
-      setTimeout(() => {
-        if (user.priority === 2) {
+        // Debug: log role and route immediately to avoid timing issues
+        console.log('Logged in role:', store.role)
+        if (store.role === 'admin') {
           this.$router.push('/adminpanel')
         } else {
           this.$router.push('/habitsmanager')
         }
-      }, 800)
+      } catch (err) {
+        // 401 → invalid credentials; anything else → generic message
+        const msg =
+          err.status === 401
+            ? 'Invalid email or password.'
+            : err.message || 'Something went wrong. Please try again.'
+        this.showToast('Login failed', msg, 3500)
+      }
     },
+
     showToast(title, message, duration = 3000) {
-      if (!this.toast) this.toast = { visible: false, title: '', message: '', timeout: null }
       this.toast.title = title
       this.toast.message = message
       this.toast.visible = true
-
       if (this.toast.timeout) clearTimeout(this.toast.timeout)
       this.toast.timeout = setTimeout(() => {
         this.toast.visible = false
