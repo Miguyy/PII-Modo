@@ -115,8 +115,24 @@ export async function deleteImpact(impactId, token) {
   return handleResponse(res)
 }
 
+/**
+ * getTaskImpacts(taskId, token)
+ * * Retrieves all impact entries associated with a specific task ID.
+ * Backend route: GET /tasks/:taskId/impacts
+ */
+export async function getTaskImpacts(taskId, token) {
+  const res = await fetch(`${BASE_URL}/tasks/${taskId}/impacts`, {
+    headers: {
+      ...bearerHeaders(token),
+    },
+  })
+
+  return handleResponse(res)
+}
+
 export default {
   getAllImpacts,
   createImpact,
   deleteImpact,
+  getTaskImpacts,
 }

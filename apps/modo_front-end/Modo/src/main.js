@@ -11,6 +11,7 @@ import './css/styles.css'
 /* Font Awesome */
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import { faUtensils } from '@fortawesome/free-solid-svg-icons'
 import {
   faUser,
   faEnvelope,
@@ -48,12 +49,15 @@ import {
   faWater,
   faPersonWalking,
   faBoltLightning,
+  faBolt, // ✨ Added: Maps to 'fa-solid fa-bolt'
   faSeedling,
+  faStar, // ✨ Added: Maps to 'fa-solid fa-star'
   faDownload,
   faFilePdf,
 } from '@fortawesome/free-solid-svg-icons'
 
 library.add(
+  faUtensils,
   faUser,
   faEnvelope,
   faLock,
@@ -90,7 +94,9 @@ library.add(
   faWater,
   faPersonWalking,
   faBoltLightning,
+  faBolt,
   faSeedling,
+  faStar,
   faDownload,
   faFilePdf,
 )
