@@ -26,14 +26,10 @@ export const getAllTasks = async (req, res, next) => {
     q,
     sort = "id_tarefa",
     order = "ASC",
-    page = 1,
-    limit = 5,
+    page, // Dropped hardcoded = 1
+    limit, // Dropped hardcoded = 5
   } = req.query;
   try {
-    const parsedPage = Math.max(Number(page) || 1, 1);
-    const parsedLimit = Math.min(Math.max(Number(limit) || 5, 1), 100);
-    const offset = (parsedPage - 1) * parsedLimit;
-
     const safeSortFields = new Set([
       "id_tarefa",
       "nome_tarefa",
@@ -48,12 +44,23 @@ export const getAllTasks = async (req, res, next) => {
       where[Op.or] = [{ nome_tarefa: { [Op.like]: `%${q}%` } }];
     }
 
-    const { rows, count } = await Task.findAndCountAll({
+    const queryOptions = {
       where,
       order: [[sortField, sortOrder]],
-      limit: parsedLimit,
-      offset,
-    });
+    };
+
+    let parsedPage = null;
+    let parsedLimit = null;
+
+    // Apply pagination ONLY if requested by the Admin Panel
+    if (page !== undefined || limit !== undefined) {
+      parsedPage = Math.max(Number(page) || 1, 1);
+      parsedLimit = Math.min(Math.max(Number(limit) || 5, 1), 100);
+      queryOptions.limit = parsedLimit;
+      queryOptions.offset = (parsedPage - 1) * parsedLimit;
+    }
+
+    const { rows, count } = await Task.findAndCountAll(queryOptions);
 
     const response = rows.map((task) => ({
       ...task.toJSON(),
@@ -66,17 +73,15 @@ export const getAllTasks = async (req, res, next) => {
       ],
     }));
 
-    res
-      .status(200)
-      .json({
-        meta: {
-          total: count,
-          page: parsedPage,
-          limit: parsedLimit,
-          pages: Math.ceil(count / parsedLimit),
-        },
-        data: response,
-      });
+    res.status(200).json({
+      meta: {
+        total: count,
+        page: parsedPage || 1,
+        limit: parsedLimit || count,
+        pages: parsedLimit ? Math.ceil(count / parsedLimit) : 1,
+      },
+      data: response,
+    });
   } catch (error) {
     return next(genericError());
   }

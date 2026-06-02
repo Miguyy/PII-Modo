@@ -132,13 +132,14 @@ try {
   process.exit(1);
 }
 
-// delete data from tables (Tarefas, Tarefas_Utilizadores and Habitos) before seeding to avoid duplicates
+// delete data from tables (Tarefas, Tarefas_Utilizadores, Impacto and Habitos) before seeding to avoid duplicates
 /* try {
   if (sequelize.getDialect() === "mysql")
-    await sequelize.query("SET FOREIGN_KEY_CHECKS = 0");
+  await sequelize.query("SET FOREIGN_KEY_CHECKS = 0");
   await UserTasks.destroy({ truncate: true });
-  await Task.destroy({ truncate: true });
-  await Habit.destroy({ truncate: true });
+  await Task.destroy({ truncate: true }); 
+   await Habit.destroy({ truncate: true }); 
+  await Impact.destroy({ truncate: true });
   if (sequelize.getDialect() === "mysql")
     await sequelize.query("SET FOREIGN_KEY_CHECKS = 1");
 } catch (err) {
@@ -146,14 +147,14 @@ try {
   if (sequelize.getDialect() === "mysql")
     await sequelize.query("SET FOREIGN_KEY_CHECKS = 1");
   process.exit(1);
-} */
-/* if (sequelize.getDialect() === "mysql")
-  await sequelize.query("SET FOREIGN_KEY_CHECKS = 0");
-
-await Impact.drop(); // removes the Impacto table and its rows/constraints
-
+}
 if (sequelize.getDialect() === "mysql")
-  await sequelize.query("SET FOREIGN_KEY_CHECKS = 1"); */
+  await sequelize.query("SET FOREIGN_KEY_CHECKS = 0"); */
+
+/* await Impact.drop();  */ // removes the Impacto table and its rows/constraints
+
+/* if (sequelize.getDialect() === "mysql")
+  await sequelize.query("SET FOREIGN_KEY_CHECKS = 1");  */
 
 await sequelize.sync({ alter: true });
 // export the models for use in other modules
