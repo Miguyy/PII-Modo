@@ -81,6 +81,15 @@ export const useUserStore = defineStore('user', {
           (parsed.currentUser && (parsed.currentUser.nome || parsed.currentUser.name)) ||
           null
         this.role = parsed.role || (parsed.currentUser && parsed.currentUser.role) || null
+
+        // 🟢 FIX: Read token string directly from persistent storage wrapper
+        this.token = parsed.token || sessionStorage.getItem(TOKEN_KEY)
+
+        // 🟢 CRITICAL SYNC FIX: If token is present in state but missing from sessionStorage
+        // (on page reload), write it back out instantly so HabitStore doesn't abort.
+        if (this.token && !sessionStorage.getItem(TOKEN_KEY)) {
+          sessionStorage.setItem(TOKEN_KEY, this.token)
+        }
       } catch (err) {
         console.error('Failed loading user from localStorage', err)
         localStorage.removeItem(STORAGE_KEY)
@@ -93,6 +102,7 @@ export const useUserStore = defineStore('user', {
           currentUser: this.currentUser,
           nome: this.nome,
           role: this.role,
+          token: this.token, // 🟢 Cache the actual token payload
         }
         localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
       } catch (err) {
@@ -116,13 +126,19 @@ export const useUserStore = defineStore('user', {
       this.loading = true
       this.error = null
       try {
-        const data = await login(email, password) // auth.services.login
-        // server sets HttpOnly cookie; response returns id and role
+        const data = await login(email, password)
         this.role = data.tipo_utilizador || data.role
-        // fetch full profile; server will read cookie automatically
+
+        // Extract valid token properties returned from backend API response schemas
+        const activeToken = data.token || data.modo_token || data.token_utilizador
+
+        // Call token saving helper method to write out to session storage
+        this._saveToken(activeToken, this.role)
+
         await this.fetchCurrentUser(data.id_utilizador || data.id)
         this.saveToLocalStorage()
       } catch (err) {
+        this.error = err.message || 'Login failed'
         throw err
       } finally {
         this.loading = false
