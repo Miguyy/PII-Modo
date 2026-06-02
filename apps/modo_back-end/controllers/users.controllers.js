@@ -558,8 +558,7 @@ export const logout = async (req, res) => {
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
   });
-  res.json({ message: "Logged out" });
-  res.status(200).json({ message: "Logged out." });
+  return res.status(200).json({ message: "Logged out." });
 };
 
 /**
@@ -606,18 +605,11 @@ export const loginUser = async (req, res, next) => {
     };
 
     res.cookie("token", token, cookieOptions);
-
-    // Return user metadata (role/id) but you DON'T need to expose token to client
-    res.json({
-      message: "Login successful",
-      id_utilizador: user.id_utilizador,
-      tipo_utilizador: user.tipo_utilizador,
-    });
-
-    // Return the requested success message plus the JWT token and role
-    res.status(200).json({
+    // Return cookie plus a single JSON response that includes the token
+    return res.status(200).json({
       message: "User login was a success!",
       token,
+      id_utilizador: user.id_utilizador,
       role: (user.tipo_utilizador || "").toLowerCase(),
     });
   } catch (error) {
