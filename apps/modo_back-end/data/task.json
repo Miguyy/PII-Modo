@@ -1,45 +1,17 @@
 [
   {
-    "id_habito": 6,
-    "nome_tarefa": "Water houseplants",
-    "pontos_tarefa": 5,
-    "tipo_tarefa": "Check",
-    "localizacao_tarefa": "Inside",
-    "prioridade_tarefa": "Low",
-    "duracao_temporizador": null,
-    "quantidade_necessaria": null
-  },
-  {
-    "id_habito": 3,
-    "nome_tarefa": "Recycle for 5 minutes",
+    "id_tarefa": 42,
+    "id_habito": 14,
+    "nome_tarefa": "Identify 3 native regional plants",
     "pontos_tarefa": 10,
-    "tipo_tarefa": "Timer",
-    "localizacao_tarefa": "Inside",
-    "prioridade_tarefa": "Medium",
-    "duracao_temporizador": 300,
-    "quantidade_necessaria": null
-  },
-  {
-    "id_habito": 27,
-    "nome_tarefa": "Walk 1 km instead of driving",
-    "pontos_tarefa": 15,
     "tipo_tarefa": "Count",
     "localizacao_tarefa": "Outside",
-    "prioridade_tarefa": "High",
+    "prioridade_tarefa": "Medium",
     "duracao_temporizador": null,
-    "quantidade_necessaria": 1
+    "quantidade_necessaria": 3
   },
   {
-    "id_habito": 4,
-    "nome_tarefa": "Turn off unused lights",
-    "pontos_tarefa": 5,
-    "tipo_tarefa": "Check",
-    "localizacao_tarefa": "Inside",
-    "prioridade_tarefa": "Low",
-    "duracao_temporizador": null,
-    "quantidade_necessaria": null
-  },
-  {
+    "id_tarefa": 5,
     "id_habito": 2,
     "nome_tarefa": "Log daily water consumption",
     "pontos_tarefa": 15,
@@ -50,6 +22,161 @@
     "quantidade_necessaria": 1
   },
   {
+    "id_tarefa": 29,
+    "id_habito": 9,
+    "nome_tarefa": "Delete 50 unneeded emails",
+    "pontos_tarefa": 10,
+    "tipo_tarefa": "Count",
+    "localizacao_tarefa": "Inside",
+    "prioridade_tarefa": "Low",
+    "duracao_temporizador": null,
+    "quantidade_necessaria": 50
+  },
+  {
+    "id_tarefa": 54,
+    "id_habito": 18,
+    "nome_tarefa": "Defrost freezer components safely",
+    "pontos_tarefa": 15,
+    "tipo_tarefa": "Check",
+    "localizacao_tarefa": "Inside",
+    "prioridade_tarefa": "High",
+    "duracao_temporizador": null,
+    "quantidade_necessaria": null
+  },
+  {
+    "id_tarefa": 1,
+    "id_habito": 1,
+    "nome_tarefa": "Vegetarian meal today",
+    "pontos_tarefa": 10,
+    "tipo_tarefa": "Check",
+    "localizacao_tarefa": "Inside",
+    "prioridade_tarefa": "Medium",
+    "duracao_temporizador": null,
+    "quantidade_necessaria": null
+  },
+  {
+    "id_tarefa": 20,
+    "id_habito": 7,
+    "nome_tarefa": "Bring reusable shopping bag",
+    "pontos_tarefa": 5,
+    "tipo_tarefa": "Check",
+    "localizacao_tarefa": "Outside",
+    "prioridade_tarefa": "Low",
+    "duracao_temporizador": null,
+    "quantidade_necessaria": null
+  },
+  {
+    "id_tarefa": 37,
+    "id_habito": 12,
+    "nome_tarefa": "Clean surfaces with white vinegar mix",
+    "pontos_tarefa": 10,
+    "tipo_tarefa": "Check",
+    "localizacao_tarefa": "Inside",
+    "prioridade_tarefa": "Medium",
+    "duracao_temporizador": null,
+    "quantidade_necessaria": null
+  },
+  {
+    "id_tarefa": 12,
+    "id_habito": 4,
+    "nome_tarefa": "Turn off unused lights",
+    "pontos_tarefa": 5,
+    "tipo_tarefa": "Check",
+    "localizacao_tarefa": "Inside",
+    "prioridade_tarefa": "Low",
+    "duracao_temporizador": null,
+    "quantidade_necessaria": null
+  },
+  {
+    "id_tarefa": 45,
+    "id_habito": 15,
+    "nome_tarefa": "Lower heating by 1 degree",
+    "pontos_tarefa": 10,
+    "tipo_tarefa": "Check",
+    "localizacao_tarefa": "Inside",
+    "prioridade_tarefa": "Medium",
+    "duracao_temporizador": null,
+    "quantidade_necessaria": null
+  },
+  {
+    "id_tarefa": 34,
+    "id_habito": 11,
+    "nome_tarefa": "Use digital notes instead of notepad",
+    "pontos_tarefa": 5,
+    "tipo_tarefa": "Check",
+    "localizacao_tarefa": "Inside",
+    "prioridade_tarefa": "Low",
+    "duracao_temporizador": null,
+    "quantidade_necessaria": null
+  },
+  {
+    "id_tarefa": 17,
+    "id_habito": 6,
+    "nome_tarefa": "Pick up local litter (15 min)",
+    "pontos_tarefa": 10,
+    "tipo_tarefa": "Timer",
+    "localizacao_tarefa": "Outside",
+    "prioridade_tarefa": "Medium",
+    "duracao_temporizador": 900,
+    "quantidade_necessaria": null
+  },
+  {
+    "id_tarefa": 58,
+    "id_habito": 20,
+    "nome_tarefa": "Share eco-tip on social feeds",
+    "pontos_tarefa": 10,
+    "tipo_tarefa": "Check",
+    "localizacao_tarefa": "Inside",
+    "prioridade_tarefa": "Medium",
+    "duracao_temporizador": null,
+    "quantidade_necessaria": null
+  },
+  {
+    "id_tarefa": 10,
+    "id_habito": 3,
+    "nome_tarefa": "Recycle for 5 minutes",
+    "pontos_tarefa": 10,
+    "tipo_tarefa": "Timer",
+    "localizacao_tarefa": "Inside",
+    "prioridade_tarefa": "Medium",
+    "duracao_temporizador": 300,
+    "quantidade_necessaria": null
+  },
+  {
+    "id_tarefa": 48,
+    "id_habito": 16,
+    "nome_tarefa": "Refuse loose plastic produce wrappers",
+    "pontos_tarefa": 5,
+    "tipo_tarefa": "Check",
+    "localizacao_tarefa": "Outside",
+    "prioridade_tarefa": "Low",
+    "duracao_temporizador": null,
+    "quantidade_necessaria": null
+  },
+  {
+    "id_tarefa": 25,
+    "id_habito": 8,
+    "nome_tarefa": "Walk 1 km instead of driving",
+    "pontos_tarefa": 15,
+    "tipo_tarefa": "Count",
+    "localizacao_tarefa": "Outside",
+    "prioridade_tarefa": "High",
+    "duracao_temporizador": null,
+    "quantidade_necessaria": 1
+  },
+  {
+    "id_tarefa": 39,
+    "id_habito": 13,
+    "nome_tarefa": "Donate old clothes",
+    "pontos_tarefa": 10,
+    "tipo_tarefa": "Check",
+    "localizacao_tarefa": "Outside",
+    "prioridade_tarefa": "Medium",
+    "duracao_temporizador": null,
+    "quantidade_necessaria": null
+  },
+  {
+    "id_tarefa": 6,
     "id_habito": 2,
     "nome_tarefa": "5-minute shower limit",
     "pontos_tarefa": 10,
@@ -60,8 +187,20 @@
     "quantidade_necessaria": null
   },
   {
-    "id_habito": 9,
-    "nome_tarefa": "Bring reusable shopping bag",
+    "id_tarefa": 15,
+    "id_habito": 5,
+    "nome_tarefa": "Water houseplants",
+    "pontos_tarefa": 5,
+    "tipo_tarefa": "Check",
+    "localizacao_tarefa": "Inside",
+    "prioridade_tarefa": "Low",
+    "duracao_temporizador": null,
+    "quantidade_necessaria": null
+  },
+  {
+    "id_tarefa": 32,
+    "id_habito": 10,
+    "nome_tarefa": "Check items for eco-labels",
     "pontos_tarefa": 5,
     "tipo_tarefa": "Check",
     "localizacao_tarefa": "Outside",
@@ -70,6 +209,29 @@
     "quantidade_necessaria": null
   },
   {
+    "id_tarefa": 50,
+    "id_habito": 17,
+    "nome_tarefa": "Read sustainability article (10 min)",
+    "pontos_tarefa": 10,
+    "tipo_tarefa": "Timer",
+    "localizacao_tarefa": "Inside",
+    "prioridade_tarefa": "Medium",
+    "duracao_temporizador": 600,
+    "quantidade_necessaria": null
+  },
+  {
+    "id_tarefa": 21,
+    "id_habito": 7,
+    "nome_tarefa": "Request digital invoice",
+    "pontos_tarefa": 5,
+    "tipo_tarefa": "Check",
+    "localizacao_tarefa": "Inside",
+    "prioridade_tarefa": "Low",
+    "duracao_temporizador": null,
+    "quantidade_necessaria": null
+  },
+  {
+    "id_tarefa": 13,
     "id_habito": 4,
     "nome_tarefa": "Unplug standby electronics",
     "pontos_tarefa": 10,
@@ -80,57 +242,8 @@
     "quantidade_necessaria": null
   },
   {
-    "id_habito": 15,
-    "nome_tarefa": "Vegetarian meal today",
-    "pontos_tarefa": 10,
-    "tipo_tarefa": "Check",
-    "localizacao_tarefa": "Inside",
-    "prioridade_tarefa": "Medium",
-    "duracao_temporizador": null,
-    "quantidade_necessaria": null
-  },
-  {
-    "id_habito": 8,
-    "nome_tarefa": "Pick up local litter (15 min)",
-    "pontos_tarefa": 10,
-    "tipo_tarefa": "Timer",
-    "localizacao_tarefa": "Outside",
-    "prioridade_tarefa": "Medium",
-    "duracao_temporizador": 900,
-    "quantidade_necessaria": null
-  },
-  {
-    "id_habito": 13,
-    "nome_tarefa": "Request digital invoice",
-    "pontos_tarefa": 5,
-    "tipo_tarefa": "Check",
-    "localizacao_tarefa": "Inside",
-    "prioridade_tarefa": "Low",
-    "duracao_temporizador": null,
-    "quantidade_necessaria": null
-  },
-  {
-    "id_habito": 14,
-    "nome_tarefa": "Compost organic waste",
-    "pontos_tarefa": 10,
-    "tipo_tarefa": "Check",
-    "localizacao_tarefa": "Outside",
-    "prioridade_tarefa": "Medium",
-    "duracao_temporizador": null,
-    "quantidade_necessaria": null
-  },
-  {
-    "id_habito": 27,
-    "nome_tarefa": "Cycle for short trip (>=2 km)",
-    "pontos_tarefa": 15,
-    "tipo_tarefa": "Count",
-    "localizacao_tarefa": "Outside",
-    "prioridade_tarefa": "High",
-    "duracao_temporizador": null,
-    "quantidade_necessaria": 1
-  },
-  {
-    "id_habito": 16,
+    "id_tarefa": 2,
+    "id_habito": 1,
     "nome_tarefa": "Buy from local farmers",
     "pontos_tarefa": 10,
     "tipo_tarefa": "Check",
@@ -140,7 +253,52 @@
     "quantidade_necessaria": null
   },
   {
-    "id_habito": 7,
+    "id_tarefa": 55,
+    "id_habito": 19,
+    "nome_tarefa": "Shut down work computer overnight",
+    "pontos_tarefa": 10,
+    "tipo_tarefa": "Check",
+    "localizacao_tarefa": "Inside",
+    "prioridade_tarefa": "Medium",
+    "duracao_temporizador": null,
+    "quantidade_necessaria": null
+  },
+  {
+    "id_tarefa": 26,
+    "id_habito": 8,
+    "nome_tarefa": "Cycle for short trip (>=2 km)",
+    "pontos_tarefa": 15,
+    "tipo_tarefa": "Count",
+    "localizacao_tarefa": "Outside",
+    "prioridade_tarefa": "High",
+    "duracao_temporizador": null,
+    "quantidade_necessaria": 1
+  },
+  {
+    "id_tarefa": 40,
+    "id_habito": 13,
+    "nome_tarefa": "Buy second-hand clothes",
+    "pontos_tarefa": 10,
+    "tipo_tarefa": "Check",
+    "localizacao_tarefa": "Outside",
+    "prioridade_tarefa": "Medium",
+    "duracao_temporizador": null,
+    "quantidade_necessaria": null
+  },
+  {
+    "id_tarefa": 30,
+    "id_habito": 9,
+    "nome_tarefa": "Unsubscribe from junk lists",
+    "pontos_tarefa": 5,
+    "tipo_tarefa": "Check",
+    "localizacao_tarefa": "Inside",
+    "prioridade_tarefa": "Low",
+    "duracao_temporizador": null,
+    "quantidade_necessaria": null
+  },
+  {
+    "id_tarefa": 7,
+    "id_habito": 2,
     "nome_tarefa": "Collect shower warm-up water",
     "pontos_tarefa": 5,
     "tipo_tarefa": "Check",
@@ -150,18 +308,31 @@
     "quantidade_necessaria": null
   },
   {
-    "id_habito": 17,
-    "nome_tarefa": "Use reusable bottle",
+    "id_tarefa": 44,
+    "id_habito": 15,
+    "nome_tarefa": "Open windows for natural airflow",
     "pontos_tarefa": 5,
     "tipo_tarefa": "Check",
-    "localizacao_tarefa": "Outside",
+    "localizacao_tarefa": "Inside",
     "prioridade_tarefa": "Low",
     "duracao_temporizador": null,
     "quantidade_necessaria": null
   },
   {
-    "id_habito": 19,
-    "nome_tarefa": "Donate old clothes",
+    "id_tarefa": 35,
+    "id_habito": 11,
+    "nome_tarefa": "Opt out of paper junk mail delivery",
+    "pontos_tarefa": 15,
+    "tipo_tarefa": "Check",
+    "localizacao_tarefa": "Inside",
+    "prioridade_tarefa": "High",
+    "duracao_temporizador": null,
+    "quantidade_necessaria": null
+  },
+  {
+    "id_tarefa": 22,
+    "id_habito": 7,
+    "nome_tarefa": "Compost organic waste",
     "pontos_tarefa": 10,
     "tipo_tarefa": "Check",
     "localizacao_tarefa": "Outside",
@@ -170,17 +341,30 @@
     "quantidade_necessaria": null
   },
   {
-    "id_habito": 21,
-    "nome_tarefa": "Take the stairs for 3 floors",
-    "pontos_tarefa": 15,
-    "tipo_tarefa": "Count",
+    "id_tarefa": 52,
+    "id_habito": 18,
+    "nome_tarefa": "Keep fridge door closed firmly",
+    "pontos_tarefa": 5,
+    "tipo_tarefa": "Check",
     "localizacao_tarefa": "Inside",
     "prioridade_tarefa": "Low",
+    "duracao_temporizador": null,
+    "quantidade_necessaria": null
+  },
+  {
+    "id_tarefa": 18,
+    "id_habito": 6,
+    "nome_tarefa": "Plant a tree",
+    "pontos_tarefa": 15,
+    "tipo_tarefa": "Count",
+    "localizacao_tarefa": "Outside",
+    "prioridade_tarefa": "High",
     "duracao_temporizador": null,
     "quantidade_necessaria": 1
   },
   {
-    "id_habito": 26,
+    "id_tarefa": 3,
+    "id_habito": 1,
     "nome_tarefa": "Eat leftovers tonight",
     "pontos_tarefa": 5,
     "tipo_tarefa": "Check",
@@ -190,7 +374,19 @@
     "quantidade_necessaria": null
   },
   {
-    "id_habito": 20,
+    "id_tarefa": 49,
+    "id_habito": 16,
+    "nome_tarefa": "Use wooden/bamboo toothbrushes",
+    "pontos_tarefa": 10,
+    "tipo_tarefa": "Check",
+    "localizacao_tarefa": "Inside",
+    "prioridade_tarefa": "Medium",
+    "duracao_temporizador": null,
+    "quantidade_necessaria": null
+  },
+  {
+    "id_tarefa": 14,
+    "id_habito": 4,
     "nome_tarefa": "Switch to LED bulbs",
     "pontos_tarefa": 10,
     "tipo_tarefa": "Check",
@@ -200,7 +396,19 @@
     "quantidade_necessaria": null
   },
   {
-    "id_habito": 27,
+    "id_tarefa": 59,
+    "id_habito": 20,
+    "nome_tarefa": "Discuss dynamic reuse ideas with a friend",
+    "pontos_tarefa": 10,
+    "tipo_tarefa": "Timer",
+    "localizacao_tarefa": "Outside",
+    "prioridade_tarefa": "Low",
+    "duracao_temporizador": 300,
+    "quantidade_necessaria": null
+  },
+  {
+    "id_tarefa": 27,
+    "id_habito": 8,
     "nome_tarefa": "Use public transport today",
     "pontos_tarefa": 15,
     "tipo_tarefa": "Count",
@@ -210,16 +418,29 @@
     "quantidade_necessaria": 1
   },
   {
-    "id_habito": 4,
-    "nome_tarefa": "Air-dry one load of laundry",
-    "pontos_tarefa": 10,
+    "id_tarefa": 41,
+    "id_habito": 14,
+    "nome_tarefa": "Set out clean water for birds/bees",
+    "pontos_tarefa": 5,
     "tipo_tarefa": "Check",
-    "localizacao_tarefa": "Inside",
-    "prioridade_tarefa": "Medium",
+    "localizacao_tarefa": "Outside",
+    "prioridade_tarefa": "Low",
     "duracao_temporizador": null,
     "quantidade_necessaria": null
   },
   {
+    "id_tarefa": 38,
+    "id_habito": 12,
+    "nome_tarefa": "Use zero-waste dish soap bar",
+    "pontos_tarefa": 5,
+    "tipo_tarefa": "Check",
+    "localizacao_tarefa": "Inside",
+    "prioridade_tarefa": "Low",
+    "duracao_temporizador": null,
+    "quantidade_necessaria": null
+  },
+  {
+    "id_tarefa": 8,
     "id_habito": 2,
     "nome_tarefa": "Turn off tap while brushing",
     "pontos_tarefa": 5,
@@ -230,28 +451,20 @@
     "quantidade_necessaria": null
   },
   {
-    "id_habito": 23,
-    "nome_tarefa": "Buy bulk groceries",
-    "pontos_tarefa": 5,
-    "tipo_tarefa": "Check",
-    "localizacao_tarefa": "Outside",
-    "prioridade_tarefa": "Low",
-    "duracao_temporizador": null,
-    "quantidade_necessaria": null
-  },
-  {
-    "id_habito": 11,
-    "nome_tarefa": "Plant a tree",
+    "id_tarefa": 56,
+    "id_habito": 19,
+    "nome_tarefa": "Take the stairs for 3 floors",
     "pontos_tarefa": 15,
     "tipo_tarefa": "Count",
-    "localizacao_tarefa": "Outside",
-    "prioridade_tarefa": "High",
+    "localizacao_tarefa": "Inside",
+    "prioridade_tarefa": "Low",
     "duracao_temporizador": null,
     "quantidade_necessaria": 1
   },
   {
-    "id_habito": 17,
-    "nome_tarefa": "Use reusable coffee cup",
+    "id_tarefa": 23,
+    "id_habito": 7,
+    "nome_tarefa": "Use reusable bottle",
     "pontos_tarefa": 5,
     "tipo_tarefa": "Check",
     "localizacao_tarefa": "Outside",
@@ -260,7 +473,74 @@
     "quantidade_necessaria": null
   },
   {
-    "id_habito": 27,
+    "id_tarefa": 33,
+    "id_habito": 10,
+    "nome_tarefa": "Refuse items with extra plastic layers",
+    "pontos_tarefa": 10,
+    "tipo_tarefa": "Check",
+    "localizacao_tarefa": "Outside",
+    "prioridade_tarefa": "Medium",
+    "duracao_temporizador": null,
+    "quantidade_necessaria": null
+  },
+  {
+    "id_tarefa": 11,
+    "id_habito": 3,
+    "nome_tarefa": "Clean plastic bins before disposal",
+    "pontos_tarefa": 5,
+    "tipo_tarefa": "Check",
+    "localizacao_tarefa": "Inside",
+    "prioridade_tarefa": "Low",
+    "duracao_temporizador": null,
+    "quantidade_necessaria": null
+  },
+  {
+    "id_tarefa": 51,
+    "id_habito": 17,
+    "nome_tarefa": "Listen to an eco-focused podcast entry",
+    "pontos_tarefa": 15,
+    "tipo_tarefa": "Timer",
+    "localizacao_tarefa": "Inside",
+    "prioridade_tarefa": "High",
+    "duracao_temporizador": 1200,
+    "quantidade_necessaria": null
+  },
+  {
+    "id_tarefa": 4,
+    "id_habito": 1,
+    "nome_tarefa": "Support campus farmers market",
+    "pontos_tarefa": 10,
+    "tipo_tarefa": "Check",
+    "localizacao_tarefa": "Outside",
+    "prioridade_tarefa": "Medium",
+    "duracao_temporizador": null,
+    "quantidade_necessaria": null
+  },
+  {
+    "id_tarefa": 16,
+    "id_habito": 5,
+    "nome_tarefa": "Prune or clear local garden beds",
+    "pontos_tarefa": 10,
+    "tipo_tarefa": "Timer",
+    "localizacao_tarefa": "Outside",
+    "prioridade_tarefa": "Medium",
+    "duracao_temporizador": 600,
+    "quantidade_necessaria": null
+  },
+  {
+    "id_tarefa": 46,
+    "id_habito": 15,
+    "nome_tarefa": "Close blinds during intense noon heat",
+    "pontos_tarefa": 5,
+    "tipo_tarefa": "Check",
+    "localizacao_tarefa": "Inside",
+    "prioridade_tarefa": "Low",
+    "duracao_temporizador": null,
+    "quantidade_necessaria": null
+  },
+  {
+    "id_tarefa": 28,
+    "id_habito": 8,
     "nome_tarefa": "Carpool or use campus shuttle",
     "pontos_tarefa": 10,
     "tipo_tarefa": "Count",
@@ -270,17 +550,30 @@
     "quantidade_necessaria": 1
   },
   {
-    "id_habito": 9,
-    "nome_tarefa": "Buy second-hand clothes",
-    "pontos_tarefa": 10,
+    "id_tarefa": 36,
+    "id_habito": 11,
+    "nome_tarefa": "Print double-sided sheets only",
+    "pontos_tarefa": 5,
+    "tipo_tarefa": "Count",
+    "localizacao_tarefa": "Inside",
+    "prioridade_tarefa": "Low",
+    "duracao_temporizador": null,
+    "quantidade_necessaria": 1
+  },
+  {
+    "id_tarefa": 53,
+    "id_habito": 18,
+    "nome_tarefa": "Boil water with a tight lid on",
+    "pontos_tarefa": 5,
     "tipo_tarefa": "Check",
-    "localizacao_tarefa": "Outside",
-    "prioridade_tarefa": "Medium",
+    "localizacao_tarefa": "Inside",
+    "prioridade_tarefa": "Low",
     "duracao_temporizador": null,
     "quantidade_necessaria": null
   },
   {
-    "id_habito": 7,
+    "id_tarefa": 9,
+    "id_habito": 2,
     "nome_tarefa": "Report and fix water leaks",
     "pontos_tarefa": 10,
     "tipo_tarefa": "Check",
@@ -290,11 +583,78 @@
     "quantidade_necessaria": null
   },
   {
-    "id_habito": 1,
-    "nome_tarefa": "Support campus farmers market",
-    "pontos_tarefa": 10,
+    "id_tarefa": 24,
+    "id_habito": 7,
+    "nome_tarefa": "Buy bulk groceries",
+    "pontos_tarefa": 5,
     "tipo_tarefa": "Check",
     "localizacao_tarefa": "Outside",
+    "prioridade_tarefa": "Low",
+    "duracao_temporizador": null,
+    "quantidade_necessaria": null
+  },
+  {
+    "id_tarefa": 57,
+    "id_habito": 19,
+    "nome_tarefa": "Use rechargeable mouse/keyboard cells",
+    "pontos_tarefa": 10,
+    "tipo_tarefa": "Check",
+    "localizacao_tarefa": "Inside",
+    "prioridade_tarefa": "Medium",
+    "duracao_temporizador": null,
+    "quantidade_necessaria": null
+  },
+  {
+    "id_tarefa": 31,
+    "id_habito": 9,
+    "nome_tarefa": "Clear old heavy cloud backups",
+    "pontos_tarefa": 15,
+    "tipo_tarefa": "Timer",
+    "localizacao_tarefa": "Inside",
+    "prioridade_tarefa": "Medium",
+    "duracao_temporizador": 600,
+    "quantidade_necessaria": null
+  },
+  {
+    "id_tarefa": 43,
+    "id_habito": 13,
+    "nome_tarefa": "Mend a torn garment layer",
+    "pontos_tarefa": 15,
+    "tipo_tarefa": "Timer",
+    "localizacao_tarefa": "Inside",
+    "prioridade_tarefa": "High",
+    "duracao_temporizador": 900,
+    "quantidade_necessaria": null
+  },
+  {
+    "id_tarefa": 60,
+    "id_habito": 1,
+    "nome_tarefa": "Buy bulk flour and grains",
+    "pontos_tarefa": 5,
+    "tipo_tarefa": "Check",
+    "localizacao_tarefa": "Outside",
+    "prioridade_tarefa": "Low",
+    "duracao_temporizador": null,
+    "quantidade_necessaria": null
+  },
+  {
+    "id_tarefa": 61,
+    "id_habito": 7,
+    "nome_tarefa": "Use a reusable lunchbox",
+    "pontos_tarefa": 5,
+    "tipo_tarefa": "Check",
+    "localizacao_tarefa": "Inside",
+    "prioridade_tarefa": "Low",
+    "duracao_temporizador": null,
+    "quantidade_necessaria": null
+  },
+  {
+    "id_tarefa": 62,
+    "id_habito": 4,
+    "nome_tarefa": "Air-dry one load of laundry",
+    "pontos_tarefa": 10,
+    "tipo_tarefa": "Check",
+    "localizacao_tarefa": "Inside",
     "prioridade_tarefa": "Medium",
     "duracao_temporizador": null,
     "quantidade_necessaria": null
