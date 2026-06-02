@@ -41,11 +41,11 @@ router.patch(
 );
 
 // Patch by body when there's no decorationId (e.g., current stored id_decoracao is null)
-router.patch(
+/* router.patch(
   "/:userId/avatar-decorations",
   authenticateUser,
   uploadReport.none(),
   updateUserDecorationByBody,
-);
+); */
 
 export default router;

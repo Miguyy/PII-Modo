@@ -1,0 +1,75 @@
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+
+async function handleResponse(res) {
+  const text = await res.text()
+
+  let data = null
+  try {
+    data = text ? JSON.parse(text) : null
+  } catch {
+    data = text
+  }
+
+  if (!res.ok) {
+    throw data || { message: res.statusText }
+  }
+
+  return data
+}
+
+function bearerHeaders(token) {
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
+
+/**
+ * POST /users/:userId/avatar-decorations
+ * Unlock / assign a decoration to a user
+ */
+export async function assignDecorationToUser(userId, formData, token) {
+  const res = await fetch(`${BASE_URL}/users/${userId}/avatar-decorations`, {
+    method: 'POST',
+    headers: {
+      ...bearerHeaders(token),
+    },
+    body: formData,
+  })
+
+  return handleResponse(res)
+}
+
+/**
+ * GET /users/:userId/avatar-decorations
+ * Get all decorations owned by a user
+ */
+export async function getUserDecorations(userId, token) {
+  const res = await fetch(`${BASE_URL}/users/${userId}/avatar-decorations`, {
+    headers: {
+      ...bearerHeaders(token),
+    },
+  })
+
+  return handleResponse(res)
+}
+
+/**
+ * PATCH /users/:userId/avatar-decorations/:decorationId
+ * Activate / switch a specific decoration
+ */
+export async function activateUserDecoration(userId, decorationId, payload, token) {
+  const res = await fetch(`${BASE_URL}/users/${userId}/avatar-decorations/${decorationId}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      ...bearerHeaders(token),
+    },
+    body: JSON.stringify(payload),
+  })
+
+  return handleResponse(res)
+}
+
+export default {
+  assignDecorationToUser,
+  getUserDecorations,
+  activateUserDecoration,
+}

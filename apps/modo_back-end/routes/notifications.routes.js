@@ -68,12 +68,12 @@ router.patch(
 );
 
 // Patch by body (accepts `{ id_notificacao, ... }`)
-router.patch(
+/* router.patch(
   "/notifications",
   authenticateUser,
   validateUpdateNotification,
   updateNotificationByBody,
-);
+); */
 
 // Delete a notification
 router.delete(
