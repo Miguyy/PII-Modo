@@ -63,17 +63,15 @@ export const getAllDecorations = async (req, res, next) => {
       ],
     }));
 
-    res
-      .status(200)
-      .json({
-        meta: {
-          total: count,
-          page: parsedPage,
-          limit: parsedLimit,
-          pages: Math.ceil(count / parsedLimit),
-        },
-        data: response,
-      });
+    res.status(200).json({
+      meta: {
+        total: count,
+        page: parsedPage,
+        limit: parsedLimit,
+        pages: Math.ceil(count / parsedLimit),
+      },
+      data: response,
+    });
   } catch (error) {
     return next(genericError());
   }
