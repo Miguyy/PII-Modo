@@ -12,8 +12,19 @@ export const useHabitStore = defineStore('habit', {
     habits: [],
     tasks: [],
     tasksByHabitId: {},
+
     loading: false,
     error: null,
+
+    habitPage: 1,
+    taskPage: 1,
+    limit: 5,
+
+    habitSort: 'id_habito',
+    habitOrder: 'ASC',
+
+    taskSort: 'id_tarefa',
+    taskOrder: 'ASC',
   }),
 
   getters: {
@@ -61,7 +72,20 @@ export const useHabitStore = defineStore('habit', {
 
       try {
         // 4. 📡 API FETCH: Run clean, limit-free calls for the dashboard layout
-        const [habitsData, tasksData] = await Promise.all([getAllHabits(token), getAllTasks(token)])
+        const [habitsData, tasksData] = await Promise.all([
+          getAllHabits(token, {
+            page: this.habitPage,
+            limit: this.limit,
+            sort: this.habitSort,
+            order: this.habitOrder,
+          }),
+          getAllTasks(token, {
+            page: this.taskPage,
+            limit: this.limit,
+            sort: this.taskSort,
+            order: this.taskOrder,
+          }),
+        ])
 
         this.habits = Array.isArray(habitsData) ? habitsData : habitsData?.data || []
         this.tasks = Array.isArray(tasksData) ? tasksData : tasksData?.data || []

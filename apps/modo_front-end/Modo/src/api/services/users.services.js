@@ -121,20 +121,34 @@ export async function getUserById(userId) {
  * Returns: { id_utilizador, nome, email, ..., links }
  */
 export async function updateUser(userId, updates, token, imageFile = null) {
-  const isForm = imageFile != null
   const opts = {
     method: 'PATCH',
     credentials: 'include',
+    headers: {},
   }
-  if (isForm) {
-    const fd = new FormData()
-    Object.keys(updates).forEach((k) => fd.append(k, updates[k]))
+
+  // Only attach Authorization. Do NOT touch Content-Type!
+  if (token) {
+    opts.headers['Authorization'] = `Bearer ${token}`
+  }
+
+  // Package everything cleanly into FormData
+  const fd = new FormData()
+
+  Object.keys(updates).forEach((key) => {
+    if (updates[key] !== undefined && updates[key] !== null) {
+      fd.append(key, updates[key])
+    }
+  })
+
+  if (imageFile) {
     fd.append('imagem_utilizador', imageFile)
-    opts.body = fd
-  } else {
-    opts.headers = { 'Content-Type': 'application/json' }
-    opts.body = JSON.stringify(updates)
   }
+
+  // By passing a FormData object directly into body without a Content-Type header,
+  // the browser will automatically inject: multipart/form-data; boundary=...
+  opts.body = fd
+
   const res = await fetch(`${BASE_URL}/users/${userId}`, opts)
   return handleResponse(res)
 }
