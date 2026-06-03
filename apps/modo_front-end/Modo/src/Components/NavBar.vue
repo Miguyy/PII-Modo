@@ -7,16 +7,12 @@ const userStore = useUserStore()
 const router = useRouter()
 const route = useRoute()
 
-// 🔥 garante reatividade correta
 const user = computed(() => userStore.currentUser)
 
-// ❌ ESTAVA ERRADO: priority === 2 não existe no backend/store
-// ✔ backend usa tipo_utilizador = "admin"
 const isAdmin = computed(
   () => (userStore.currentUser?.tipo_utilizador || '').toLowerCase() === 'admin',
 )
 
-// 🔥 garante que mesmo após refresh o user aparece na navbar
 onMounted(async () => {
   if (!userStore.currentUser && userStore.loadFromLocalStorage) {
     await userStore.loadFromLocalStorage()
@@ -56,7 +52,7 @@ const scrollToSection = (hash) => {
 
 <template>
   <!-- Navbar component with conditional links based on user authentication and role. 
-  Displays user name and avatar when logged in, and a login link when not authenticated. 
+  Displays user name and imagem_utilizador when logged in, and a login link when not authenticated. 
   Includes smooth scrolling to sections on the homepage. -->
   <div class="navbar-wrapper">
     <nav class="navbar navbar-expand-lg custom-navbar px-3">
@@ -187,12 +183,12 @@ const scrollToSection = (hash) => {
           </RouterLink>
         </div>
 
-        <span class="me-3 bold" style="color: #ededed">{{ user.name }}</span>
+        <span class="me-3 bold" style="color: #ededed">{{ user.nome }}</span>
         <RouterLink to="/settings">
           <img
-            v-if="user.avatar"
-            :src="user.avatar"
-            alt="avatar"
+            v-if="user.imagem_utilizador"
+            :src="user.imagem_utilizador"
+            alt="imagem_utilizador"
             class="rounded-circle me-2"
             style="width: 40px; height: 40px; object-fit: cover"
           />
