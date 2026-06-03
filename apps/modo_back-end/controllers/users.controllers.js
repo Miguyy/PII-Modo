@@ -272,7 +272,7 @@ export const getUserById = async (req, res, next) => {
 export const updateUser = async (req, res, next) => {
   try {
     const { userId } = req.params;
-    const { email, password, nome } = req.body;
+    const { email, password, nome, pontos } = req.body;
     const requester = req.user; // authenticated requester
 
     // load target user by id param
@@ -345,6 +345,12 @@ export const updateUser = async (req, res, next) => {
     // Handle profile picture update if file was uploaded
     if (req.file) {
       updates.imagem_utilizador = getUploadedFileUrl(req.file);
+    }
+    if (pontos !== undefined) {
+      const pointsValue = Number(pontos);
+
+      updates.pontos = pointsValue;
+      updates.nivel = Math.floor(pointsValue / 100);
     }
 
     // If a profile image was uploaded as multipart/form-data (field: imagem_utilizador), upload to Cloudinary
