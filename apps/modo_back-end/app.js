@@ -12,10 +12,30 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 // Enable CORS for the frontend during development. Set FRONTEND_URL
 // in env to restrict in other environments.
-const frontendOrigin = process.env.FRONTEND_URL || "http://localhost:5173";
+const allowedOrigins = process.env.FRONTEND_URL
+  ? process.env.FRONTEND_URL.split(",").map(o => o.trim())
+  : [];
+
 app.use(
   cors({
-    origin: frontendOrigin,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, curl, or postman)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.length > 0) {
+        if (allowedOrigins.includes(origin)) {
+          return callback(null, true);
+        }
+        return callback(new Error("Not allowed by CORS"));
+      }
+
+      // Default development behavior: allow any localhost port
+      if (/^http:\/\/localhost(:\d+)?$/.test(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    },
     methods: ["GET", "POST", "PATCH", "DELETE"],
     credentials: true,
   }),

@@ -181,10 +181,18 @@
               <label><FontAwesomeIcon icon="lock" /> Password</label>
               <div class="inline">
                 <input
-                  :type="isEditingPassword ? 'text' : 'password'"
+                  v-if="isEditingPassword"
+                  type="text"
                   v-model="userPassword"
-                  :readonly="!isEditingPassword"
-                  :style="{ opacity: isEditingPassword ? 1 : 0.5 }"
+                  placeholder="Enter new password"
+                />
+                <input
+                  v-else
+                  type="password"
+                  value="placeholder"
+                  placeholder="••••••••"
+                  readonly
+                  :style="{ opacity: 0.5 }"
                 />
                 <button
                   id="toggle-password"
@@ -639,15 +647,14 @@ const toggleEditEmail = () => {
 
 // password
 const isEditingPassword = ref(false)
-const userPassword = ref(user.value?.password || '********') // Valor inicial ou da store
+const userPassword = ref('') // empty by default; user types a new password when editing
 
 const toggleEditPassword = () => {
   if (isEditingPassword.value) {
-    if (user.value) user.value.password = userPassword.value
+    // Just stage the value — Save Changes will send it to the API
     isEditingPassword.value = false
   } else {
-    // Ao clicar em change, garante que o rascunho tem a senha atual
-    userPassword.value = user.value?.password || ''
+    userPassword.value = '' // clear so the user types a fresh new password
     isEditingPassword.value = true
   }
 }
@@ -689,18 +696,21 @@ const defaultDecorations = [
 // Load decorations from localStorage (synced with Admin Panel)
 function loadDecorations() {
   if (userStore.decorations.length > 0) {
-    return userStore.decorations.map((decoration) => ({
-      name: decoration.name || decoration.nome_decoracao,
-      src: decoration.src,
-      requiredLevel: decoration.nivel_necessario ?? 0,
-      id_decoracao: decoration.id_decoracao,
-    }))
+    return userStore.decorations
+      .map((decoration) => ({
+        name: decoration.name || decoration.nome_decoracao,
+        src: decoration.src,
+        requiredLevel: decoration.nivel_necessario ?? 0,
+        id_decoracao: decoration.id_decoracao,
+      }))
+      .sort((a, b) => (a.requiredLevel ?? 0) - (b.requiredLevel ?? 0))
   }
 
   const saved = localStorage.getItem('avatarDecorations')
   if (saved) {
     try {
-      return JSON.parse(saved)
+      const parsed = JSON.parse(saved)
+      return parsed.sort((a, b) => (a.requiredLevel ?? 0) - (b.requiredLevel ?? 0))
     } catch {
       return [...defaultDecorations]
     }
@@ -881,8 +891,16 @@ const saveChanges = async () => {
     const updates = {
       name: userName.value,
       email: userEmail.value,
-      password: userPassword.value,
-      avatarDecoration: selectedDecoration.value,
+    }
+
+    // Include the new password only if the user typed one
+    if (userPassword.value.trim()) {
+      updates.password = userPassword.value.trim()
+    }
+
+    // Only send avatarDecoration if one is selected
+    if (selectedDecoration.value) {
+      updates.avatarDecoration = selectedDecoration.value
     }
 
     if (profilePic.value && !String(profilePic.value).startsWith('data:')) {
@@ -890,9 +908,16 @@ const saveChanges = async () => {
     }
 
     await userStore.updateUserProfile(updates)
+    userPassword.value = '' // clear staged password after successful save
+    isEditingPassword.value = false
     showToast('Success', 'Changes saved successfully!', 'success')
   } catch (e) {
-    showToast('Error', 'Failed to save changes: ' + e.message, 'error')
+    // Handle 409 email-already-exists conflict with a friendly message
+    if (e.status === 409 || (e.errors && e.errors.email)) {
+      showToast('Email unavailable', 'That email is already registered to another account.', 'error')
+    } else {
+      showToast('Error', 'Failed to save changes: ' + e.message, 'error')
+    }
   }
 }
 </script>

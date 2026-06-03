@@ -98,14 +98,10 @@ export const useUserStore = defineStore('user', {
       return normalized
     },
 
-    _buildLocalDecorationPath(name) {
-      if (!name) return null
-      return new URL(`../images/avatar_decoration/${name}.png`, import.meta.url).href
-    },
-
+    // Resolve the decoration image source: always use the Cloudinary URL
+    // stored in `caminho_decoracao` from the database. Local file fallbacks
+    // have been removed so the DB is the single source of truth.
     _resolveDecorationAsset(name, remoteSrc) {
-      const localPath = this._buildLocalDecorationPath(name)
-      if (localPath) return localPath
       return remoteSrc || null
     },
 
@@ -242,7 +238,10 @@ export const useUserStore = defineStore('user', {
       if (!this.currentUser) return []
       const data = await getUserNotifications(this.currentUser.id_utilizador)
       const list = data?.notifications || data || []
-      this.notifications = list.map((n) => this._normalizeNotification(n))
+      // Only keep unread notifications so marking-as-read persists across reloads
+      this.notifications = list
+        .map((n) => this._normalizeNotification(n))
+        .filter((n) => !n.lida)
       return this.notifications
     },
 
@@ -271,9 +270,12 @@ export const useUserStore = defineStore('user', {
     },
 
     async loadDecorations() {
-      const data = await getAllDecorations()
+      // Request up to 200 so we always get all decorations regardless of default page limit
+      const data = await getAllDecorations({ limit: 200 })
       const list = data?.data || data || []
-      this.decorations = list.map((d) => this._normalizeDecoration(d))
+      this.decorations = list
+        .map((d) => this._normalizeDecoration(d))
+        .sort((a, b) => (a.nivel_necessario ?? 0) - (b.nivel_necessario ?? 0))
       return this.decorations
     },
 

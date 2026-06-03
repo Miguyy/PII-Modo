@@ -172,13 +172,26 @@ const scrollToSection = (hash) => {
 
         <span class="me-3 bold" style="color: #ededed">{{ user.name }}</span>
         <RouterLink to="/settings">
-          <img
-            v-if="user.avatar"
-            :src="user.avatar"
-            alt="avatar"
-            class="rounded-circle me-2"
-            style="width: 40px; height: 40px; object-fit: cover"
-          />
+          <div class="navbar-avatar-wrapper">
+            <!-- Profile picture -->
+            <img
+              v-if="user.avatar"
+              :src="user.avatar"
+              alt="avatar"
+              class="navbar-avatar-img"
+            />
+            <!-- Initials fallback -->
+            <div v-else class="navbar-avatar-fallback">
+              {{ (user.name || '?').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() }}
+            </div>
+            <!-- Decoration overlay -->
+            <img
+              v-if="user.avatarDecoration"
+              :src="user.avatarDecoration"
+              class="navbar-avatar-decoration"
+              alt=""
+            />
+          </div>
         </RouterLink>
 
         <!-- Logout button, currently for testing purposes -->

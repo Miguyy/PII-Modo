@@ -22,8 +22,13 @@ function bearerHeaders(token) {
   return token ? { Authorization: `Bearer ${token}` } : {}
 }
 
-export async function getAllDecorations(token) {
-  const res = await fetch(`${BASE_URL}/avatar-decorations`, {
+export async function getAllDecorations(params = {}, token) {
+  const qs = new URLSearchParams()
+  Object.entries(params).forEach(([k, v]) => {
+    if (v !== undefined && v !== null && v !== '') qs.set(k, v)
+  })
+  const query = qs.toString() ? `?${qs.toString()}` : ''
+  const res = await fetch(`${BASE_URL}/avatar-decorations${query}`, {
     credentials: 'include',
     headers: {
       ...bearerHeaders(token),
