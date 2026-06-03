@@ -239,7 +239,7 @@
                   {{ notification.message }}
                 </p>
                 <small class="notification-date">{{
-                  formatNotificationDate(notification.date)
+                  formatNotificationDate(notification.date || notification.data)
                 }}</small>
                 <button class="clear-notification-btn" @click="readNotification(index)">
                   Read
@@ -360,23 +360,25 @@ function toggleSection(section) {
 const notifications = ref([])
 const notificationsEnabled = ref(true)
 
-function loadNotifications() {
+async function loadNotifications() {
   const userId = user.value?.id
   if (!userId) return
-  const saved = localStorage.getItem(`notifications_${userId}`)
-  if (saved) {
-    try {
-      notifications.value = JSON.parse(saved)
-    } catch {
-      notifications.value = []
+  try {
+    notifications.value = await userStore.loadNotifications()
+  } catch {
+    const saved = localStorage.getItem(`notifications_${userId}`)
+    if (saved) {
+      try {
+        notifications.value = JSON.parse(saved)
+      } catch {
+        notifications.value = []
+      }
     }
   }
 }
 
 function saveNotifications() {
-  const userId = user.value?.id
-  if (!userId) return
-  localStorage.setItem(`notifications_${userId}`, JSON.stringify(notifications.value))
+  userStore.notifications = notifications.value
 }
 
 function addNotification(title, message) {
@@ -388,13 +390,29 @@ function addNotification(title, message) {
   saveNotifications()
 }
 
-function dismissNotification(index) {
+async function dismissNotification(index) {
+  const notification = notifications.value[index]
+  if (notification?.id_notificacao) {
+    try {
+      await userStore.markNotificationAsRead(notification.id_notificacao)
+    } catch {
+      // keep local dismissal even if the backend is unavailable
+    }
+  }
   notifications.value.splice(index, 1)
   saveNotifications()
   showToast('Notification dismissed', '', 'success')
 }
 
-function readNotification(index) {
+async function readNotification(index) {
+  const notification = notifications.value[index]
+  if (notification?.id_notificacao) {
+    try {
+      await userStore.markNotificationAsRead(notification.id_notificacao)
+    } catch {
+      // fall through to local removal
+    }
+  }
   // Mark as read by removing from the list (keeps existing behavior)
   notifications.value.splice(index, 1)
   saveNotifications()
@@ -414,7 +432,16 @@ function loadNotificationsEnabled() {
   if (val === '0') notificationsEnabled.value = false
 }
 
-function clearAllNotifications() {
+async function clearAllNotifications() {
+  for (const notification of notifications.value) {
+    if (notification?.id_notificacao) {
+      try {
+        await userStore.markNotificationAsRead(notification.id_notificacao)
+      } catch {
+        // continue clearing locally
+      }
+    }
+  }
   notifications.value = []
   saveNotifications()
   showToast('All notifications cleared', '', 'success')
@@ -648,17 +675,28 @@ const userInitials = computed(() => {
 })
 
 // Default decorations (fallback) with requiredLevel
+const decorationAsset = (name) => new URL(`../images/avatar_decoration/${name}.png`, import.meta.url).href
+
 const defaultDecorations = [
-  { name: 'solarSystem', src: '/src/images/avatar_decoration/solarSystem.png', requiredLevel: 0 },
-  { name: 'garden', src: '/src/images/avatar_decoration/garden.png', requiredLevel: 5 },
-  { name: 'olives', src: '/src/images/avatar_decoration/olives.png', requiredLevel: 10 },
-  { name: 'cat', src: '/src/images/avatar_decoration/cat.png', requiredLevel: 15 },
-  { name: 'summer', src: '/src/images/avatar_decoration/summer.png', requiredLevel: 20 },
-  { name: 'zoo', src: '/src/images/avatar_decoration/zoo.png', requiredLevel: 25 },
+  { name: 'solarSystem', src: decorationAsset('solarSystem'), requiredLevel: 0 },
+  { name: 'garden', src: decorationAsset('garden'), requiredLevel: 5 },
+  { name: 'olives', src: decorationAsset('olives'), requiredLevel: 10 },
+  { name: 'cat', src: decorationAsset('cat'), requiredLevel: 15 },
+  { name: 'summer', src: decorationAsset('summer'), requiredLevel: 20 },
+  { name: 'zoo', src: decorationAsset('zoo'), requiredLevel: 25 },
 ]
 
 // Load decorations from localStorage (synced with Admin Panel)
 function loadDecorations() {
+  if (userStore.decorations.length > 0) {
+    return userStore.decorations.map((decoration) => ({
+      name: decoration.name || decoration.nome_decoracao,
+      src: decoration.src,
+      requiredLevel: decoration.nivel_necessario ?? 0,
+      id_decoracao: decoration.id_decoracao,
+    }))
+  }
+
   const saved = localStorage.getItem('avatarDecorations')
   if (saved) {
     try {
@@ -674,6 +712,12 @@ const decorations = ref(loadDecorations())
 
 // Load saved decoration and profile pic on mount
 onMounted(() => {
+  userStore
+    .loadDecorations()
+    .then(() => {
+      decorations.value = loadDecorations()
+    })
+    .catch(() => {})
   if (user.value?.avatarDecoration) {
     selectedDecoration.value = user.value.avatarDecoration
   }
@@ -719,11 +763,16 @@ const handleFileUpload = (event) => {
 
   // Convert to base64 and store
   const reader = new FileReader()
-  reader.onload = (e) => {
+  reader.onload = async (e) => {
     profilePic.value = e.target.result
     if (user.value) {
-      user.value.avatar = e.target.result
-      userStore.saveToLocalStorage()
+      try {
+        const updated = await userStore.updateUserProfile({}, file)
+        profilePic.value = updated.avatar || updated.imagem_utilizador || e.target.result
+      } catch {
+        user.value.avatar = e.target.result
+        userStore.saveToLocalStorage()
+      }
     }
     showToast('Picture updated', 'Your profile picture has been changed.', 'success')
   }
@@ -787,7 +836,7 @@ const selectDecoration = async (src) => {
   // Save to user profile using updateUserProfile for proper persistence
   if (user.value) {
     try {
-      await userStore.updateUserProfile({ avatarDecoration: src })
+      await userStore.updateAvatarDecoration(decoration || src)
     } catch {
       // Fallback: save directly
       user.value.avatarDecoration = src
@@ -829,13 +878,18 @@ const handleDeleteAccount = () => {
 // Save all changes
 const saveChanges = async () => {
   try {
-    await userStore.updateUserProfile({
+    const updates = {
       name: userName.value,
       email: userEmail.value,
       password: userPassword.value,
-      avatar: profilePic.value,
       avatarDecoration: selectedDecoration.value,
-    })
+    }
+
+    if (profilePic.value && !String(profilePic.value).startsWith('data:')) {
+      updates.avatar = profilePic.value
+    }
+
+    await userStore.updateUserProfile(updates)
     showToast('Success', 'Changes saved successfully!', 'success')
   } catch (e) {
     showToast('Error', 'Failed to save changes: ' + e.message, 'error')

@@ -1,40 +1,23 @@
 /*
   Purpose: Pinia store for user state.
-  Uses auth.services.js and users.services.js to talk to the real API.
-  Token is kept in sessionStorage so it survives a page refresh but is
-  cleared when the browser tab is closed.
 */
 
 import { defineStore } from 'pinia'
-import { login, logout as logoutApi } from '../api/services/auth.services'
-import {
-  createUser,
-  getAllUsers,
-  getUserById,
-  updateUser,
-  deleteUser,
-} from '../api/services/users.services'
+import { login, logout as logoutApi } from '../api/services/auth.services.js'
+import { getUserById, updateUser, getAllUsers, createUser, deleteUser } from '../api/services/users.services.js'
+import { getAllDecorations } from '../api/services/decorations.services.js'
+import { getUserNotifications, updateNotification } from '../api/services/notifications.services.js'
 
-const TOKEN_KEY = 'modo_token'
 const STORAGE_KEY = 'modo_user'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
-    // Full user object from GET /users/:userId
     currentUser: null,
-
-    // JWT string
-    token: null,
-
-    // 'admin' | 'client' | null — comes from the login response
     role: null,
-
-    // Admin: list of all users from GET /users
     users: [],
-
-    // Pagination meta from GET /users
+    notifications: [],
+    decorations: [],
     usersMeta: { total: 0, page: 1, limit: 5, pages: 1 },
-
     loading: false,
     error: null,
   }),
@@ -45,29 +28,91 @@ export const useUserStore = defineStore('user', {
   },
 
   actions: {
-    // ── internal helpers ──────────────────────────────────────────────────
+    _normalizeUser(user) {
+      if (!user) return null
 
-    _saveToken(token, role) {
-      this.token = token
-      this.role = role
-      sessionStorage.setItem(TOKEN_KEY, token)
+      const id = user.id_utilizador ?? user.id
+      const nome = user.nome ?? user.name ?? ''
+      const avatar = user.imagem_utilizador ?? user.avatar ?? null
+      const avatarDecorationName = user.avatarDecorationName ?? user.nome_decoracao ?? null
+      const avatarDecorationSource = user.avatarDecoration ?? user.caminho_decoracao ?? null
+      const avatarDecoration = this._resolveDecorationAsset(avatarDecorationName, avatarDecorationSource)
+      const points = user.pontos ?? user.points ?? 0
+      const priority = user.nivel ?? user.priority ?? 1
+
+      return {
+        ...user,
+        id,
+        id_utilizador: id,
+        name: nome,
+        nome,
+        email: user.email ?? '',
+        avatar,
+        imagem_utilizador: avatar,
+        avatarDecorationName,
+        avatarDecoration,
+        pontos: points,
+        points,
+        nivel: priority,
+        priority,
+      }
+    },
+
+    _normalizeDecoration(decoration) {
+      if (!decoration) return null
+      const name = decoration.nome_decoracao ?? decoration.name ?? ''
+      return {
+        ...decoration,
+        id: decoration.id_decoracao ?? decoration.id,
+        id_decoracao: decoration.id_decoracao ?? decoration.id,
+        name,
+        nome_decoracao: name,
+        src: this._resolveDecorationAsset(name, decoration.caminho_decoracao || decoration.src),
+      }
+    },
+
+    _normalizeNotification(notification) {
+      if (!notification) return null
+      const date = notification.date ?? notification.data ?? notification.createdAt ?? null
+      return {
+        ...notification,
+        id: notification.id_notificacao ?? notification.id,
+        id_notificacao: notification.id_notificacao ?? notification.id,
+        message: notification.message ?? notification.mensagem ?? '',
+        mensagem: notification.message ?? notification.mensagem ?? '',
+        date,
+        data: date,
+      }
+    },
+
+    _syncUsersList(updatedUser) {
+      const normalized = this._normalizeUser(updatedUser)
+      if (!normalized) return null
+      const id = Number(normalized.id_utilizador)
+      const index = this.users.findIndex((user) => Number(user.id_utilizador ?? user.id) === id)
+      if (index >= 0) {
+        this.users[index] = { ...this.users[index], ...normalized }
+      } else {
+        this.users.push(normalized)
+      }
+      return normalized
+    },
+
+    _buildLocalDecorationPath(name) {
+      if (!name) return null
+      return new URL(`../images/avatar_decoration/${name}.png`, import.meta.url).href
+    },
+
+    _resolveDecorationAsset(name, remoteSrc) {
+      const localPath = this._buildLocalDecorationPath(name)
+      if (localPath) return localPath
+      return remoteSrc || null
     },
 
     _clearSession() {
-      this.token = null
       this.role = null
       this.currentUser = null
-      sessionStorage.removeItem(TOKEN_KEY)
       localStorage.removeItem(STORAGE_KEY)
-    },
-
-    // Decode the JWT payload without a library — we only need the `id`
-    _decodeToken(token) {
-      try {
-        return JSON.parse(atob(token.split('.')[1]))
-      } catch {
-        return null
-      }
     },
 
     async loadFromLocalStorage() {
@@ -75,12 +120,12 @@ export const useUserStore = defineStore('user', {
         const raw = localStorage.getItem(STORAGE_KEY)
         if (!raw) return
         const parsed = JSON.parse(raw)
-        this.currentUser = parsed.currentUser || null
-        this.nome =
-          parsed.nome ||
-          (parsed.currentUser && (parsed.currentUser.nome || parsed.currentUser.name)) ||
-          null
-        this.role = parsed.role || (parsed.currentUser && parsed.currentUser.role) || null
+        this.currentUser = this._normalizeUser(parsed.currentUser || null)
+        this.role = parsed.role || null
+        const savedUserId = this.currentUser?.id_utilizador ?? this.currentUser?.id
+        if (savedUserId) {
+          await this.fetchCurrentUser(savedUserId)
+        }
       } catch (err) {
         console.error('Failed loading user from localStorage', err)
         localStorage.removeItem(STORAGE_KEY)
@@ -89,12 +134,10 @@ export const useUserStore = defineStore('user', {
 
     saveToLocalStorage() {
       try {
-        const payload = {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
           currentUser: this.currentUser,
-          nome: this.nome,
           role: this.role,
-        }
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
+        }))
       } catch (err) {
         console.error('Failed saving user to localStorage', err)
       }
@@ -105,84 +148,17 @@ export const useUserStore = defineStore('user', {
         localStorage.removeItem(STORAGE_KEY)
       } catch (e) {}
     },
-    // ── auth ──────────────────────────────────────────────────────────────
 
-    /**
-     * Login with email + password.
-     * On success stores token, role and fetches the full user profile.
-     * Throws on failure so the view can catch and show a message.
-     */
     async login(email, password) {
       this.loading = true
       this.error = null
       try {
-        const data = await login(email, password) // auth.services.login
-        // server sets HttpOnly cookie; response returns id and role
+        const data = await login(email, password)
         this.role = data.tipo_utilizador || data.role
-        // fetch full profile; server will read cookie automatically
-        await this.fetchCurrentUser(data.id_utilizador || data.id)
+        const userId = data.id_utilizador ?? data.id
+        if (!userId) throw new Error(`Login response missing user ID: ${JSON.stringify(data)}`)
+        await this.fetchCurrentUser(userId)
         this.saveToLocalStorage()
-      } catch (err) {
-        throw err
-      } finally {
-        this.loading = false
-      }
-    },
-
-    /**
-     * Logout — calls POST /users/logout then clears local state.
-     */
-    async logout() {
-      try {
-        await logoutApi() // auth.services.logout with credentials: 'include'
-      } finally {
-        this._clearSession() // remove currentUser and role
-        this.clearLocalStorage()
-      }
-    },
-
-    // ── current user ──────────────────────────────────────────────────────
-
-    /**
-     * GET /users/:userId
-     * Loads the full profile and stores it as currentUser.
-     */
-    async fetchCurrentUser(userId) {
-      try {
-        // Returns { id_utilizador, nome, email, tipo_utilizador,
-        //           pontos, nivel, data_criacao_conta, imagem_utilizador, links }
-        const data = await getUserById(userId, this.token)
-        this.currentUser = data
-        // Keep role in sync with the DB value
-        if (data.tipo_utilizador) {
-          this.role = data.tipo_utilizador.toLowerCase()
-        }
-        this.saveToLocalStorage()
-      } catch (err) {
-        // Can't load the profile → force logout to avoid a broken state
-        this._clearSession()
-        throw err
-      }
-    },
-
-    /**
-     * PATCH /users/:userId
-     * Updates the current user's own profile.
-     */
-    async updateCurrentUser(updates, imageFile = null) {
-      if (!this.currentUser) throw new Error('Not authenticated')
-      this.loading = true
-      this.error = null
-      try {
-        const data = await updateUser(
-          this.currentUser.id_utilizador,
-          updates,
-          this.token,
-          imageFile,
-        )
-        this.currentUser = data
-        this.saveToLocalStorage()
-        return data
       } catch (err) {
         this.error = err.message
         throw err
@@ -191,18 +167,128 @@ export const useUserStore = defineStore('user', {
       }
     },
 
-    // ── admin: user list ──────────────────────────────────────────────────
+    async logout() {
+      try {
+        await logoutApi()
+      } finally {
+        this._clearSession()
+      }
+    },
 
-    /**
-     * GET /users  (admin only)
-     * params: { page, limit, role, sort, order, q }
-     */
+    async fetchCurrentUser(userId) {
+      try {
+        const data = await getUserById(userId)
+        this.currentUser = this._normalizeUser(data)
+        if (data.tipo_utilizador) {
+          this.role = data.tipo_utilizador.toLowerCase()
+        }
+        this.saveToLocalStorage()
+      } catch (err) {
+        this._clearSession()
+        throw err
+      }
+    },
+
+    async updateCurrentUser(updates, imageFile = null) {
+      return this.updateUserProfile(updates, imageFile)
+    },
+
+    async updateUserProfile(updates = {}, imageFile = null) {
+      if (!this.currentUser) throw new Error('Not authenticated')
+      this.loading = true
+      this.error = null
+      try {
+        const payload = {}
+        if (Object.prototype.hasOwnProperty.call(updates, 'name')) payload.nome = updates.name
+        if (Object.prototype.hasOwnProperty.call(updates, 'nome')) payload.nome = updates.nome
+        if (Object.prototype.hasOwnProperty.call(updates, 'email')) payload.email = updates.email
+        if (Object.prototype.hasOwnProperty.call(updates, 'password')) payload.password = updates.password
+        if (Object.prototype.hasOwnProperty.call(updates, 'avatar')) payload.avatar = updates.avatar
+        if (Object.prototype.hasOwnProperty.call(updates, 'imagem_utilizador')) {
+          payload.imagem_utilizador = updates.imagem_utilizador
+        }
+        if (Object.prototype.hasOwnProperty.call(updates, 'avatarDecoration')) {
+          payload.avatarDecoration = updates.avatarDecoration
+        }
+        if (Object.prototype.hasOwnProperty.call(updates, 'id_decoracao')) {
+          payload.id_decoracao = updates.id_decoracao
+        }
+
+        // FIXED: Passing null for the token slot so imageFile lands correctly
+        const data = await updateUser(this.currentUser.id_utilizador, payload, null, imageFile)
+        const normalized = this._normalizeUser(data)
+        this.currentUser = { ...this.currentUser, ...normalized }
+        this._syncUsersList(this.currentUser)
+        this.saveToLocalStorage()
+        return this.currentUser
+      } catch (err) {
+        this.error = err.message
+        throw err
+      } finally {
+        this.loading = false
+      }
+    },
+
+    getUserById(userId) {
+      return (
+        this.users.find((user) => Number(user.id_utilizador ?? user.id) === Number(userId)) ||
+        (Number(this.currentUser?.id_utilizador ?? this.currentUser?.id) === Number(userId)
+          ? this.currentUser
+          : null)
+      )
+    },
+
+    async loadNotifications() {
+      if (!this.currentUser) return []
+      const data = await getUserNotifications(this.currentUser.id_utilizador)
+      const list = data?.notifications || data || []
+      this.notifications = list.map((n) => this._normalizeNotification(n))
+      return this.notifications
+    },
+
+    async markNotificationAsRead(notificationId) {
+      const notification = this.notifications.find(
+        (entry) => Number(entry.id_notificacao ?? entry.id) === Number(notificationId),
+      )
+      if (!notification) return null
+
+      const updated = await updateNotification(notificationId, { lida: true })
+      const normalized = this._normalizeNotification(updated)
+      this.notifications = this.notifications.map((entry) =>
+        Number(entry.id_notificacao ?? entry.id) === Number(notificationId) ? normalized : entry,
+      )
+      return normalized
+    },
+
+    removeNotification(notificationId) {
+      this.notifications = this.notifications.filter(
+        (entry) => Number(entry.id_notificacao ?? entry.id) !== Number(notificationId),
+      )
+    },
+
+    clearAllNotifications() {
+      this.notifications = []
+    },
+
+    async loadDecorations() {
+      const data = await getAllDecorations()
+      const list = data?.data || data || []
+      this.decorations = list.map((d) => this._normalizeDecoration(d))
+      return this.decorations
+    },
+
+    async updateAvatarDecoration(decoration) {
+      if (!this.currentUser) throw new Error('Not authenticated')
+      const decorationValue =
+        decoration?.id_decoracao ?? decoration?.id ?? decoration?.src ?? decoration ?? null
+      return this.updateUserProfile({ avatarDecoration: decorationValue })
+    },
+
     async fetchUsers(params = {}) {
       this.loading = true
       this.error = null
       try {
-        const data = await getAllUsers(this.token, params)
-        // { meta: { total, page, limit, pages }, data: [...] }
+        const data = await getAllUsers(params)
         this.users = data.data || []
         this.usersMeta = data.meta || this.usersMeta
         return data
@@ -214,15 +300,11 @@ export const useUserStore = defineStore('user', {
       }
     },
 
-    /**
-     * POST /users  (admin only)
-     * Creates a user and pushes it into the local list.
-     */
     async addUser(userData, imageFile = null) {
       this.loading = true
       this.error = null
       try {
-        const data = await createUser(userData, this.token, imageFile)
+        const data = await createUser(userData, null, imageFile)
         this.users.push(data)
         return data
       } catch (err) {
@@ -233,16 +315,12 @@ export const useUserStore = defineStore('user', {
       }
     },
 
-    /**
-     * DELETE /users/:userId  (owner or admin)
-     */
     async deleteUser(userId) {
       this.loading = true
       this.error = null
       try {
-        await deleteUser(userId, this.token)
+        await deleteUser(userId)
         this.users = this.users.filter((u) => Number(u.id_utilizador) !== Number(userId))
-        // If the user deleted their own account, clear the session
         if (Number(this.currentUser?.id_utilizador) === Number(userId)) {
           this._clearSession()
         }
