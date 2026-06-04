@@ -55,6 +55,19 @@ export async function createNotification(userId, payload, token) {
   return handleResponse(res)
 }
 
+export async function broadcastNotification(payload, token) {
+  const res = await fetch(`${BASE_URL}/notifications/broadcast`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      ...bearerHeaders(token),
+    },
+    body: JSON.stringify(payload),
+  })
+  return handleResponse(res)
+}
+
 export async function getNotificationById(notificationId, token) {
   const res = await fetch(`${BASE_URL}/notifications/${notificationId}`, {
     credentials: 'include',
@@ -96,4 +109,5 @@ export default {
   getNotificationById,
   updateNotification,
   deleteNotification,
+  broadcastNotification,
 }

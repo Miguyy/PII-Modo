@@ -6,7 +6,7 @@
 */
 
 // Import habits data
-import { Habit } from "../config/db.config.js";
+import { Habit, Notification, User } from "../config/db.config.js";
 import { Op } from "sequelize";
 import {
   validationError,
@@ -102,6 +102,26 @@ export const createHabit = async (req, res, next) => {
       categoria,
     });
 
+    const requesterId = req.user ? (req.user.id_utilizador || req.user.dataValues?.id_utilizador) : 'Unknown Admin';
+    console.log(`[ADMIN ACTION] User ${requesterId} CREATED new Habit: ${name} (ID: ${habit.id_habito})`);
+
+    // Auto-broadcast new feature
+    try {
+      const users = await User.findAll({ attributes: ["id_utilizador"] });
+      if (users && users.length > 0) {
+        const notificationsToInsert = users.map(u => ({
+          id_utilizador: u.id_utilizador,
+          mensagem: `The system was updated with new features: ${name}`,
+          tipo_notificacao: 'System',
+          lida: false,
+        }));
+        await Notification.bulkCreate(notificationsToInsert);
+        console.log(`[ADMIN ACTION] Auto-broadcasted new habit feature to ${users.length} users.`);
+      }
+    } catch (bcError) {
+      console.error('Failed to auto-broadcast habit creation:', bcError);
+    }
+
     // Include HATEOAS links in the response
     const response = {
       ...habit.toJSON(),
@@ -179,6 +199,9 @@ export const updateHabit = async (req, res, next) => {
       categoria: categoria ?? habit.categoria,
     });
 
+    const requesterId = req.user ? (req.user.id_utilizador || req.user.dataValues?.id_utilizador) : 'Unknown Admin';
+    console.log(`[ADMIN ACTION] User ${requesterId} UPDATED Habit ID: ${habit.id_habito}`);
+
     // Include HATEOAS links in the response
     const response = {
       ...habit.toJSON(),
@@ -212,6 +235,10 @@ export const deleteHabit = async (req, res, next) => {
       return next(notFoundError("Habit", habitId));
     }
     await habit.destroy();
+
+    const requesterId = req.user ? (req.user.id_utilizador || req.user.dataValues?.id_utilizador) : 'Unknown Admin';
+    console.log(`[ADMIN ACTION] User ${requesterId} DELETED Habit ID: ${habitId}`);
+
     res.status(204).send();
   } catch (error) {
     return next(genericError());

@@ -255,12 +255,26 @@ export default {
     const sortBy = ref('priority')
     const sortOrder = ref('desc')
 
+    const fetchFilteredData = async () => {
+      const filters = {
+        q: searchQuery.value || undefined,
+        type: selectedType.value === 'all' ? undefined : selectedType.value,
+        priority: selectedPriority.value === 'all' ? undefined : selectedPriority.value,
+        location: selectedLocation.value === 'all' ? undefined : selectedLocation.value,
+      }
+      await habitStore.fetchHabitsAndTasks(filters)
+    }
+
+    watch([searchQuery, selectedType, selectedPriority, selectedLocation], () => {
+      fetchFilteredData()
+    })
+
     onMounted(async () => {
       if (typeof userStore.loadFromLocalStorage === 'function') {
         await userStore.loadFromLocalStorage()
       }
       if (typeof habitStore.fetchHabitsAndTasks === 'function') {
-        await habitStore.fetchHabitsAndTasks()
+        await fetchFilteredData()
       }
     })
 
@@ -279,37 +293,20 @@ export default {
     }
 
     const getTaskCount = (category) => {
-      if (!category || !habitStore.habits) return 0
+      if (!category || !habitStore.catalogHabits) return 0
 
       const normCategory = String(category).trim().toLowerCase()
-      const matchingHabitIds = habitStore.habits
+      const matchingHabitIds = habitStore.catalogHabits
         .filter((h) => String(h.categoria).trim().toLowerCase() === normCategory)
         .map((h) => h.id_habito)
 
-      let totalTasks = 0
-
-      if (habitStore.tasksByHabitId && Object.keys(habitStore.tasksByHabitId).length > 0) {
-        matchingHabitIds.forEach((id) => {
-          if (habitStore.tasksByHabitId[id]) {
-            totalTasks += habitStore.tasksByHabitId[id].length
-          }
-        })
-        return totalTasks
-      }
-
-      const flatTasksArray = habitStore.tasks || habitStore.taskList || []
-      if (Array.isArray(flatTasksArray)) {
-        totalTasks = flatTasksArray.filter((task) =>
-          matchingHabitIds.includes(task.id_habito),
-        ).length
-      }
-
-      return totalTasks
+      const flatTasksArray = habitStore.catalogTasks || []
+      return flatTasksArray.filter((task) => matchingHabitIds.includes(task.id_habito)).length
     }
 
     // Habits are strictly filtered ONLY by text search queries
     const uniqueHabits = computed(() => {
-      const rawList = habitStore.habits || []
+      const rawList = habitStore.catalogHabits || []
       const trackingMap = new Map()
 
       rawList.forEach((item) => {
@@ -327,6 +324,8 @@ export default {
 
       let list = Array.from(trackingMap.values())
 
+      // Note: we don't need to filter searchQuery locally anymore because the backend does it, 
+      // but leaving it as a safe fallback just in case backend ignores it.
       if (searchQuery.value) {
         const query = searchQuery.value.toLowerCase()
         list = list.filter(
@@ -335,6 +334,9 @@ export default {
             h.descricao_habito?.toLowerCase().includes(query),
         )
       }
+
+      // Hide habits that have 0 tasks based on the current active server-side filters
+      list = list.filter((h) => getTaskCount(h.categoria) > 0)
 
       return list
     })
@@ -350,48 +352,15 @@ export default {
       if (!activeHabit.value) return []
 
       const normCategory = String(activeHabit.value.categoria).trim().toLowerCase()
-      const matchingHabitIds = (habitStore.habits || [])
+      const matchingHabitIds = (habitStore.catalogHabits || [])
         .filter((h) => String(h.categoria).trim().toLowerCase() === normCategory)
         .map((h) => h.id_habito)
 
       let tasks = []
+      const flatTasksArray = habitStore.catalogTasks || []
+      tasks = flatTasksArray.filter((task) => matchingHabitIds.includes(task.id_habito))
 
-      if (habitStore.tasksByHabitId && Object.keys(habitStore.tasksByHabitId).length > 0) {
-        matchingHabitIds.forEach((id) => {
-          const segment = habitStore.tasksByHabitId?.[id] || []
-          tasks = [...tasks, ...segment]
-        })
-      } else {
-        const flatTasksArray = habitStore.tasks || habitStore.taskList || []
-        if (Array.isArray(flatTasksArray)) {
-          tasks = flatTasksArray.filter((task) => matchingHabitIds.includes(task.id_habito))
-        }
-      }
-
-      // 1. Filter by Task Type
-      if (selectedType.value !== 'all') {
-        tasks = tasks.filter((t) => {
-          const type = String(t.tipo_tarefa || '').toLowerCase()
-          if (selectedType.value === 'time') return type === 'time' || type === 'timer'
-          return type === selectedType.value
-        })
-      }
-
-      // 2. Filter by Priority
-      if (selectedPriority.value !== 'all') {
-        tasks = tasks.filter(
-          (t) => String(t.prioridade_tarefa || '').toLowerCase() === selectedPriority.value,
-        )
-      }
-
-      // 3. Filter by Location
-      if (selectedLocation.value !== 'all') {
-        tasks = tasks.filter(
-          (t) => String(t.localizacao_tarefa || '').toLowerCase() === selectedLocation.value,
-        )
-      }
-
-      // 4. Sort Remaining Tasks
+      // 1. Sort Remaining Tasks
       tasks.sort((a, b) => {
         let valA = ''
         let valB = ''

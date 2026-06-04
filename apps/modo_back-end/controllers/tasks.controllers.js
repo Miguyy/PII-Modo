@@ -6,7 +6,7 @@
 */
 
 // Import tasks data
-import { Task } from "../config/db.config.js";
+import { Task, User, Notification } from "../config/db.config.js";
 import { Op } from "sequelize";
 import {
   validationError,
@@ -28,6 +28,9 @@ export const getAllTasks = async (req, res, next) => {
     order = "ASC",
     page, // Dropped hardcoded = 1
     limit, // Dropped hardcoded = 5
+    type,
+    location,
+    priority,
   } = req.query;
   try {
     const safeSortFields = new Set([
@@ -42,6 +45,15 @@ export const getAllTasks = async (req, res, next) => {
     const where = {};
     if (q) {
       where[Op.or] = [{ nome_tarefa: { [Op.like]: `%${q}%` } }];
+    }
+    if (type && type.toLowerCase() !== 'all') {
+      where.tipo_tarefa = { [Op.like]: `%${type}%` };
+    }
+    if (location && location.toLowerCase() !== 'all') {
+      where.localizacao_tarefa = location;
+    }
+    if (priority && priority.toLowerCase() !== 'all') {
+      where.prioridade_tarefa = priority;
     }
 
     const queryOptions = {
@@ -123,6 +135,26 @@ export const createTask = async (req, res, next) => {
       duracao_temporizador: duracao_temporizador ?? null,
       quantidade_necessaria: quantidade_necessaria ?? null,
     });
+
+    const requesterId = req.user ? (req.user.id_utilizador || req.user.dataValues?.id_utilizador) : 'Unknown Admin';
+    console.log(`[ADMIN ACTION] User ${requesterId} CREATED new Task: ${name} (ID: ${task.id_tarefa})`);
+
+    // Auto-broadcast new feature
+    try {
+      const users = await User.findAll({ attributes: ["id_utilizador"] });
+      if (users && users.length > 0) {
+        const notificationsToInsert = users.map(u => ({
+          id_utilizador: u.id_utilizador,
+          mensagem: `The system was updated with new features: ${name}`,
+          tipo_notificacao: 'System',
+          lida: false,
+        }));
+        await Notification.bulkCreate(notificationsToInsert);
+        console.log(`[ADMIN ACTION] Auto-broadcasted new task feature to ${users.length} users.`);
+      }
+    } catch (bcError) {
+      console.error('Failed to auto-broadcast task creation:', bcError);
+    }
 
     res.status(201).json({
       ...task.toJSON(),
@@ -316,6 +348,9 @@ export const updateTask = async (req, res, next) => {
 
     const updated = await task.update(payload);
 
+    const requesterId = req.user ? (req.user.id_utilizador || req.user.dataValues?.id_utilizador) : 'Unknown Admin';
+    console.log(`[ADMIN ACTION] User ${requesterId} UPDATED Task ID: ${task.id_tarefa}`);
+
     res.status(200).json({
       ...updated.toJSON(),
       links: [
@@ -355,6 +390,9 @@ export const deleteTask = async (req, res, next) => {
     const task = req.task;
 
     await task.destroy();
+
+    const requesterId = req.user ? (req.user.id_utilizador || req.user.dataValues?.id_utilizador) : 'Unknown Admin';
+    console.log(`[ADMIN ACTION] User ${requesterId} DELETED Task ID: ${taskId}`);
 
     res.status(204).send();
   } catch (error) {
