@@ -16,7 +16,7 @@
       <div class="col-12 col-md-4 col-lg-4">
         <div class="charts-box p-3 h-100">
           <!-- Habit Stats Chart Box -->
-          <HabitStatsChart :tasks="apiUserTasks" />
+          <HabitStatsChart :tasks="apiUserTasks" :rawTasks="apiUserTasks" />
         </div>
       </div>
       <div class="col-12 col-md-4 col-lg-4">
@@ -115,15 +115,14 @@
 
               <div class="col-12 mt-3">
                 <button class="btn btn-primary w-100" type="submit">
-                  <FontAwesomeIcon icon="plus" /> Create new habit
+                  <FontAwesomeIcon icon="plus" /> Create new custom task
                 </button>
               </div>
             </div>
           </form>
         </div>
       </div>
-    </div>
- -->
+    </div> -->
     <br />
     <div class="row">
       <div class="col-12">
@@ -427,7 +426,7 @@
         class="toast-icon"
         :style="{ color: toast.title === 'Habit deleted' ? '#b4554d' : '#00cc66' }"
       >
-        {{ toast.title === 'Habit deleted' ? '🗑️' : '✅' }}
+        <FontAwesomeIcon :icon="toast.title === 'Habit deleted' ? 'trash' : 'check-circle'" />
       </div>
       <div class="toast-content">
         <strong>{{ toast.title }}</strong>
@@ -453,7 +452,7 @@ import NavBar from '../Components/NavBar.vue'
 import Weather from '@/Components/Weather.vue'
 import HabitStatsChart from '@/Components/HabitStatsChart.vue'
 import { getLocation, createLocation, updateLocation } from '@/api/services/locations.services'
-import { getUserTasks, deleteUserTask, completeUserTask, updateUserTask } from '@/api/services/userTasks.services'
+import { getUserTasks, deleteUserTask, completeUserTask, updateUserTask, assignTaskToUser } from '@/api/services/userTasks.services'
 
 // Initialize stores
 const habitStore = useHabitStore()
@@ -492,6 +491,11 @@ function showToast(title, message, duration = 3000) {
   }, duration)
 }
 
+// Track the geolocation watch ID for cleanup
+const geoWatchId = ref(null)
+// Track the last saved coordinates to avoid unnecessary DB updates
+const lastSavedCoords = ref(null)
+
 onMounted(async () => {
   habitStore.loadFromLocalStorage()
   habitStore.reconcileRunningTimers()
@@ -504,15 +508,13 @@ onMounted(async () => {
 const apiUserTasks = ref([])
 
 async function fetchUserTasks() {
-  const token = userStore.token
-  const userId = currentUser.value?.id_utilizador || currentUser.value?.id
-  if (!userId || !token) return
-  
+  if (!currentUser.value) return
+  const userId = currentUser.value.id_utilizador || currentUser.value.id
   try {
-    const res = await getUserTasks(userId, token, { limit: 100 })
-    apiUserTasks.value = res.data || []
+    const res = await getUserTasks(userId, userStore.token, { limit: 100 })
+    apiUserTasks.value = Array.isArray(res.data) ? res.data : []
   } catch(e) {
-    console.error('Failed to fetch tasks', e)
+    console.error('Failed to fetch user tasks', e)
   }
 }
 
@@ -524,56 +526,107 @@ async function fetchLocationAndWeather() {
   try {
     const locRes = await getLocation(userId, token)
     if (locRes && locRes.latitude) {
+      // Load weather from existing DB location
       weatherStore.fetchCurrentWeatherByLocation(locRes.latitude, locRes.longitude)
-      // We could optionally trigger a PATCH here if browser GPS moved significantly, 
-      // but for now, rely on what's in the DB.
+      lastSavedCoords.value = { latitude: locRes.latitude, longitude: locRes.longitude }
+      // Start watching for position changes to keep DB up-to-date
+      startLocationWatch(userId, token, 'PATCH')
     } else {
-      requestBrowserLocationAndSave(userId, token, 'POST')
+      // No DB location yet — request browser permission and POST if granted
+      startLocationWatch(userId, token, 'POST')
     }
   } catch(err) {
-    // If not found, attempt to post it
-    if (err.status === 404 || err.statusCode === 404 || (err.message && String(err.message).toLowerCase().includes('not found'))) {
-      requestBrowserLocationAndSave(userId, token, 'POST')
+    if (err.status === 404 || err.statusCode === 404 || (err.description && String(err.description).toLowerCase().includes('not found')) || (err.message && String(err.message).toLowerCase().includes('not found'))) {
+      // No location in DB → try to create one if user grants permission
+      startLocationWatch(userId, token, 'POST')
     } else {
       console.error('Failed to get location:', err)
-      // fallback
       weatherStore.fetchCurrentWeather('Vila do Conde', 'PT')
     }
   }
 }
 
-function requestBrowserLocationAndSave(userId, token, method = 'POST') {
+/**
+ * Start a geolocation watchPosition.
+ * - If the user DENIES permission: do NOT save anything to the DB, just use weather fallback.
+ * - If the user GRANTS permission: save/update location in DB and update weather.
+ * - On subsequent position changes: PATCH the DB if coordinates moved by >0.001 degrees.
+ */
+function startLocationWatch(userId, token, initialMethod = 'POST') {
   if (!navigator.geolocation) {
-    showToast('Location Error', 'Geolocation is not supported by your browser', 5000)
+    // Browser does not support geolocation — no location saved, fallback weather
     weatherStore.fetchCurrentWeather('Vila do Conde', 'PT')
     return
   }
 
-  navigator.geolocation.getCurrentPosition(
+  // Clear any existing watch
+  if (geoWatchId.value !== null) {
+    navigator.geolocation.clearWatch(geoWatchId.value)
+    geoWatchId.value = null
+  }
+
+  let method = initialMethod
+
+  geoWatchId.value = navigator.geolocation.watchPosition(
     async (pos) => {
       const { latitude, longitude } = pos.coords
+
+      // Check if coordinates changed enough to warrant a DB update (>0.001° ≈ 110m)
+      const prev = lastSavedCoords.value
+      const moved = !prev ||
+        Math.abs(latitude - prev.latitude) > 0.001 ||
+        Math.abs(longitude - prev.longitude) > 0.001
+
+      // Always update weather in real time
       weatherStore.fetchCurrentWeatherByLocation(latitude, longitude)
-      
+
+      if (!moved) return  // No significant movement — skip DB update
+
+      lastSavedCoords.value = { latitude, longitude }
+
       try {
-        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
-        const data = await res.json()
-        const city = data.address?.city || data.address?.town || data.address?.village || 'Unknown'
-        const country = data.address?.country_code?.toUpperCase() || 'Unknown'
+        let city = 'Unknown'
+        let country = 'Unknown'
         
+        try {
+          // Nominatim requires a custom User-Agent to avoid blocking
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`, {
+            headers: {
+              'User-Agent': 'ModoApp/1.0',
+              'Accept': 'application/json'
+            }
+          })
+          if (res.ok) {
+            const data = await res.json()
+            city = data.address?.city || data.address?.town || data.address?.village || 'Unknown'
+            country = data.address?.country_code?.toUpperCase() || 'Unknown'
+          }
+        } catch (geomErr) {
+          console.warn('Reverse geocoding failed, falling back to Unknown:', geomErr)
+        }
+
         const payload = { latitude, longitude, cidade: city, pais: country }
+
         if (method === 'POST') {
           await createLocation(userId, payload, token)
+          method = 'PATCH'  // Subsequent updates are PATCHes
         } else {
           await updateLocation(userId, payload, token)
         }
       } catch(e) {
-        console.error('Reverse geocoding or saving location failed:', e)
+        console.error('Saving location to database failed:', e)
       }
     },
     (err) => {
-      console.warn('Location permission denied', err)
-      // fallback
+      // User denied permission or error occurred — do NOT save anything to DB
+      console.warn('Location permission denied or unavailable:', err)
+      // Only show weather fallback, no DB entry created
       weatherStore.fetchCurrentWeather('Vila do Conde', 'PT')
+    },
+    {
+      enableHighAccuracy: false,
+      timeout: 15000,
+      maximumAge: 60000,  // Accept cached position up to 1 minute old
     }
   )
 }
@@ -581,7 +634,7 @@ function requestBrowserLocationAndSave(userId, token, method = 'POST') {
 const currentUser = computed(() => userStore.currentUser)
 const userLevel = computed(() => {
   if (!currentUser.value || Number.isNaN(Number(currentUser.value.points))) return 0
-  return Math.round((currentUser.value.points || 0) / 100)
+  return Math.floor((currentUser.value.points || 0) / 100)
 })
 const userInitials = computed(() => {
   const name = currentUser.value?.name || ''
@@ -600,6 +653,7 @@ const userHabits = computed(() => {
     
     return {
       id: t.id_tarefa,
+      estado_tarefa: t.estado_tarefa,
       description: taskData.nome_tarefa || 'Unknown Task',
       category: taskData.categoria || '',
       location: (taskData.localizacao_tarefa || 'inside').toLowerCase(),
@@ -637,6 +691,9 @@ const displayHabits = computed(() => {
 
   // Filtering
   const filtered = list.filter((h) => {
+    // Hide tasks that are already fully completed via the backend endpoint
+    if (h.estado_tarefa === 'Completed') return false
+
     const matchesSearch = filters.value.search
       ? h.description.toLowerCase().includes(filters.value.search.toLowerCase())
       : true
@@ -726,31 +783,42 @@ function resetForm() {
 }
 
 // Handle submission of the add-habit form
-function handleAdd() {
-  if (!currentUser.value) return alert('Please log in first')
+async function handleAdd() {
+  if (!currentUser.value) return showToast('Error', 'Please log in first')
 
-  habitStore.addHabit({
-    user_id: currentUser.value.id,
-    description: form.value.description,
-    type: form.value.type,
-    priority: form.value.priority,
-    location: form.value.location,
-    target_count: form.value.type === 'count' ? form.value.target_count : null,
-    increment_value: form.value.type === 'count' ? form.value.increment_value : 1,
-    target_minutes: form.value.type === 'time' ? form.value.target_minutes : null,
-  })
+  const userId = currentUser.value.id_utilizador || currentUser.value.id
+  
+  // Map frontend form values to backend expected enums
+  const backendTypeMap = { check: 'Check', count: 'Count', time: 'Timer', timer: 'Timer' }
+  const backendPriorityMap = { low: 'Low', medium: 'Medium', high: 'High' }
+  const backendLocationMap = { inside: 'Inside', outside: 'Outside' }
 
-  // Provide immediate feedback
-  showToast(
-    'Habit created',
-    `${form.value.description} · ${form.value.priority} · ${form.value.location}`,
-  )
+  const payload = {
+    nome_tarefa: form.value.description,
+    tipo_tarefa: backendTypeMap[form.value.type] || 'Check',
+    prioridade_tarefa: backendPriorityMap[form.value.priority] || 'Low',
+    localizacao_tarefa: backendLocationMap[form.value.location] || 'Inside',
+    quantidade_necessaria: form.value.type === 'count' ? form.value.target_count : null,
+    duracao_temporizador: form.value.type === 'time' ? form.value.target_minutes : null,
+    pontos_tarefa: 15, // Base points for a new custom task
+  }
 
-  // reset form inputs
-  form.value.description = ''
-  form.value.location = 'inside'
-
-  resetForm()
+  try {
+    await assignTaskToUser(userId, payload, userStore.token)
+    
+    // Provide immediate feedback
+    showToast(
+      'Task created!',
+      `${form.value.description} · ${payload.prioridade_tarefa} · ${payload.localizacao_tarefa}`,
+      'success'
+    )
+    
+    resetForm()
+    await fetchUserTasks() // refresh from backend
+  } catch(e) {
+    console.error('Failed to create task:', e)
+    showToast('Error', 'Failed to create task. Check your inputs.', 'error')
+  }
 }
 
 // Delete a habit after confirmation and show a toast
@@ -769,42 +837,68 @@ async function increment(id) {
   const userId = currentUser.value?.id_utilizador || currentUser.value?.id
   const userTask = apiUserTasks.value.find(t => t.id_tarefa === id)
   if (!userTask) return
+  // Optimistic update
+  userTask.progresso = (userTask.progresso || 0) + 1
   try {
-    await updateUserTask(userId, id, { progresso: (userTask.progresso || 0) + 1 }, userStore.token)
-    await fetchUserTasks()
-  } catch(e) { console.error(e) }
+    await updateUserTask(userId, id, { progresso: userTask.progresso }, userStore.token)
+  } catch(e) {
+    userTask.progresso -= 1 // rollback
+    console.error(e)
+  }
 }
 
 async function decrement(id) {
   const userId = currentUser.value?.id_utilizador || currentUser.value?.id
   const userTask = apiUserTasks.value.find(t => t.id_tarefa === id)
   if (!userTask || (userTask.progresso || 0) <= 0) return
+  // Optimistic update
+  userTask.progresso = (userTask.progresso || 0) - 1
   try {
-    await updateUserTask(userId, id, { progresso: (userTask.progresso || 0) - 1 }, userStore.token)
-    await fetchUserTasks()
-  } catch(e) { console.error(e) }
+    await updateUserTask(userId, id, { progresso: userTask.progresso }, userStore.token)
+  } catch(e) {
+    userTask.progresso += 1 // rollback
+    console.error(e)
+  }
 }
 
 async function toggleCheck(id) {
   const userId = currentUser.value?.id_utilizador || currentUser.value?.id
   const userTask = apiUserTasks.value.find(t => t.id_tarefa === id)
   if (!userTask) return
-  const newProgress = (userTask.progresso || 0) > 0 ? 0 : 100
+  const prev = userTask.progresso || 0
+  const newProgress = prev > 0 ? 0 : 100
+  // Optimistic update
+  userTask.progresso = newProgress
   try {
     await updateUserTask(userId, id, { progresso: newProgress }, userStore.token)
-    await fetchUserTasks()
-  } catch(e) { console.error(e) }
+  } catch(e) {
+    userTask.progresso = prev // rollback
+    console.error(e)
+  }
 }
 
 async function completeAndRemoveHabit(id) {
   const userId = currentUser.value?.id_utilizador || currentUser.value?.id
+
+  // Optimistic: instantly remove the task from local state so the UI updates immediately
+  const taskIndex = apiUserTasks.value.findIndex(t => t.id_tarefa === id)
+  const removedTask = taskIndex >= 0 ? apiUserTasks.value.splice(taskIndex, 1)[0] : null
+
+  showToast('Success', 'Task completed! Points awarded.')
+  window.dispatchEvent(new Event('habitCompleted'))
+
   try {
     await completeUserTask(userId, id, userStore.token)
-    showToast('Success', 'Task completed! Points awarded.', 'success')
-    window.dispatchEvent(new Event('habitCompleted'))
-    await userStore.fetchCurrentUser(userId)
-    await fetchUserTasks()
-  } catch(e) { console.error(e) }
+    // Refresh user points in the background — don't block UI
+    userStore.fetchCurrentUser(userId).catch(err => console.warn('fetchCurrentUser failed:', err))
+  } catch(e) {
+    console.error('Failed to complete task:', e)
+    // Rollback: restore the task if API call failed
+    if (removedTask && taskIndex >= 0) {
+      apiUserTasks.value.splice(taskIndex, 0, removedTask)
+    }
+    showToast('Error', 'Failed to complete task. Please try again.')
+  }
 }
 
 async function completeTimerHabit() {
@@ -814,13 +908,24 @@ async function completeTimerHabit() {
     timerInstance.value?.hide()
 
     const userId = userStore.currentUser?.id_utilizador || userStore.currentUser?.id
+
+    // Optimistic: remove from local state immediately
+    const taskIndex = apiUserTasks.value.findIndex(t => t.id_tarefa === id)
+    const removedTask = taskIndex >= 0 ? apiUserTasks.value.splice(taskIndex, 1)[0] : null
+
+    showToast('Success', 'Task completed! Points awarded.')
+    window.dispatchEvent(new Event('habitCompleted'))
+
     try {
       await completeUserTask(userId, id, userStore.token)
-      showToast('Success', 'Task completed! Points awarded.', 'success')
-      window.dispatchEvent(new Event('habitCompleted'))
-      await userStore.fetchCurrentUser(userId)
-      await fetchUserTasks()
-    } catch(e) { console.error(e) }
+      userStore.fetchCurrentUser(userId).catch(err => console.warn('fetchCurrentUser failed:', err))
+    } catch(e) {
+      console.error('Failed to complete timer task:', e)
+      if (removedTask && taskIndex >= 0) {
+        apiUserTasks.value.splice(taskIndex, 0, removedTask)
+      }
+      showToast('Error', 'Failed to complete task. Please try again.')
+    }
   }
 }
 
@@ -881,10 +986,14 @@ const formattedTime = computed(() => {
   return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
 })
 
-// Clean up timer interval on component unmount
+// Clean up timer interval and geolocation watch on component unmount
 onUnmounted(() => {
   if (timerIntervalId.value) {
     clearInterval(timerIntervalId.value)
+  }
+  if (geoWatchId.value !== null) {
+    navigator.geolocation.clearWatch(geoWatchId.value)
+    geoWatchId.value = null
   }
 })
 

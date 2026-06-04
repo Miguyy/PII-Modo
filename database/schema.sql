@@ -4,7 +4,7 @@ CREATE TABLE Utilizador (
     email VARCHAR(150) UNIQUE NOT NULL,
     hashed_password VARCHAR(60) NOT NULL,
     pontos INT DEFAULT 0,
-    nivel INT DEFAULT 1,
+    nivel INT DEFAULT 0,
     imagem_utilizador VARCHAR(255),
     data_criacao_conta DATETIME DEFAULT CURRENT_TIMESTAMP,
     tipo_utilizador ENUM('Client', 'Admin') DEFAULT 'Client'

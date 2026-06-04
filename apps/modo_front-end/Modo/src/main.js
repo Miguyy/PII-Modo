@@ -54,6 +54,10 @@ import {
   faStar, // ✨ Added: Maps to 'fa-solid fa-star'
   faDownload,
   faFilePdf,
+  faTimesCircle,
+  faExclamationTriangle,
+  faSun,
+  faMoon,
 } from '@fortawesome/free-solid-svg-icons'
 
 library.add(
@@ -99,7 +103,35 @@ library.add(
   faStar,
   faDownload,
   faFilePdf,
+  faTimesCircle,
+  faExclamationTriangle,
+  faSun,
+  faMoon,
 )
+
+const originalFetch = window.fetch
+window.fetch = async (...args) => {
+  const res = await originalFetch(...args)
+  const url = typeof args[0] === 'string' ? args[0] : args[0]?.url || ''
+  const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+  
+  if (
+    res.status === 401 && 
+    url.startsWith(backendUrl) && 
+    !url.includes('/users/login') && 
+    !url.includes('/users/register')
+  ) {
+    import('@/stores/userStore.js').then(({ useUserStore }) => {
+      const userStore = useUserStore()
+      userStore.logout()
+    })
+    import('@/router/index.js').then((module) => {
+      const router = module.default
+      router.push('/login')
+    })
+  }
+  return res
+}
 
 const app = createApp(App)
 app.component('FontAwesomeIcon', FontAwesomeIcon)

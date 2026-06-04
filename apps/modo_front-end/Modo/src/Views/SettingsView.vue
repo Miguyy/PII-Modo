@@ -325,7 +325,7 @@
   <Transition name="toast-slide">
     <div v-if="toast.visible" class="toast-notification" :class="toast.type">
       <div class="toast-icon">
-        {{ toast.type === 'error' ? '❌' : toast.type === 'warning' ? '⚠️' : '✅' }}
+        <FontAwesomeIcon :icon="toast.type === 'error' ? 'times-circle' : toast.type === 'warning' ? 'exclamation-triangle' : 'check-circle'" />
       </div>
       <div class="toast-content">
         <strong>{{ toast.title }}</strong>
@@ -476,65 +476,7 @@ function formatNotificationDate(dateStr) {
   )
 }
 
-// Check for newly unlocked decorations based on user level
-function checkDecorationUnlocks() {
-  const userId = user.value?.id
-  if (!userId) return
-
-  const level = Math.floor((user.value.points || 0) / 100)
-  const unlockedKey = `unlockedDecorations_${userId}`
-  const savedUnlocked = localStorage.getItem(unlockedKey)
-  let previouslyUnlocked = []
-
-  if (savedUnlocked) {
-    try {
-      previouslyUnlocked = JSON.parse(savedUnlocked)
-    } catch {
-      previouslyUnlocked = []
-    }
-  }
-
-  // Load decorations
-  const saved = localStorage.getItem('avatarDecorations')
-  let decorationsList = []
-  if (saved) {
-    try {
-      decorationsList = JSON.parse(saved)
-    } catch {
-      decorationsList = []
-    }
-  }
-
-  // Default decorations fallback
-  if (decorationsList.length === 0) {
-    decorationsList = [
-      { name: 'solarSystem', requiredLevel: 0 },
-      { name: 'garden', requiredLevel: 5 },
-      { name: 'olives', requiredLevel: 10 },
-      { name: 'cat', requiredLevel: 15 },
-      { name: 'summer', requiredLevel: 20 },
-      { name: 'zoo', requiredLevel: 25 },
-    ]
-  }
-
-  // Check for newly unlocked decorations
-  const newlyUnlocked = decorationsList.filter((d) => {
-    const requiredLevel = d.requiredLevel ?? 0
-    return level >= requiredLevel && !previouslyUnlocked.includes(d.name)
-  })
-
-  // Add notifications for newly unlocked decorations
-  newlyUnlocked.forEach((d) => {
-    addNotification(
-      '🎉 New Decoration Unlocked!',
-      `Congratulations! You've unlocked the "${d.name}" avatar decoration at Level ${d.requiredLevel ?? 0}!`,
-    )
-    previouslyUnlocked.push(d.name)
-  })
-
-  // Save updated unlocked list
-  localStorage.setItem(unlockedKey, JSON.stringify(previouslyUnlocked))
-}
+// Backend now handles unlocking decorations and creating persistent notifications.
 
 // Toast notification state
 const toast = ref({
@@ -746,21 +688,12 @@ onMounted(() => {
   if (user.value?.avatar) {
     profilePic.value = user.value.avatar
   }
-  // load notifications and check for unlocked decorations on mount
+  // load notifications
   loadNotifications()
   loadNotificationsEnabled()
-  checkDecorationUnlocks()
 })
 
-// Re-check unlocks when user points change
-watch(
-  () => user.value?.points,
-  (newPoints, oldPoints) => {
-    if (newPoints !== oldPoints && newPoints !== undefined) {
-      checkDecorationUnlocks()
-    }
-  },
-)
+// Re-check not needed as backend handles it
 
 // Handle profile picture upload
 const promptAvatar = () => {

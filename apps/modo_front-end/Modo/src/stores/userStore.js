@@ -195,7 +195,7 @@ export const useUserStore = defineStore('user', {
 
     async fetchCurrentUser(userId) {
       try {
-        const data = await getUserById(userId)
+        const data = await getUserById(userId, this.token)
         this.currentUser = this._normalizeUser(data)
         if (data.tipo_utilizador) {
           this.role = data.tipo_utilizador.toLowerCase()
@@ -232,8 +232,8 @@ export const useUserStore = defineStore('user', {
           payload.id_decoracao = updates.id_decoracao
         }
 
-        // FIXED: Passing null for the token slot so imageFile lands correctly
-        const data = await updateUser(this.currentUser.id_utilizador, payload, null, imageFile)
+        // Passing this.token so the request doesn't fail with 401
+        const data = await updateUser(this.currentUser.id_utilizador, payload, this.token, imageFile)
         const normalized = this._normalizeUser(data)
         this.currentUser = { ...this.currentUser, ...normalized }
         this._syncUsersList(this.currentUser)

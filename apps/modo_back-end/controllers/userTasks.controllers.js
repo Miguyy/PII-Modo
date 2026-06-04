@@ -6,7 +6,8 @@
 */
 
 // Import user tasks data
-import { UserTasks as UserTask, User, Task } from "../config/db.config.js";
+import { UserTasks as UserTask, User, Task, Habit, Notification, AvatarDecoration } from "../config/db.config.js";
+import { Op } from "sequelize";
 import {
   validationError,
   forbiddenError,
@@ -67,16 +68,38 @@ export const getAllUserTasks = async (req, res, next) => {
       offset,
     });
 
+    // Bulk fetch all Tasks and their parent Habits to avoid N+1 query delay
+    const taskIds = rows.map((ut) => ut.id_tarefa);
+    let tasksMap = new Map();
+    
+    if (taskIds.length > 0) {
+      const tasks = await Task.findAll({
+        where: { id_tarefa: taskIds },
+        include: [{ model: Habit, attributes: ['categoria'] }],
+      });
+      
+      for (const t of tasks) {
+        const taskJson = t.toJSON();
+        // Flatten categoria from the nested Habit association
+        if (taskJson.Habito) {
+          taskJson.categoria = taskJson.Habito.categoria ?? null;
+          delete taskJson.Habito;
+        }
+        tasksMap.set(taskJson.id_tarefa, taskJson);
+      }
+    }
+
     const response = [];
     for (const ut of rows) {
       const utJson = ut.toJSON();
-      const task = await Task.findByPk(utJson.id_tarefa);
-      if (habitId && (!task || task.toJSON().id_habito !== Number(habitId)))
+      const taskJson = tasksMap.get(utJson.id_tarefa) || null;
+      
+      if (habitId && (!taskJson || taskJson.id_habito !== Number(habitId)))
         continue;
 
       response.push({
         ...utJson,
-        task: task ? task.toJSON() : null,
+        task: taskJson,
         links: [
           {
             rel: "self",
@@ -180,6 +203,27 @@ export const assignTaskToUser = async (req, res, next) => {
     });
 
     if (existing) {
+      if (existing.estado_tarefa === "Completed") {
+        // Reactivate a previously completed task
+        await existing.update({
+          estado_tarefa: "Pending",
+          progresso: 0,
+          data_conclusao: null,
+          data_inicio: new Date(),
+        });
+        
+        return res.status(200).json({
+          ...existing.toJSON(),
+          links: [
+            {
+              rel: "self",
+              method: "GET",
+              href: `/users/${userId}/tasks/${resolvedTaskId}`,
+            },
+          ],
+        });
+      }
+
       return next(
         conflictError({ userTask: ["Task already assigned to user."] }),
       );
@@ -191,6 +235,7 @@ export const assignTaskToUser = async (req, res, next) => {
       progresso: 0,
       tarefa_ativa: true,
       estado_tarefa: "Pending",
+      data_inicio: new Date(),
     });
 
     // Include HATEOAS links as the response
@@ -253,8 +298,20 @@ export const assignHabitTasksToUser = async (req, res, next) => {
       const exists = await UserTask.findOne({
         where: { id_utilizador: Number(userId), id_tarefa: Number(tid) },
       });
+      
       if (exists) {
-        skipped.push(tid);
+        if (exists.estado_tarefa === "Completed") {
+          // Reactivate completed task
+          await exists.update({
+            estado_tarefa: "Pending",
+            progresso: 0,
+            data_conclusao: null,
+            data_inicio: new Date(),
+          });
+          created.push(exists.toJSON());
+        } else {
+          skipped.push(tid);
+        }
         continue;
       }
 
@@ -264,6 +321,7 @@ export const assignHabitTasksToUser = async (req, res, next) => {
         progresso: 0,
         tarefa_ativa: true,
         estado_tarefa: "Pending",
+        data_inicio: new Date(),
       });
       created.push(ut.toJSON());
     }
@@ -448,7 +506,53 @@ export const completeUserTask = async (req, res, next) => {
       data_conclusao: new Date(),
     });
 
-    // Include HATEOAS links in the response
+    // Award points concurrently before responding to prevent frontend race conditions
+    try {
+      const [task, user] = await Promise.all([
+        Task.findByPk(userTask.id_tarefa),
+        User.findByPk(userTask.id_utilizador),
+      ]);
+      const pontos = task ? (task.pontos_tarefa || 0) : 0;
+      if (pontos > 0 && user) {
+        const oldNivel = user.nivel || 0;
+        const newPontos = (user.pontos || 0) + pontos;
+        const newNivel = Math.floor(newPontos / 100);
+        await user.update({ 
+          pontos: newPontos,
+          nivel: newNivel
+        });
+        
+        if (newNivel > oldNivel) {
+          await Notification.create({
+            id_utilizador: user.id_utilizador,
+            tipo_notificacao: 'Level',
+            mensagem: `Congratulations! You've leveled up to Level ${newNivel}!`,
+          });
+          
+          const unlockedDecorations = await AvatarDecoration.findAll({
+            where: {
+              nivel_necessario: {
+                [Op.gt]: oldNivel,
+                [Op.lte]: newNivel
+              }
+            }
+          });
+          
+          for (const dec of unlockedDecorations) {
+            await Notification.create({
+              id_utilizador: user.id_utilizador,
+              tipo_notificacao: 'Avatar',
+              mensagem: `Congratulations! You've unlocked the "${dec.nome_decoracao}" avatar decoration!`,
+            });
+          }
+        }
+        
+        console.log(`[POINTS] User ${userTask.id_utilizador} +${pontos} pts (task ${userTask.id_tarefa}). Total: ${newPontos}, Level: ${newNivel}`);
+      }
+    } catch (err) {
+      console.error("[POINTS] Award failed:", err);
+    }
+
     res.status(200).json({
       ...userTask.toJSON(),
       links: [
