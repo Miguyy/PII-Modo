@@ -1,14 +1,18 @@
 <template>
   <div class="admin-panel">
     <NavBar />
-    <div class="container">
+
+    <div class="container mt-4">
       <div class="page-title">
         <h4>ADMIN PANEL</h4>
         <h1>&#x2022;</h1>
       </div>
     </div>
 
-    <div class="container">
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!--  USERS TABLE                                                    -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="container mb-5">
       <div
         class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3"
       >
@@ -32,11 +36,11 @@
               v-model="search"
               class="form-control form-control-sm border-start-0 search-input"
               placeholder="Search users..."
-              aria-label="Search users..."
+              @input="handleSearch"
             />
           </div>
           <div class="total-badge align-self-center">
-            Total: <strong>{{ users.length }}</strong>
+            Total: <strong>{{ userStore.usersMeta.total }}</strong>
           </div>
         </div>
       </div>
@@ -91,7 +95,9 @@
                 <td>{{ user.name }}</td>
                 <td>{{ user.points ?? '-' }}</td>
                 <td>{{ user.priority }}</td>
-                <td class="text-truncate" style="max-width: 140px">{{ user.email }}</td>
+                <td class="text-truncate" style="max-width: 140px" :title="user.email">
+                  {{ user.email }}
+                </td>
                 <td>{{ formatDate(user.createdAt) }}</td>
                 <td>
                   <button
@@ -116,20 +122,16 @@
             </tbody>
           </table>
         </div>
-
         <div class="card-footer d-flex justify-content-between align-items-center footer-clean">
-          <div class="d-flex align-items-center">
-            <div class="page-label">Page {{ pageLabel }}</div>
-          </div>
-
+          <div class="page-label">Page {{ pageLabel }}</div>
           <nav aria-label="Pagination">
             <ul class="pagination pagination-sm mb-0 d-flex gap-2">
-              <li class="page-item">
+              <li>
                 <button class="page-btn" :disabled="currentPage === 1" @click="prevPage">
                   Previous
                 </button>
               </li>
-              <li class="page-item">
+              <li>
                 <button class="page-btn" :disabled="currentPage === totalPages" @click="nextPage">
                   Next
                 </button>
@@ -138,9 +140,13 @@
           </nav>
         </div>
       </div>
+    </div>
 
-      <!-- Avatar Decorations Section -->
-      <div class="d-flex flex-row gap-3 align-items-center mb-3 mt-5">
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!--  DECORATIONS TABLE                                              -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="container mb-5">
+      <div class="d-flex flex-row gap-3 align-items-center mb-3">
         <div class="input-group input-group-sm search-group flex-grow-1">
           <span class="input-group-text bg-white border-end-0 search-icon">
             <svg
@@ -157,17 +163,15 @@
             </svg>
           </span>
           <input
-            v-model="search"
+            v-model="decorationSearch"
             class="form-control form-control-sm border-start-0 search-input"
             placeholder="Search decorations..."
-            aria-label="Search decorations..."
+            @input="handleDecorationSearch"
           />
         </div>
-
         <div class="total-badge flex-shrink-0 align-self-center">
-          Total: <strong>{{ decorations.length }}</strong>
+          Total: <strong>{{ decorationTotal }}</strong>
         </div>
-
         <button class="btn btn-add-decoration flex-shrink-0" @click="openAddDecorationModal">
           <i class="bi bi-plus-lg me-1"></i>Add
         </button>
@@ -181,26 +185,26 @@
                 <th style="width: 80px">Preview</th>
                 <th class="sortable" @click="toggleDecorationSort('name')">
                   Name
-                  <span class="sort-indicator" v-if="decorationSortKey === 'name'">{{
+                  <span class="sort-indicator" v-if="decorationSortKey === 'nome_decoracao'">{{
                     decorationSortDir === 'asc' ? '▲' : '▼'
                   }}</span>
                 </th>
                 <th
-                  style="width: 100px"
+                  style="width: 130px"
                   class="sortable"
                   @click="toggleDecorationSort('requiredLevel')"
                 >
                   Req. Level
-                  <span class="sort-indicator" v-if="decorationSortKey === 'requiredLevel'">{{
+                  <span class="sort-indicator" v-if="decorationSortKey === 'nivel_necessario'">{{
                     decorationSortDir === 'asc' ? '▲' : '▼'
                   }}</span>
                 </th>
-                <th style="width: 250px">Path</th>
+                <th style="width: 250px">Path / URL</th>
                 <th style="width: 120px">Actions</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="decoration in sortedDecorations" :key="decoration.name">
+              <tr v-for="decoration in pagedDecorations" :key="decoration.id">
                 <td>
                   <img :src="decoration.src" :alt="decoration.name" class="decoration-preview" />
                 </td>
@@ -208,7 +212,11 @@
                 <td>
                   <span class="level-badge">Lv. {{ decoration.requiredLevel ?? 0 }}</span>
                 </td>
-                <td class="text-muted text-truncate" style="max-width: 250px">
+                <td
+                  class="text-muted text-truncate"
+                  style="max-width: 250px"
+                  :title="decoration.src"
+                >
                   {{ decoration.src }}
                 </td>
                 <td>
@@ -221,63 +229,86 @@
                   </button>
                   <button
                     class="action-icon action-delete"
-                    @click="deleteDecoration(decoration.name)"
+                    @click="deleteDecorationHandler(decoration.id, decoration.name)"
                     title="Delete"
                   >
                     <i><FontAwesomeIcon icon="trash" class="bi bi-trash" /></i>
                   </button>
                 </td>
               </tr>
-              <tr v-if="decorations.length === 0">
-                <td colspan="5" class="text-center py-4 text-muted">No decorations found.</td>
+              <tr v-if="pagedDecorations.length === 0">
+                <td colspan="5" class="text-center py-4 text-muted">
+                  No decorations found matching criteria.
+                </td>
               </tr>
             </tbody>
           </table>
         </div>
-      </div>
-
-      <!-- CRUD habits -->
-      <section id="habit-management">
-        <div class="d-flex flex-row gap-3 align-items-center mb-3 mt-5">
-          <div style="max-width: 1100px; width: 100%; margin: 0 auto">
-            <div class="d-flex align-items-center justify-content-between gap-3">
-              <div class="d-flex align-items-center gap-3" style="flex: 1">
-                <div class="input-group input-group-sm search-group flex-grow-1">
-                  <span class="input-group-text bg-white border-end-0 search-icon">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      fill="#355D4C"
-                      viewBox="0 0 16 16"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85zm-5.242 1.156a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"
-                      />
-                    </svg>
-                  </span>
-                  <input
-                    v-model="habitSearch"
-                    class="form-control form-control-sm border-start-0 search-input"
-                    placeholder="Search habits..."
-                    aria-label="Search habits..."
-                  />
-                </div>
-
-                <div class="total-badge flex-shrink-0 align-self-center">
-                  Total: <strong>{{ filteredHabits.length }}</strong>
-                </div>
-
-                <button class="btn btn-add-decoration flex-shrink-0" @click="openAddHabitModal">
-                  <i class="bi bi-plus-lg me-1"></i>Add
+        <div class="card-footer d-flex justify-content-between align-items-center footer-clean">
+          <div class="page-label">Page {{ decorationPageLabel }}</div>
+          <nav aria-label="Decoration Pagination">
+            <ul class="pagination pagination-sm mb-0 d-flex gap-2">
+              <li>
+                <button
+                  class="page-btn"
+                  :disabled="decorationCurrentPage === 1"
+                  @click="prevDecorationPage"
+                >
+                  Previous
                 </button>
-              </div>
-            </div>
+              </li>
+              <li>
+                <button
+                  class="page-btn"
+                  :disabled="decorationCurrentPage === decorationTotalPages"
+                  @click="nextDecorationPage"
+                >
+                  Next
+                </button>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!--  HABITS TABLE                                                   -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="container mb-5">
+      <section id="habit-management">
+        <div class="d-flex flex-row gap-3 align-items-center mb-3">
+          <div class="input-group input-group-sm search-group flex-grow-1">
+            <span class="input-group-text bg-white border-end-0 search-icon">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="#355D4C"
+                viewBox="0 0 16 16"
+                aria-hidden="true"
+              >
+                <path
+                  d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85zm-5.242 1.156a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"
+                />
+              </svg>
+            </span>
+            <input
+              v-model="habitSearch"
+              class="form-control form-control-sm border-start-0 search-input"
+              placeholder="Search habits..."
+              @input="handleHabitSearch"
+            />
           </div>
+          <div class="total-badge flex-shrink-0 align-self-center">
+            Total: <strong>{{ totalHabitCount }}</strong>
+          </div>
+          <button class="btn btn-add-decoration flex-shrink-0" @click="openAddHabitModal">
+            <i class="bi bi-plus-lg me-1"></i>Add
+          </button>
         </div>
 
-        <div class="card shadow-sm border-0 mb-5">
+        <div class="card shadow-sm border-0">
           <div class="table-responsive">
             <table class="table table-hover align-middle mb-0 admin-table">
               <thead>
@@ -300,29 +331,11 @@
                       habitSortDir === 'asc' ? '▲' : '▼'
                     }}</span>
                   </th>
-                  <th style="width: 100px" class="sortable" @click="toggleHabitSort('type')">
-                    Type
-                    <span class="sort-indicator" v-if="habitSortKey === 'type'">{{
-                      habitSortDir === 'asc' ? '▲' : '▼'
-                    }}</span>
-                  </th>
-                  <th style="width: 100px" class="sortable" @click="toggleHabitSort('priority')">
-                    Priority
-                    <span class="sort-indicator" v-if="habitSortKey === 'priority'">{{
-                      habitSortDir === 'asc' ? '▲' : '▼'
-                    }}</span>
-                  </th>
-                  <th style="width: 160px" class="sortable" @click="toggleHabitSort('goal')">
-                    Goal Details
-                    <span class="sort-indicator" v-if="habitSortKey === 'goal'">{{
-                      habitSortDir === 'asc' ? '▲' : '▼'
-                    }}</span>
-                  </th>
                   <th style="width: 120px">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="habit in filteredHabits" :key="habit.id">
+                <tr v-for="habit in paginatedHabitsList" :key="habit.id">
                   <td class="text-muted small">{{ habit.id }}</td>
                   <td>
                     <span class="d-block fw-semibold">{{ habit.title }}</span>
@@ -331,7 +344,7 @@
                       style="max-width: 200px"
                       :title="habit.description"
                     >
-                      {{ habit.description || 'No description' }}
+                      {{ habit.description || 'No description provided' }}
                     </small>
                   </td>
                   <td>
@@ -339,38 +352,6 @@
                       habit.category
                     }}</span>
                     <span v-else class="text-muted small">-</span>
-                  </td>
-                  <td>
-                    <span class="badge bg-light text-dark border text-capitalize">{{
-                      habit.type
-                    }}</span>
-                  </td>
-                  <td>
-                    <span
-                      :class="{
-                        'badge bg-success-subtle text-success text-capitalize':
-                          habit.priority === 'low',
-                        'badge bg-warning-subtle text-warning-emphasis text-capitalize':
-                          habit.priority === 'medium',
-                        'badge bg-danger-subtle text-danger text-capitalize':
-                          habit.priority === 'high',
-                      }"
-                      >{{ habit.priority }}</span
-                    >
-                  </td>
-                  <td class="small text-muted">
-                    <div v-if="habit.type === 'check'">
-                      <i class="bi bi-check2-square me-1"></i> Simple Check
-                    </div>
-                    <div v-else-if="habit.type === 'count'">
-                      <i class="bi bi-plus-slash-minus me-1"></i> Target:
-                      <strong>{{ habit.target_count }}</strong> <br />
-                      <span class="x-small">(Inc: {{ habit.increment_value }})</span>
-                    </div>
-                    <div v-else-if="habit.type === 'time'">
-                      <i class="bi bi-stopwatch me-1"></i> Target:
-                      <strong>{{ habit.target_minutes }} min</strong>
-                    </div>
                   </td>
                   <td>
                     <button
@@ -389,20 +370,241 @@
                     </button>
                   </td>
                 </tr>
-                <tr v-if="filteredHabits.length === 0">
-                  <td colspan="7" class="text-center py-4 text-muted">
+                <tr v-if="paginatedHabitsList.length === 0">
+                  <td colspan="4" class="text-center py-4 text-muted">
                     No habits registered in the system.
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
+          <div class="card-footer d-flex justify-content-between align-items-center footer-clean">
+            <div class="page-label">Page {{ habitPageLabel }}</div>
+            <nav aria-label="Habit Pagination">
+              <ul class="pagination pagination-sm mb-0 d-flex gap-2">
+                <li>
+                  <button
+                    class="page-btn"
+                    :disabled="habitCurrentPage === 1"
+                    @click="prevHabitPage"
+                  >
+                    Previous
+                  </button>
+                </li>
+                <li>
+                  <button
+                    class="page-btn"
+                    :disabled="habitCurrentPage === habitTotalPages"
+                    @click="nextHabitPage"
+                  >
+                    Next
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!--  TASKS TABLE                                                    -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="container mb-5">
+      <section id="task-management">
+        <div class="d-flex flex-row gap-3 align-items-center mb-3">
+          <div class="input-group input-group-sm search-group flex-grow-1">
+            <span class="input-group-text bg-white border-end-0 search-icon">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="#355D4C"
+                viewBox="0 0 16 16"
+                aria-hidden="true"
+              >
+                <path
+                  d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85zm-5.242 1.156a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"
+                />
+              </svg>
+            </span>
+            <input
+              v-model="taskSearch"
+              class="form-control form-control-sm border-start-0 search-input"
+              placeholder="Search tasks..."
+              @input="handleTaskSearch"
+            />
+          </div>
+          <div class="total-badge flex-shrink-0 align-self-center">
+            Total: <strong>{{ totalTaskCount }}</strong>
+          </div>
+          <button class="btn btn-add-decoration flex-shrink-0" @click="openAddTaskModal">
+            <i class="bi bi-plus-lg me-1"></i>Add
+          </button>
+        </div>
+
+        <div class="card shadow-sm border-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 admin-table">
+              <thead>
+                <tr>
+                  <th style="width: 70px" class="sortable" @click="toggleTaskSort('id')">
+                    ID
+                    <span class="sort-indicator" v-if="taskSortKey === 'id'">{{
+                      taskSortDir === 'asc' ? '▲' : '▼'
+                    }}</span>
+                  </th>
+                  <th class="sortable" @click="toggleTaskSort('title')">
+                    Title
+                    <span class="sort-indicator" v-if="taskSortKey === 'title'">{{
+                      taskSortDir === 'asc' ? '▲' : '▼'
+                    }}</span>
+                  </th>
+                  <th style="width: 90px" class="sortable" @click="toggleTaskSort('points')">
+                    Points
+                    <span class="sort-indicator" v-if="taskSortKey === 'points'">{{
+                      taskSortDir === 'asc' ? '▲' : '▼'
+                    }}</span>
+                  </th>
+                  <th style="width: 90px" class="sortable" @click="toggleTaskSort('type')">
+                    Type
+                    <span class="sort-indicator" v-if="taskSortKey === 'type'">{{
+                      taskSortDir === 'asc' ? '▲' : '▼'
+                    }}</span>
+                  </th>
+                  <th style="width: 95px" class="sortable" @click="toggleTaskSort('priority')">
+                    Priority
+                    <span class="sort-indicator" v-if="taskSortKey === 'priority'">{{
+                      taskSortDir === 'asc' ? '▲' : '▼'
+                    }}</span>
+                  </th>
+                  <th style="width: 120px">Task Details</th>
+                  <th style="width: 90px">Location</th>
+                  <!-- NEW: Impacts column -->
+                  <th style="width: 200px">Impacts</th>
+                  <th style="width: 120px">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="task in paginatedTasksList" :key="task.id">
+                  <td class="text-muted small">{{ task.id }}</td>
+                  <td>
+                    <span class="d-block fw-semibold">{{ task.title }}</span>
+                  </td>
+                  <td>{{ task.points ?? 0 }} pts</td>
+                  <td>
+                    <span class="badge bg-light text-dark border text-capitalize">{{
+                      task.type || '-'
+                    }}</span>
+                  </td>
+                  <td>
+                    <span
+                      :class="{
+                        'badge bg-success-subtle text-success text-capitalize':
+                          task.priority === 'Low',
+                        'badge bg-warning-subtle text-warning-emphasis text-capitalize':
+                          task.priority === 'Medium',
+                        'badge bg-danger-subtle text-danger text-capitalize':
+                          task.priority === 'High',
+                      }"
+                      >{{ task.priority || '-' }}</span
+                    >
+                  </td>
+                  <td>
+                    <span
+                      v-if="task.type === 'Timer' && task.duracao_temporizador"
+                      class="text-muted small"
+                      >⏱ {{ task.duracao_temporizador }}s</span
+                    >
+                    <span
+                      v-else-if="task.type === 'Count' && task.quantidade_necessaria"
+                      class="text-muted small"
+                      >🔢 {{ task.quantidade_necessaria }}x</span
+                    >
+                    <span v-else-if="task.type === 'Check'" class="text-muted small">✔ Check</span>
+                    <span v-else class="text-muted small">-</span>
+                  </td>
+                  <td>
+                    <span
+                      v-if="task.location"
+                      :class="{
+                        'badge bg-info-subtle text-info border': task.location === 'Inside',
+                        'badge bg-secondary-subtle text-secondary border':
+                          task.location === 'Outside',
+                      }"
+                      >{{ task.location }}</span
+                    >
+                    <span v-else class="text-muted small">-</span>
+                  </td>
+                  <!-- Impacts cell: shows badges for each impact type -->
+                  <td>
+                    <template v-if="impactsByTask[task.id] && impactsByTask[task.id].length">
+                      <span
+                        v-for="imp in impactsByTask[task.id]"
+                        :key="imp.id_impacto"
+                        class="badge me-1 mb-1 impact-badge"
+                        :class="impactBadgeClass(imp.tipo_impacto)"
+                        :title="`${imp.valor_por_unidade} ${imp.unidade}`"
+                      >
+                        {{ impactIcon(imp.tipo_impacto) }} {{ imp.tipo_impacto }}
+                      </span>
+                    </template>
+                    <span v-else class="text-muted small">-</span>
+                  </td>
+                  <td>
+                    <button
+                      class="action-icon action-edit me-2"
+                      @click="openEditTaskModal(task)"
+                      title="Edit"
+                    >
+                      <i class="bi bi-pencil" aria-hidden="true"></i>
+                    </button>
+                    <button
+                      class="action-icon action-delete"
+                      @click="handleDeleteTask(task.id, task.title)"
+                      title="Delete"
+                    >
+                      <i><FontAwesomeIcon icon="trash" class="bi bi-trash" /></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr v-if="paginatedTasksList.length === 0">
+                  <td colspan="9" class="text-center py-4 text-muted">
+                    No tasks registered in the system.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="card-footer d-flex justify-content-between align-items-center footer-clean">
+            <div class="page-label">Page {{ taskPageLabel }}</div>
+            <nav aria-label="Task Pagination">
+              <ul class="pagination pagination-sm mb-0 d-flex gap-2">
+                <li>
+                  <button class="page-btn" :disabled="taskCurrentPage === 1" @click="prevTaskPage">
+                    Previous
+                  </button>
+                </li>
+                <li>
+                  <button
+                    class="page-btn"
+                    :disabled="taskCurrentPage === taskTotalPages"
+                    @click="nextTaskPage"
+                  >
+                    Next
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          </div>
         </div>
       </section>
     </div>
   </div>
 
-  <!-- Edit User Modal -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!--  USER EDIT MODAL                                               -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
   <div v-if="modalVisible" class="custom-modal-backdrop">
     <div class="modal-panel">
       <h5 class="mb-3">Edit user</h5>
@@ -422,12 +624,11 @@
         <div class="col">
           <label class="form-label">Priority</label>
           <select v-model="editingUser.priority" class="form-select">
-            <option value="1">User</option>
-            <option value="2">Admin</option>
+            <option value="Client">Client</option>
+            <option value="Admin">Admin</option>
           </select>
         </div>
       </div>
-
       <div class="d-flex justify-content-end gap-2 mt-3">
         <button class="btn btn-outline-secondary" @click="cancelEdit">Cancel</button>
         <button class="btn btn-success" @click="confirmEdit">Save</button>
@@ -435,18 +636,15 @@
     </div>
   </div>
 
-  <!-- Edit/Add Decoration Modal -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!--  DECORATION MODAL                                              -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
   <div v-if="decorationModalVisible" class="custom-modal-backdrop">
     <div class="modal-panel">
       <h5 class="mb-3">{{ isNewDecoration ? 'Add Decoration' : 'Edit Decoration' }}</h5>
       <div class="mb-3">
         <label class="form-label">Name</label>
-        <input
-          v-model="editingDecoration.name"
-          class="form-control"
-          :disabled="!isNewDecoration"
-          placeholder="e.g., rainbow"
-        />
+        <input v-model="editingDecoration.name" class="form-control" placeholder="e.g., rainbow" />
       </div>
       <div class="mb-3">
         <label class="form-label">Required Level</label>
@@ -458,34 +656,32 @@
           step="5"
           placeholder="0"
         />
-        <small class="text-muted"
-          >Users need this level to equip the decoration (recommended: multiples of 5)</small
-        >
+        <small class="text-muted">Users need this level to equip the decoration.</small>
       </div>
       <div class="mb-3">
-        <label class="form-label">Choose Image</label>
-        <div class="file-input-wrapper">
-          <input
-            type="file"
-            ref="decorationFileInput"
-            accept="image/*"
-            class="form-control"
-            @change="handleDecorationFileUpload"
-          />
-        </div>
-        <small class="text-muted mt-1 d-block"
-          >Current: {{ editingDecoration.src || 'No image selected' }}</small
+        <label class="form-label">Choose Image File</label>
+        <input
+          type="file"
+          ref="decorationFileInput"
+          accept="image/*"
+          class="form-control"
+          @change="handleDecorationFileUpload"
+        />
+        <small class="text-muted mt-1 d-block" v-if="!selectedFile && editingDecoration.src"
+          >Current URL: {{ editingDecoration.src }}</small
+        >
+        <small class="text-muted mt-1 d-block" v-else-if="selectedFile"
+          >Selected: {{ selectedFile.name }}</small
         >
       </div>
-      <div v-if="editingDecoration.src" class="mb-3 text-center">
+      <div v-if="imagePreviewUrl" class="mb-3 text-center">
         <label class="form-label d-block">Preview</label>
         <img
-          :src="editingDecoration.src"
+          :src="imagePreviewUrl"
           :alt="editingDecoration.name"
-          class="decoration-modal-preview"
+          style="max-width: 120px; max-height: 120px; object-fit: contain"
         />
       </div>
-
       <div class="d-flex justify-content-end gap-2 mt-3">
         <button class="btn btn-outline-secondary" @click="cancelDecorationEdit">Cancel</button>
         <button class="btn btn-success" @click="saveDecoration">
@@ -495,13 +691,14 @@
     </div>
   </div>
 
-  <!-- CRUD habits (moved into container above) -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!--  HABIT MODAL                                                    -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
   <div v-if="habitModalVisible" class="custom-modal-backdrop">
     <div class="modal-panel" style="max-width: 500px; width: 100%">
       <h5 class="mb-3 fw-bold" style="color: #355d4c">
         {{ isNewHabit ? 'Create New Habit' : 'Edit Habit Settings' }}
       </h5>
-
       <div class="mb-3">
         <label class="form-label">Habit Title</label>
         <input
@@ -510,9 +707,8 @@
           placeholder="e.g., Exercise, Read books..."
         />
       </div>
-
       <div class="row mb-3">
-        <div class="col shadow-none">
+        <div class="col">
           <label class="form-label">Category</label>
           <input
             v-model="editingHabit.category"
@@ -529,64 +725,6 @@
           />
         </div>
       </div>
-
-      <div class="row mb-3">
-        <div class="col shadow-none">
-          <label class="form-label">Type</label>
-          <select v-model="editingHabit.type" class="form-select" :disabled="!isNewHabit">
-            <option value="check">Check (Simple)</option>
-            <option value="count">Count (Counter)</option>
-            <option value="time">Time (Timer)</option>
-          </select>
-        </div>
-        <div class="col">
-          <label class="form-label">Priority</label>
-          <select v-model="editingHabit.priority" class="form-select">
-            <option value="low">Low (+5 pts)</option>
-            <option value="medium">Medium (+10 pts)</option>
-            <option value="high">High (+15 pts)</option>
-          </select>
-        </div>
-      </div>
-
-      <div v-if="editingHabit.type === 'count'" class="card p-3 bg-light border-0 mb-3 text-dark">
-        <div class="row">
-          <div class="col">
-            <label class="form-label fw-semibold">Target Count</label>
-            <input
-              type="number"
-              v-model.number="editingHabit.target_count"
-              class="form-control"
-              min="1"
-              placeholder="e.g., 10"
-            />
-          </div>
-          <div class="col">
-            <label class="form-label fw-semibold">Increment Value</label>
-            <input
-              type="number"
-              v-model.number="editingHabit.increment_value"
-              class="form-control"
-              min="1"
-              placeholder="1"
-            />
-          </div>
-        </div>
-      </div>
-
-      <div v-if="editingHabit.type === 'time'" class="card p-3 bg-light border-0 mb-3 text-dark">
-        <div>
-          <label class="form-label fw-semibold">Target Minutes</label>
-          <input
-            type="number"
-            v-model.number="editingHabit.target_minutes"
-            class="form-control"
-            min="1"
-            placeholder="e.g., 30"
-          />
-        </div>
-      </div>
-
       <div class="d-flex justify-content-end gap-2 mt-4">
         <button class="btn btn-outline-secondary" @click="habitModalVisible = false">Cancel</button>
         <button
@@ -600,14 +738,225 @@
     </div>
   </div>
 
-  <!-- Toast notification -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!--  TASK MODAL                                                     -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div v-if="taskModalVisible" class="custom-modal-backdrop">
+    <div class="modal-panel" style="max-width: 600px; width: 100%">
+      <h5 class="mb-3 fw-bold" style="color: #355d4c">
+        {{ isNewTask ? 'Create New Task' : 'Edit Task Settings' }}
+      </h5>
+
+      <div class="mb-3">
+        <label class="form-label">Task Title <span class="text-danger">*</span></label>
+        <input
+          v-model="editingTask.title"
+          class="form-control"
+          placeholder="e.g., Morning Run..."
+        />
+      </div>
+
+      <div class="row mb-3">
+        <div class="col">
+          <!-- AUTO-POINTS: selecting priority fills in the default points value -->
+          <label class="form-label">Priority <span class="text-danger">*</span></label>
+          <select v-model="editingTask.priority" class="form-select" @change="applyDefaultPoints">
+            <option value="">-- Select --</option>
+            <option value="Low">Low (5 pts)</option>
+            <option value="Medium">Medium (10 pts)</option>
+            <option value="High">High (15 pts)</option>
+          </select>
+        </div>
+        <div class="col">
+          <label class="form-label"
+            >Task Points <small class="text-muted">(auto-set by priority)</small></label
+          >
+          <input type="number" v-model.number="editingTask.points" class="form-control" min="0" />
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col">
+          <label class="form-label">Task Details <span class="text-danger">*</span></label>
+          <select v-model="editingTask.tipo_tarefa" class="form-select">
+            <option value="">-- Select --</option>
+            <option value="Check">Check</option>
+            <option value="Timer">Timer</option>
+            <option value="Count">Count</option>
+          </select>
+        </div>
+        <div class="col">
+          <label class="form-label">Location <span class="text-danger">*</span></label>
+          <select v-model="editingTask.localizacao_tarefa" class="form-select">
+            <option value="">-- Select --</option>
+            <option value="Inside">Inside</option>
+            <option value="Outside">Outside</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="mb-3" v-if="editingTask.tipo_tarefa === 'Timer'">
+        <label class="form-label"
+          >Timer Duration (seconds) <span class="text-danger">*</span></label
+        >
+        <input
+          type="number"
+          v-model.number="editingTask.duracao_temporizador"
+          class="form-control"
+          min="1"
+          placeholder="e.g., 300"
+        />
+      </div>
+
+      <div class="mb-3" v-if="editingTask.tipo_tarefa === 'Count'">
+        <label class="form-label">Required Count <span class="text-danger">*</span></label>
+        <input
+          type="number"
+          v-model.number="editingTask.quantidade_necessaria"
+          class="form-control"
+          min="1"
+          placeholder="e.g., 10"
+        />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label"
+          >Assign to Habit <span class="text-muted small">(optional)</span></label
+        >
+        <select v-model="editingTask.id_habito" class="form-select">
+          <option :value="null">-- None --</option>
+          <option
+            v-for="habit in habitStore.habits"
+            :key="habit.id_habito"
+            :value="habit.id_habito"
+          >
+            {{ habit.nome_habito || habit.title }}
+          </option>
+        </select>
+      </div>
+
+      <!-- ── IMPACTS SECTION (only shown when editing an existing task) ── -->
+      <div v-if="!isNewTask" class="mb-3">
+        <hr class="my-3" />
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <label class="form-label mb-0 fw-semibold">Impacts</label>
+          <button
+            class="btn btn-sm btn-outline-success"
+            style="font-size: 0.75rem"
+            @click="showAddImpact = !showAddImpact"
+          >
+            <i class="bi bi-plus-lg me-1"></i>{{ showAddImpact ? 'Cancel' : 'Add Impact' }}
+          </button>
+        </div>
+
+        <!-- Add impact inline form -->
+        <div
+          v-if="showAddImpact"
+          class="impact-form p-3 rounded mb-3"
+          style="background: #f8fffe; border: 1px solid #d4edda"
+        >
+          <div class="row g-2 mb-2">
+            <div class="col">
+              <label class="form-label form-label-sm"
+                >Type <span class="text-danger">*</span></label
+              >
+              <select v-model="newImpact.tipo_impacto" class="form-select form-select-sm">
+                <option value="">-- Select --</option>
+                <option value="Water">💧 Water</option>
+                <option value="Energy">⚡ Energy</option>
+                <option value="Residuals">♻️ Residuals</option>
+                <option value="Mobility">🚗 Mobility</option>
+                <option value="Emissions">🌫️ Emissions</option>
+              </select>
+            </div>
+            <div class="col">
+              <label class="form-label form-label-sm"
+                >Value <span class="text-danger">*</span></label
+              >
+              <input
+                type="number"
+                v-model.number="newImpact.valor_por_unidade"
+                class="form-control form-control-sm"
+                min="0.01"
+                step="0.01"
+                placeholder="e.g., 2.5"
+              />
+            </div>
+            <div class="col">
+              <label class="form-label form-label-sm"
+                >Unit <span class="text-danger">*</span></label
+              >
+              <select v-model="newImpact.unidade" class="form-select form-select-sm">
+                <option value="">-- Select --</option>
+                <option value="Litters">Litters</option>
+                <option value="kWh">kWh</option>
+                <option value="kg">kg</option>
+                <option value="km">km</option>
+                <option value="kg CO2e">kg CO2e</option>
+              </select>
+            </div>
+          </div>
+          <button
+            class="btn btn-sm btn-success w-100"
+            @click="addImpactToTask"
+            :disabled="impactSaving"
+            style="background-color: #355d4c; border-color: #355d4c"
+          >
+            {{ impactSaving ? 'Saving...' : 'Save Impact' }}
+          </button>
+        </div>
+
+        <!-- Current impacts list -->
+        <div v-if="taskImpactsEditing.length">
+          <div
+            v-for="imp in taskImpactsEditing"
+            :key="imp.id_impacto"
+            class="d-flex justify-content-between align-items-center py-1 px-2 rounded mb-1"
+            style="background: #f8f9fa; border: 1px solid #e9ecef"
+          >
+            <span>
+              <span class="badge me-2 impact-badge" :class="impactBadgeClass(imp.tipo_impacto)"
+                >{{ impactIcon(imp.tipo_impacto) }} {{ imp.tipo_impacto }}</span
+              >
+              <span class="text-muted small">{{ imp.valor_por_unidade }} {{ imp.unidade }}</span>
+            </span>
+            <button
+              class="btn btn-sm btn-link text-danger p-0"
+              @click="removeImpactFromTask(imp.id_impacto)"
+              title="Delete impact"
+            >
+              <i><FontAwesomeIcon icon="trash" /></i>
+            </button>
+          </div>
+        </div>
+        <div v-else class="text-muted small fst-italic">No impacts assigned to this task yet.</div>
+      </div>
+
+      <div class="d-flex justify-content-end gap-2 mt-4">
+        <button class="btn btn-outline-secondary" @click="closeTaskModal">Cancel</button>
+        <button
+          class="btn btn-success"
+          @click="saveTask"
+          style="background-color: #355d4c; border-color: #355d4c"
+        >
+          {{ isNewTask ? 'Create Task' : 'Save Changes' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!--  TOAST                                                          -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
   <Transition name="toast-slide">
     <div v-if="toast.visible" class="toast-notification">
       <div
         class="toast-icon"
-        :style="{ color: toast.title === 'User deleted' ? '#b4554d' : '#00cc66' }"
+        :style="{
+          color: toast.title.includes('deleted') || toast.title === 'Error' ? '#b4554d' : '#00cc66',
+        }"
       >
-        {{ toast.title === 'User deleted' ? '🗑️' : '✅' }}
+        {{ toast.title.includes('deleted') || toast.title === 'Error' ? '🗑️' : '✅' }}
       </div>
       <div class="toast-content">
         <strong>{{ toast.title }}</strong>
@@ -622,242 +971,166 @@ import { ref, computed, onMounted } from 'vue'
 import NavBar from '../Components/NavBar.vue'
 import { useUserStore } from '@/stores/userStore'
 import { useHabitStore } from '@/stores/habitStore'
-import { updateUser as apiUpdateUser, updateHabit as apiUpdateHabit } from '@/api/modoApi'
+import { updateUser as apiUpdateUser } from '../api/services/users.services.js'
+import {
+  createHabit as apiCreateHabit,
+  updateHabit as apiUpdateHabit,
+  deleteHabit as apiDeleteHabit,
+} from '../api/services/habits.services.js'
+import {
+  createTask as apiCreateTask,
+  updateTask as apiUpdateTask,
+  deleteTask as apiDeleteTask,
+} from '../api/services/tasks.services.js'
+import {
+  getAllImpacts,
+  createImpact as apiCreateImpact,
+  deleteImpact as apiDeleteImpact,
+} from '../api/services/impacts.services.js'
+import {
+  getAllDecorations,
+  createDecoration,
+  updateDecoration,
+  deleteDecoration,
+} from '../api/services/decorations.services.js'
 
 const userStore = useUserStore()
 const habitStore = useHabitStore()
 
 const search = ref('')
-const perPage = ref(5)
-const currentPage = ref(1)
+const decorationSearch = ref('')
 const habitSearch = ref('')
+const taskSearch = ref('')
 
-// Habit sorting
-const habitSortKey = ref('id')
-const habitSortDir = ref('asc')
+const perPage = ref(5)
+let debounceTimer = null
+let decorationDebounceTimer = null
+let habitDebounceTimer = null
+let taskDebounceTimer = null
 
-function toggleHabitSort(key) {
-  if (habitSortKey.value === key) {
-    habitSortDir.value = habitSortDir.value === 'asc' ? 'desc' : 'asc'
-  } else {
-    habitSortKey.value = key
-    habitSortDir.value = 'asc'
+// ═══════════════════════════════════════════════════════════════════════
+//  IMPACTS — global lookup map { taskId → [impacts] }
+// ═══════════════════════════════════════════════════════════════════════
+// Fetched once on mount via GET /impacts (returns all), then grouped.
+const allImpacts = ref([])
+
+const impactsByTask = computed(() => {
+  const map = {}
+  for (const imp of allImpacts.value) {
+    const tid = imp.id_tarefa
+    if (!map[tid]) map[tid] = []
+    map[tid].push(imp)
   }
-}
-
-const filteredHabits = computed(() => {
-  const q = (habitSearch.value || '').trim().toLowerCase()
-  let list = (habitStore.habits || []).slice()
-  if (q) {
-    list = list.filter((h) => {
-      const title = (h.title || '').toString().toLowerCase()
-      const desc = (h.description || '').toString().toLowerCase()
-      const cat = (h.category || '').toString().toLowerCase()
-      return title.includes(q) || desc.includes(q) || cat.includes(q)
-    })
-  }
-
-  // sort
-  const key = habitSortKey.value
-  const dir = habitSortDir.value === 'asc' ? 1 : -1
-
-  list.sort((a, b) => {
-    const va = a == null ? '' : a[key]
-    const vb = b == null ? '' : b[key]
-
-    if (key === 'id') {
-      const na = Number(va) || 0
-      const nb = Number(vb) || 0
-      return (na - nb) * dir
-    }
-
-    if (key === 'goal') {
-      const goalValue = (h) => {
-        if (!h) return ''
-        if (h.type === 'check') return 'check'
-        if (h.type === 'count') return `count:${h.target_count || 0}`
-        if (h.type === 'time') return `time:${h.target_minutes || 0}`
-        return ''
-      }
-      const ga = goalValue(a).toString().toLowerCase()
-      const gb = goalValue(b).toString().toLowerCase()
-      if (ga < gb) return -1 * dir
-      if (ga > gb) return 1 * dir
-      return 0
-    }
-
-    const sa = (va || '').toString().toLowerCase()
-    const sb = (vb || '').toString().toLowerCase()
-    if (sa < sb) return -1 * dir
-    if (sa > sb) return 1 * dir
-    return 0
-  })
-
-  return list
+  return map
 })
 
-// Default avatar decorations with level requirements (every 5 levels unlocks a new one)
-const defaultDecorations = [
-  { name: 'solarSystem', src: '/src/images/avatar_decoration/solarSystem.png', requiredLevel: 0 },
-  { name: 'garden', src: '/src/images/avatar_decoration/garden.png', requiredLevel: 5 },
-  { name: 'olives', src: '/src/images/avatar_decoration/olives.png', requiredLevel: 10 },
-  { name: 'cat', src: '/src/images/avatar_decoration/cat.png', requiredLevel: 15 },
-  { name: 'summer', src: '/src/images/avatar_decoration/summer.png', requiredLevel: 20 },
-  { name: 'zoo', src: '/src/images/avatar_decoration/zoo.png', requiredLevel: 25 },
-]
-
-// Load decorations from localStorage or use defaults
-function loadDecorations() {
-  const saved = localStorage.getItem('avatarDecorations')
-  if (saved) {
-    try {
-      return JSON.parse(saved)
-    } catch {
-      return [...defaultDecorations]
-    }
-  }
-  return [...defaultDecorations]
-}
-
-function saveDecorations() {
-  localStorage.setItem('avatarDecorations', JSON.stringify(decorations.value))
-}
-
-// Avatar decorations data
-const decorations = ref(loadDecorations())
-
-// Decoration modal state
-const decorationModalVisible = ref(false)
-const editingDecoration = ref(null)
-const isNewDecoration = ref(false)
-const decorationFileInput = ref(null)
-
-// Decoration sorting
-const decorationSortKey = ref('name')
-const decorationSortDir = ref('asc')
-
-const sortedDecorations = computed(() => {
-  const list = [...decorations.value]
-  const key = decorationSortKey.value
-  const dir = decorationSortDir.value === 'asc' ? 1 : -1
-
-  list.sort((a, b) => {
-    // Handle numeric sorting for requiredLevel
-    if (key === 'requiredLevel') {
-      const va = Number(a[key]) || 0
-      const vb = Number(b[key]) || 0
-      return (va - vb) * dir
-    }
-    const va = (a[key] || '').toString().toLowerCase()
-    const vb = (b[key] || '').toString().toLowerCase()
-    if (va < vb) return -1 * dir
-    if (va > vb) return 1 * dir
-    return 0
-  })
-
-  return list
-})
-
-function toggleDecorationSort(key) {
-  if (decorationSortKey.value === key) {
-    decorationSortDir.value = decorationSortDir.value === 'asc' ? 'desc' : 'asc'
-  } else {
-    decorationSortKey.value = key
-    decorationSortDir.value = 'asc'
+async function syncImpacts() {
+  try {
+    const raw = await getAllImpacts(userStore.token)
+    allImpacts.value = Array.isArray(raw) ? raw : raw?.data || []
+  } catch (err) {
+    console.error('Failed to load impacts:', err)
   }
 }
 
-// Sorting state: which key and direction ('asc'|'desc')
+function impactBadgeClass(tipo) {
+  return {
+    'bg-primary-subtle text-primary': tipo === 'Water',
+    'bg-warning-subtle text-warning-emphasis': tipo === 'Energy',
+    'bg-success-subtle text-success': tipo === 'Residuals',
+    'bg-info-subtle text-info': tipo === 'Mobility',
+    'bg-secondary-subtle text-secondary': tipo === 'Emissions',
+  }
+}
+
+function impactIcon(tipo) {
+  const icons = { Water: '💧', Energy: '⚡', Residuals: '♻️', Mobility: '🚗', Emissions: '🌫️' }
+  return icons[tipo] || '•'
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  USERS ENGINE
+// ═══════════════════════════════════════════════════════════════════════
 const sortKey = ref('id')
 const sortDir = ref('asc')
-
-/*
-  `users` computed now:
-  - reads users from the store
-  - applies the search filter (name/email)
-  - sorts by `sortKey` using `sortDir` (handles numbers, dates, strings)
-  This keeps sorting local and instant (client-side).
-*/
-const users = computed(() => {
-  const list = (userStore.users || []).slice()
-  const q = search.value.trim().toLowerCase()
-
-  // filter
-  let filtered = list
-  if (q) {
-    filtered = list.filter(
-      (u) => (u.name || '').toLowerCase().includes(q) || (u.email || '').toLowerCase().includes(q),
-    )
-  }
-
-  // sort
-  const key = sortKey.value
-  const dir = sortDir.value === 'asc' ? 1 : -1
-
-  filtered.sort((a, b) => {
-    const va = a == null ? '' : a[key]
-    const vb = b == null ? '' : b[key]
-
-    // date handling
-    if (key === 'createdAt') {
-      const da = va ? new Date(va).getTime() : 0
-      const db = vb ? new Date(vb).getTime() : 0
-      return (da - db) * dir
-    }
-
-    // numeric handling
-    if (key === 'id' || key === 'points' || key === 'priority') {
-      const na = Number(va) || 0
-      const nb = Number(vb) || 0
-      return (na - nb) * dir
-    }
-
-    // string fallback
-    const sa = (va || '').toString().toLowerCase()
-    const sb = (vb || '').toString().toLowerCase()
-    if (sa < sb) return -1 * dir
-    if (sa > sb) return 1 * dir
-    return 0
-  })
-
-  return filtered
-})
-
-const totalPages = computed(() => Math.max(1, Math.ceil(users.value.length / perPage.value)))
-
-const pageLabel = computed(() => {
-  const p = String(currentPage.value).padStart(2, '0')
-  const t = String(totalPages.value).padStart(2, '0')
-  return `${p} of ${t}`
-})
-
-const startIndex = computed(() => (currentPage.value - 1) * perPage.value)
-const endIndex = computed(() => startIndex.value + perPage.value)
-
-const pagedUsers = computed(() => users.value.slice(startIndex.value, endIndex.value))
-
-function goToPage(n) {
-  if (n < 1) n = 1
-  if (n > totalPages.value) n = totalPages.value
-  currentPage.value = n
+const backendFieldMap = {
+  id: 'id_utilizador',
+  name: 'nome',
+  points: 'pontos',
+  priority: 'tipo_utilizador',
+  email: 'email',
+  createdAt: 'data_criacao_conta',
 }
+
+async function syncUsers() {
+  try {
+    await userStore.fetchUsers({
+      page: userStore.usersMeta.page,
+      limit: perPage.value,
+      sort: backendFieldMap[sortKey.value] || 'id_utilizador',
+      order: sortDir.value.toUpperCase(),
+      q: search.value.trim() || undefined,
+    })
+  } catch (err) {
+    console.error('Failed to sync users:', err)
+  }
+}
+
+function handleSearch() {
+  clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(() => {
+    userStore.usersMeta.page = 1
+    syncUsers()
+  }, 300)
+}
+
+const currentPage = computed(() => userStore.usersMeta.page)
+const totalPages = computed(() => userStore.usersMeta.pages || 1)
+const pageLabel = computed(
+  () =>
+    `${String(currentPage.value).padStart(2, '0')} of ${String(totalPages.value).padStart(2, '0')}`,
+)
+
+const pagedUsers = computed(() =>
+  (userStore.users || []).map((u) => ({
+    id: u.id_utilizador,
+    name: u.nome,
+    points: u.pontos,
+    priority: u.tipo_utilizador || 'Client',
+    email: u.email,
+    createdAt: u.data_criacao_conta,
+  })),
+)
+
 function prevPage() {
-  goToPage(currentPage.value - 1)
+  if (currentPage.value > 1) {
+    userStore.usersMeta.page--
+    syncUsers()
+  }
 }
 function nextPage() {
-  goToPage(currentPage.value + 1)
+  if (currentPage.value < totalPages.value) {
+    userStore.usersMeta.page++
+    syncUsers()
+  }
+}
+function toggleSort(key) {
+  if (sortKey.value === key) sortDir.value = sortDir.value === 'asc' ? 'desc' : 'asc'
+  else {
+    sortKey.value = key
+    sortDir.value = 'asc'
+  }
+  userStore.usersMeta.page = 1
+  syncUsers()
 }
 
-// Modal state for editing a user inline
 const modalVisible = ref(false)
 const editingUser = ref(null)
 
 function openEditModal(user) {
-  // clone the user so edits are local until confirmed
-  editingUser.value = JSON.parse(JSON.stringify(user))
+  editingUser.value = { ...user }
   modalVisible.value = true
 }
-
 function cancelEdit() {
   modalVisible.value = false
   editingUser.value = null
@@ -866,207 +1139,644 @@ function cancelEdit() {
 
 async function confirmEdit() {
   if (!editingUser.value) return
-  const payload = { ...editingUser.value }
+  const userId = editingUser.value.id
+  if (!userId) return
   try {
-    // try API update
-    await apiUpdateUser(payload.id, payload)
-    // update local store
-    const idx = userStore.users.findIndex((u) => String(u.id) === String(payload.id))
-    if (idx !== -1) {
-      userStore.users[idx] = { ...userStore.users[idx], ...payload }
-      userStore.saveToLocalStorage()
+    const payload = {
+      nome: editingUser.value.name,
+      email: editingUser.value.email,
+      pontos: editingUser.value.points,
+      tipo_utilizador: editingUser.value.priority,
     }
-    showToast('User modified', `${payload.name || payload.email} was modified`)
+    await apiUpdateUser(userId, payload, userStore.token)
+    const idx = userStore.users.findIndex((u) => String(u.id_utilizador) === String(userId))
+    if (idx !== -1) {
+      userStore.users[idx] = {
+        ...userStore.users[idx],
+        nome: payload.nome,
+        email: payload.email,
+        pontos: payload.pontos,
+        tipo_utilizador: payload.tipo_utilizador,
+      }
+      if (userStore.saveToLocalStorage) userStore.saveToLocalStorage()
+    }
+    await syncUsers()
+    showToast('User modified', `${payload.nome} was modified successfully`)
   } catch (e) {
-    // fallback: update locally
-    console.warn('API update failed, updating locally only', e)
-    const idx = userStore.users.findIndex((u) => String(u.id) === String(payload.id))
-    if (idx !== -1) {
-      userStore.users[idx] = { ...userStore.users[idx], ...payload }
-      userStore.saveToLocalStorage()
-    }
-    showToast('User modified', `${payload.name || payload.email} was modified (local)`)
+    console.error(e)
+    showToast('Error', e.message || 'Could not update user record on database')
   } finally {
     modalVisible.value = false
     editingUser.value = null
   }
 }
 
-/*
-  Toggle sorting for a column header:
-  - if clicking the active column, flip asc/desc
-  - if clicking a new column, set it to ascending by default
-*/
-function toggleSort(key) {
-  if (sortKey.value === key) {
-    sortDir.value = sortDir.value === 'asc' ? 'desc' : 'asc'
-  } else {
-    sortKey.value = key
-    sortDir.value = 'asc'
+async function deleteUser(id) {
+  if (!confirm('Are you sure you want to delete this user?')) return
+  const target = userStore.users.find((u) => Number(u.id_utilizador) === Number(id))
+  const label = target ? `${target.nome || '-'} · ${target.email || '-'}` : String(id)
+  try {
+    await userStore.deleteUser(id)
+    if (userStore.users.length === 0 && currentPage.value > 1) userStore.usersMeta.page--
+    showToast('User deleted', label)
+    syncUsers()
+  } catch (e) {
+    console.error(e)
+    showToast('Error', e.message || 'Could not delete user')
   }
 }
 
-// Habit management state
-const habitModalVisible = ref(false)
-const isNewHabit = ref(true)
+// ═══════════════════════════════════════════════════════════════════════
+//  DECORATIONS ENGINE
+// ═══════════════════════════════════════════════════════════════════════
+const decorationsList = ref([])
+const decorationTotal = ref(0)
+const decorationCurrentPage = ref(1)
+const decorationLimit = ref(10)
+const decorationTotalPages = ref(1)
+const decorationSortKey = ref('id_decoracao')
+const decorationSortDir = ref('asc')
+const decorationModalVisible = ref(false)
+const editingDecoration = ref(null)
+const isNewDecoration = ref(false)
+const decorationFileInput = ref(null)
+const selectedFile = ref(null)
+const imagePreviewUrl = ref('')
 
-// Reactive form object mapping exactly to habitModel.js properties (without user_id)
-const editingHabit = ref({
-  id: null,
-  title: '',
-  type: 'check',
-  priority: 'medium',
-  description: '',
-  category: '',
-  target_count: null,
-  increment_value: 1,
-  target_minutes: null,
+async function syncDecorations() {
+  try {
+    const response = await getAllDecorations(userStore.token || null, {
+      page: decorationCurrentPage.value,
+      limit: decorationLimit.value,
+      sort: decorationSortKey.value || 'id_decoracao',
+      order: decorationSortDir.value.toUpperCase(),
+      q: (decorationSearch.value || '').trim() || undefined,
+    })
+    if (response && response.data) {
+      decorationsList.value = response.data
+      decorationTotal.value = response.meta.total
+      decorationTotalPages.value = response.meta.pages
+    }
+  } catch (err) {
+    console.error('Failed to sync decorations:', err)
+    showToast('Error', err.message || 'Could not load decorations')
+  }
+}
+
+function handleDecorationSearch() {
+  clearTimeout(decorationDebounceTimer)
+  decorationDebounceTimer = setTimeout(() => {
+    decorationCurrentPage.value = 1
+    syncDecorations()
+  }, 300)
+}
+
+const pagedDecorations = computed(() => {
+  const query = (decorationSearch.value || '').trim().toLowerCase()
+  let list = (decorationsList.value || []).map((d) => ({
+    id: d.id_decoracao || d.id,
+    name: d.nome_decoracao || d.name || '',
+    requiredLevel: d.nivel_necessario !== undefined ? d.nivel_necessario : (d.requiredLevel ?? 0),
+    src: d.caminho_decoracao || d.src || '',
+  }))
+  if (query) list = list.filter((d) => d.name.toLowerCase().includes(query))
+  return list
 })
 
-// Open modal to create a new habit
-function openAddHabitModal() {
-  editingHabit.value = {
-    id: null,
-    title: '',
-    type: 'check',
-    priority: 'medium',
-    description: '',
-    category: '',
-    target_count: null,
-    increment_value: 1,
-    target_minutes: null,
+const decorationPageLabel = computed(
+  () =>
+    `${String(decorationCurrentPage.value).padStart(2, '0')} of ${String(decorationTotalPages.value).padStart(2, '0')}`,
+)
+
+function prevDecorationPage() {
+  if (decorationCurrentPage.value > 1) {
+    decorationCurrentPage.value--
+    syncDecorations()
   }
+}
+function nextDecorationPage() {
+  if (decorationCurrentPage.value < decorationTotalPages.value) {
+    decorationCurrentPage.value++
+    syncDecorations()
+  }
+}
+function toggleDecorationSort(key) {
+  const schemaMap = {
+    id: 'id_decoracao',
+    name: 'nome_decoracao',
+    requiredLevel: 'nivel_necessario',
+  }
+  const targetField = schemaMap[key] || 'id_decoracao'
+  if (decorationSortKey.value === targetField)
+    decorationSortDir.value = decorationSortDir.value === 'asc' ? 'desc' : 'asc'
+  else {
+    decorationSortKey.value = targetField
+    decorationSortDir.value = 'asc'
+  }
+  decorationCurrentPage.value = 1
+  syncDecorations()
+}
+
+function openAddDecorationModal() {
+  editingDecoration.value = { id: null, name: '', src: '', requiredLevel: 0 }
+  selectedFile.value = null
+  imagePreviewUrl.value = ''
+  isNewDecoration.value = true
+  decorationModalVisible.value = true
+}
+function editDecoration(decoration) {
+  editingDecoration.value = {
+    ...decoration,
+    id_decoracao: decoration.id,
+    nome_decoracao: decoration.name,
+    nivel_necessario: decoration.requiredLevel,
+    caminho_decoracao: decoration.src,
+  }
+  selectedFile.value = null
+  imagePreviewUrl.value = decoration.src
+  isNewDecoration.value = false
+  decorationModalVisible.value = true
+}
+function cancelDecorationEdit() {
+  decorationModalVisible.value = false
+  editingDecoration.value = null
+  selectedFile.value = null
+  imagePreviewUrl.value = ''
+  if (decorationFileInput.value) decorationFileInput.value.value = ''
+}
+function handleDecorationFileUpload(event) {
+  const file = event.target.files[0]
+  if (!file) return
+  if (!file.type.startsWith('image/')) {
+    showToast('Invalid file', 'Please select an image file')
+    return
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('File too large', 'Max 5MB')
+    return
+  }
+  selectedFile.value = file
+  imagePreviewUrl.value = URL.createObjectURL(file)
+}
+async function saveDecoration() {
+  if (!editingDecoration.value.name) {
+    showToast('Error', 'Decoration name is mandatory.')
+    return
+  }
+  if (isNewDecoration.value && !selectedFile.value) {
+    showToast('Error', 'Image file is mandatory.')
+    return
+  }
+  try {
+    const formData = new FormData()
+    formData.append('nome_decoracao', editingDecoration.value.name)
+    formData.append('nivel_necessario', String(editingDecoration.value.requiredLevel ?? 0))
+    if (selectedFile.value) formData.append('caminho_decoracao', selectedFile.value)
+    else formData.append('caminho_decoracao', editingDecoration.value.src || '')
+    if (isNewDecoration.value) {
+      await createDecoration(formData, userStore.token || null)
+      showToast('Decoration added', `"${editingDecoration.value.name}" was created successfully.`)
+    } else {
+      await updateDecoration(editingDecoration.value.id, formData, userStore.token || null)
+      showToast('Decoration updated', `"${editingDecoration.value.name}" was updated successfully.`)
+    }
+    syncDecorations()
+    decorationModalVisible.value = false
+    editingDecoration.value = null
+    selectedFile.value = null
+    imagePreviewUrl.value = ''
+  } catch (err) {
+    showToast('Error', err.errors?.nome_decoracao?.[0] || err.message || 'Validation failed.')
+  }
+}
+async function deleteDecorationHandler(id, name) {
+  if (!confirm(`Are you sure you want to delete the "${name}" decoration?`)) return
+  try {
+    await deleteDecoration(id, userStore.token || null)
+    showToast('Decoration deleted', `"${name}" was successfully removed.`)
+    if (decorationsList.value.length === 1 && decorationCurrentPage.value > 1)
+      decorationCurrentPage.value--
+    syncDecorations()
+  } catch (err) {
+    showToast('Error', err.message || 'Could not delete decoration.')
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  HABITS ENGINE
+// ═══════════════════════════════════════════════════════════════════════
+const habitSortKey = ref('id')
+const habitSortDir = ref('asc')
+const habitCurrentPage = ref(1)
+const habitLimit = ref(5)
+const habitModalVisible = ref(false)
+const isNewHabit = ref(true)
+const editingHabit = ref({ id: null, title: '', description: '', category: '' })
+
+function toggleHabitSort(key) {
+  if (habitSortKey.value === key) habitSortDir.value = habitSortDir.value === 'asc' ? 'desc' : 'asc'
+  else {
+    habitSortKey.value = key
+    habitSortDir.value = 'asc'
+  }
+}
+
+const filteredHabits = computed(() => {
+  const q = (habitSearch.value || '').trim().toLowerCase()
+  let list = (habitStore.habits || []).map((h) => ({
+    id: h.id_habito ?? h.id,
+    title: h.nome_habito ?? h.titulo ?? h.name ?? h.title ?? '',
+    description: h.descricao_habito ?? h.descricao ?? h.description ?? '',
+    category: h.categoria ?? h.category ?? '',
+  }))
+  if (q)
+    list = list.filter(
+      (h) =>
+        h.title.toLowerCase().includes(q) ||
+        h.description.toLowerCase().includes(q) ||
+        h.category.toLowerCase().includes(q),
+    )
+  const key = habitSortKey.value
+  const dir = habitSortDir.value === 'asc' ? 1 : -1
+  list.sort((a, b) => {
+    if (key === 'id') return (Number(a.id || 0) - Number(b.id || 0)) * dir
+    return (
+      String(a[key] || '')
+        .toLowerCase()
+        .localeCompare(String(b[key] || '').toLowerCase()) * dir
+    )
+  })
+  return list
+})
+
+const totalHabitCount = computed(() => filteredHabits.value.length)
+const habitTotalPages = computed(() => Math.ceil(totalHabitCount.value / habitLimit.value) || 1)
+const paginatedHabitsList = computed(() => {
+  const start = (habitCurrentPage.value - 1) * habitLimit.value
+  return filteredHabits.value.slice(start, start + habitLimit.value)
+})
+const habitPageLabel = computed(
+  () =>
+    `${String(habitCurrentPage.value).padStart(2, '0')} of ${String(habitTotalPages.value).padStart(2, '0')}`,
+)
+
+function prevHabitPage() {
+  if (habitCurrentPage.value > 1) habitCurrentPage.value--
+}
+function nextHabitPage() {
+  if (habitCurrentPage.value < habitTotalPages.value) habitCurrentPage.value++
+}
+function handleHabitSearch() {
+  clearTimeout(habitDebounceTimer)
+  habitDebounceTimer = setTimeout(() => {
+    habitCurrentPage.value = 1
+  }, 300)
+}
+function openAddHabitModal() {
+  editingHabit.value = { id: null, title: '', description: '', category: '' }
   isNewHabit.value = true
   habitModalVisible.value = true
 }
-
-// Open modal to edit an existing habit
 function openEditHabitModal(habit) {
-  // Clone the object to prevent direct table mutation before saving
   editingHabit.value = { ...habit }
   isNewHabit.value = false
   habitModalVisible.value = true
 }
 
-// Save Habit (Create or Update)
 async function saveHabit() {
-  if (!editingHabit.value.title) {
+  if (!editingHabit.value.title?.trim()) {
     showToast('Error', 'Title is required')
     return
   }
-
   try {
+    const token = userStore.token
+    const payload = {
+      nome_habito: editingHabit.value.title.trim(),
+      descricao_habito: editingHabit.value.description || '',
+      categoria: editingHabit.value.category || '',
+    }
     if (isNewHabit.value) {
-      // 1. Build initial payload for creation (Global habit, no user_id needed here)
-      const payload = {
-        title: editingHabit.value.title,
-        type: editingHabit.value.type,
-        priority: editingHabit.value.priority,
-        description: editingHabit.value.description || '',
-        category: editingHabit.value.category || '',
-        completed: false,
-        points_awarded: false,
-        repeat: { frequency: 'daily', days: [] },
-      }
-
-      // Configure type-specific numeric fields required by your Model
-      if (payload.type === 'count') {
-        payload.target_count = editingHabit.value.target_count
-          ? Number(editingHabit.value.target_count)
-          : null
-        payload.increment_value = Number(editingHabit.value.increment_value) || 1
-      } else if (payload.type === 'time') {
-        payload.target_minutes = editingHabit.value.target_minutes
-          ? Number(editingHabit.value.target_minutes)
-          : null
-      }
-
-      // habitStore.addHabit persists it on the API and instantiates "new Habit(created)"
-      await habitStore.addHabit(payload)
-      showToast('Habit added', `"${payload.title}" was created successfully`)
+      const created = await apiCreateHabit(payload, token)
+      habitStore.habits.push(created)
+      showToast('Habit added', `"${payload.nome_habito}" was created successfully`)
     } else {
-      // 2. Update existing habit
-      const id = editingHabit.value.id
-      const payload = { ...editingHabit.value }
-
-      // Ensure strict numeric type casting before sending the updates
-      if (payload.type === 'count') {
-        payload.target_count = payload.target_count ? Number(payload.target_count) : null
-        payload.increment_value = Number(payload.increment_value) || 1
-      } else if (payload.type === 'time') {
-        payload.target_minutes = payload.target_minutes ? Number(payload.target_minutes) : null
-        // Re-calculate remaining seconds if the admin changed the planned target duration
-        payload.remaining_seconds = payload.target_minutes * 60
-      }
-
-      // Send update request to the server
-      try {
-        await apiUpdateHabit(id, payload)
-      } catch (err) {
-        console.warn('API update habit failed, updating locally', err)
-      }
-
-      // Update the global state inside Pinia
-      habitStore.updateHabit(id, payload)
-      showToast('Habit updated', `"${payload.title}" was updated`)
+      await apiUpdateHabit(editingHabit.value.id, payload, token)
+      const idx = habitStore.habits.findIndex(
+        (h) => (h.id_habito ?? h.id) === editingHabit.value.id,
+      )
+      if (idx !== -1) habitStore.habits[idx] = { ...habitStore.habits[idx], ...payload }
+      showToast('Habit updated', `"${payload.nome_habito}" was updated`)
     }
   } catch (error) {
-    console.error(error)
-    showToast('Error', 'An error occurred while saving the habit')
+    const msg = error?.errors
+      ? Object.values(error.errors).flat().join(', ')
+      : error?.message || 'An error occurred while saving the habit'
+    showToast('Error', msg)
   } finally {
     habitModalVisible.value = false
   }
 }
 
-// Delete Habit
 async function handleDeleteHabit(id, title) {
   if (!confirm(`Are you sure you want to delete the habit "${title}"?`)) return
   try {
-    await habitStore.deleteHabit(id)
+    await apiDeleteHabit(id, userStore.token)
+    const idx = habitStore.habits.findIndex((h) => (h.id_habito ?? h.id) === id)
+    if (idx !== -1) habitStore.habits.splice(idx, 1)
     showToast('Habit deleted', `"${title}" was removed`)
+    if (paginatedHabitsList.value.length === 0 && habitCurrentPage.value > 1)
+      habitCurrentPage.value--
   } catch (error) {
-    console.error(error)
-    showToast('Error', 'Failed to delete habit')
+    showToast('Error', error?.message || 'Failed to delete habit')
   }
 }
 
-// toast state & helper (matches HabitManagerView toast)
+// ═══════════════════════════════════════════════════════════════════════
+//  TASKS ENGINE
+// ═══════════════════════════════════════════════════════════════════════
+
+// Priority → default points map
+const PRIORITY_POINTS = { Low: 5, Medium: 10, High: 15 }
+
+const taskSortKey = ref('id')
+const taskSortDir = ref('asc')
+const taskCurrentPage = ref(1)
+const taskLimit = ref(5)
+const taskModalVisible = ref(false)
+const isNewTask = ref(true)
+
+const editingTask = ref({
+  id: null,
+  title: '',
+  points: 0,
+  priority: '',
+  tipo_tarefa: '',
+  localizacao_tarefa: '',
+  duracao_temporizador: null,
+  quantidade_necessaria: null,
+  id_habito: null,
+})
+
+// Impacts within the task edit modal
+const taskImpactsEditing = ref([]) // impacts for the task currently being edited
+const showAddImpact = ref(false)
+const impactSaving = ref(false)
+const newImpact = ref({ tipo_impacto: '', valor_por_unidade: null, unidade: '' })
+
+// Called when the Priority dropdown changes — sets default points but
+// allows the admin to manually override the value afterwards.
+function applyDefaultPoints() {
+  const p = editingTask.value.priority
+  if (p && PRIORITY_POINTS[p] !== undefined) {
+    editingTask.value.points = PRIORITY_POINTS[p]
+  }
+}
+
+function toggleTaskSort(key) {
+  if (taskSortKey.value === key) taskSortDir.value = taskSortDir.value === 'asc' ? 'desc' : 'asc'
+  else {
+    taskSortKey.value = key
+    taskSortDir.value = 'asc'
+  }
+}
+
+const filteredTasks = computed(() => {
+  const q = (taskSearch.value || '').trim().toLowerCase()
+  let list = (habitStore.tasks || []).map((t) => ({
+    id: t.id_tarefa ?? t.id,
+    title: t.nome_tarefa ?? t.title ?? 'Untitled Task',
+    points: t.pontos_tarefa ?? t.points ?? 0,
+    type: t.tipo_tarefa ?? t.type ?? '',
+    priority: t.prioridade_tarefa ?? t.priority ?? '',
+    location: t.localizacao_tarefa ?? t.location ?? '',
+    duracao_temporizador: t.duracao_temporizador ?? null,
+    quantidade_necessaria: t.quantidade_necessaria ?? null,
+    id_habito: t.id_habito ?? null,
+  }))
+  if (q) list = list.filter((t) => t.title.toLowerCase().includes(q))
+  const key = taskSortKey.value
+  const dir = taskSortDir.value === 'asc' ? 1 : -1
+  list.sort((a, b) => {
+    if (key === 'id' || key === 'points') return (Number(a[key] || 0) - Number(b[key] || 0)) * dir
+    return (
+      String(a[key] || '')
+        .toLowerCase()
+        .localeCompare(String(b[key] || '').toLowerCase()) * dir
+    )
+  })
+  return list
+})
+
+const totalTaskCount = computed(() => filteredTasks.value.length)
+const taskTotalPages = computed(() => Math.ceil(totalTaskCount.value / taskLimit.value) || 1)
+const paginatedTasksList = computed(() => {
+  const start = (taskCurrentPage.value - 1) * taskLimit.value
+  return filteredTasks.value.slice(start, start + taskLimit.value)
+})
+const taskPageLabel = computed(
+  () =>
+    `${String(taskCurrentPage.value).padStart(2, '0')} of ${String(taskTotalPages.value).padStart(2, '0')}`,
+)
+
+function prevTaskPage() {
+  if (taskCurrentPage.value > 1) taskCurrentPage.value--
+}
+function nextTaskPage() {
+  if (taskCurrentPage.value < taskTotalPages.value) taskCurrentPage.value++
+}
+function handleTaskSearch() {
+  clearTimeout(taskDebounceTimer)
+  taskDebounceTimer = setTimeout(() => {
+    taskCurrentPage.value = 1
+  }, 300)
+}
+
+function openAddTaskModal() {
+  editingTask.value = {
+    id: null,
+    title: '',
+    points: 0,
+    priority: '',
+    tipo_tarefa: '',
+    localizacao_tarefa: '',
+    duracao_temporizador: null,
+    quantidade_necessaria: null,
+    id_habito: null,
+  }
+  taskImpactsEditing.value = []
+  showAddImpact.value = false
+  newImpact.value = { tipo_impacto: '', valor_por_unidade: null, unidade: '' }
+  isNewTask.value = true
+  taskModalVisible.value = true
+}
+
+function openEditTaskModal(task) {
+  editingTask.value = {
+    id: task.id,
+    title: task.title,
+    points: task.points,
+    priority: task.priority,
+    tipo_tarefa: task.type,
+    localizacao_tarefa: task.location,
+    duracao_temporizador: task.duracao_temporizador,
+    quantidade_necessaria: task.quantidade_necessaria,
+    id_habito: task.id_habito,
+  }
+  // Load the impacts for this specific task into the modal editing list
+  taskImpactsEditing.value = [...(impactsByTask.value[task.id] || [])]
+  showAddImpact.value = false
+  newImpact.value = { tipo_impacto: '', valor_por_unidade: null, unidade: '' }
+  isNewTask.value = false
+  taskModalVisible.value = true
+}
+
+function closeTaskModal() {
+  taskModalVisible.value = false
+  showAddImpact.value = false
+  newImpact.value = { tipo_impacto: '', valor_por_unidade: null, unidade: '' }
+}
+
+async function saveTask() {
+  if (!editingTask.value.title?.trim()) {
+    showToast('Error', 'Title is mandatory')
+    return
+  }
+  if (!editingTask.value.tipo_tarefa) {
+    showToast('Error', 'Task Details (type) is required')
+    return
+  }
+  if (!editingTask.value.localizacao_tarefa) {
+    showToast('Error', 'Location is required')
+    return
+  }
+  if (editingTask.value.tipo_tarefa === 'Timer' && !(editingTask.value.duracao_temporizador > 0)) {
+    showToast('Error', 'Timer duration must be a positive number')
+    return
+  }
+  if (editingTask.value.tipo_tarefa === 'Count' && !(editingTask.value.quantidade_necessaria > 0)) {
+    showToast('Error', 'Required count must be a positive number')
+    return
+  }
+
+  const payload = {
+    nome_tarefa: editingTask.value.title.trim(),
+    pontos_tarefa: editingTask.value.points ?? 0,
+    prioridade_tarefa: editingTask.value.priority,
+    tipo_tarefa: editingTask.value.tipo_tarefa,
+    localizacao_tarefa: editingTask.value.localizacao_tarefa,
+    duracao_temporizador:
+      editingTask.value.tipo_tarefa === 'Timer' ? editingTask.value.duracao_temporizador : null,
+    quantidade_necessaria:
+      editingTask.value.tipo_tarefa === 'Count' ? editingTask.value.quantidade_necessaria : null,
+    id_habito: editingTask.value.id_habito || null,
+  }
+
+  try {
+    const token = userStore.token
+    if (isNewTask.value) {
+      const created = await apiCreateTask(payload, token)
+      habitStore.tasks.push(created)
+      showToast('Task added', `"${payload.nome_tarefa}" was created`)
+    } else {
+      await apiUpdateTask(editingTask.value.id, payload, token)
+      const idx = habitStore.tasks.findIndex((t) => (t.id_tarefa ?? t.id) === editingTask.value.id)
+      if (idx !== -1) habitStore.tasks[idx] = { ...habitStore.tasks[idx], ...payload }
+      showToast('Task updated', `"${payload.nome_tarefa}" was updated`)
+    }
+  } catch (error) {
+    const msg = error?.errors
+      ? Object.values(error.errors).flat().join(', ')
+      : error?.message || 'An error occurred while saving the task'
+    showToast('Error', msg)
+    return // keep modal open on error
+  }
+  closeTaskModal()
+}
+
+async function handleDeleteTask(id, title) {
+  if (!confirm(`Are you sure you want to delete the task "${title}"?`)) return
+  try {
+    await apiDeleteTask(id, userStore.token)
+    const idx = habitStore.tasks.findIndex((t) => (t.id_tarefa ?? t.id) === id)
+    if (idx !== -1) habitStore.tasks.splice(idx, 1)
+    // Also remove impacts for this task from local cache
+    allImpacts.value = allImpacts.value.filter((imp) => imp.id_tarefa !== id)
+    showToast('Task deleted', `"${title}" was removed`)
+    if (paginatedTasksList.value.length === 0 && taskCurrentPage.value > 1) taskCurrentPage.value--
+  } catch (error) {
+    showToast('Error', error?.message || 'Failed to delete task')
+  }
+}
+
+// ── Impact management inside the task modal ─────────────────────────
+async function addImpactToTask() {
+  if (!newImpact.value.tipo_impacto) {
+    showToast('Error', 'Impact type is required')
+    return
+  }
+  if (!(newImpact.value.valor_por_unidade > 0)) {
+    showToast('Error', 'Value must be a positive number')
+    return
+  }
+  if (!newImpact.value.unidade) {
+    showToast('Error', 'Unit is required')
+    return
+  }
+
+  impactSaving.value = true
+  try {
+    // POST /tasks/:taskId/impacts
+    const created = await apiCreateImpact(
+      {
+        tipo_impacto: newImpact.value.tipo_impacto,
+        valor_por_unidade: newImpact.value.valor_por_unidade,
+        unidade: newImpact.value.unidade,
+      },
+      userStore.token,
+      editingTask.value.id, // taskId passed separately; service routes to /tasks/:taskId/impacts
+    )
+    // Update both the global list and the modal's local list
+    allImpacts.value.push(created)
+    taskImpactsEditing.value.push(created)
+    newImpact.value = { tipo_impacto: '', valor_por_unidade: null, unidade: '' }
+    showAddImpact.value = false
+    showToast('Impact added', `${created.tipo_impacto} impact was added`)
+  } catch (error) {
+    const msg = error?.errors
+      ? Object.values(error.errors).flat().join(', ')
+      : error?.message || 'Failed to add impact'
+    showToast('Error', msg)
+  } finally {
+    impactSaving.value = false
+  }
+}
+
+async function removeImpactFromTask(impactId) {
+  if (!confirm('Delete this impact?')) return
+  try {
+    await apiDeleteImpact(impactId, userStore.token)
+    allImpacts.value = allImpacts.value.filter((i) => i.id_impacto !== impactId)
+    taskImpactsEditing.value = taskImpactsEditing.value.filter((i) => i.id_impacto !== impactId)
+    showToast('Impact deleted', 'Impact was removed')
+  } catch (error) {
+    showToast('Error', error?.message || 'Failed to delete impact')
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  UTILITIES
+// ═══════════════════════════════════════════════════════════════════════
 const toast = ref({ visible: false, title: '', message: '', timeout: null })
 
 function showToast(title, message, duration = 3000) {
   toast.value.title = title
   toast.value.message = message
   toast.value.visible = true
-
   if (toast.value.timeout) clearTimeout(toast.value.timeout)
   toast.value.timeout = setTimeout(() => {
     toast.value.visible = false
   }, duration)
 }
-
-async function deleteUser(id) {
-  if (!confirm('Are you sure you want to delete this user?')) return
-
-  // capture user's display info before deletion
-  const target = userStore.getUserById(id)
-  const label = target ? `${target.name || '-'} · ${target.email || '-'}` : String(id)
-
-  try {
-    await userStore.deleteAccount(id)
-    // adjust page if needed
-    if (pagedUsers.value.length === 0 && currentPage.value > 1) currentPage.value--
-
-    showToast('User deleted', label)
-  } catch (e) {
-    console.error('Failed to delete user', e)
-    alert('Failed to delete user')
-  }
-}
-
-onMounted(() => {
-  if (userStore.loadFromLocalStorage) userStore.loadFromLocalStorage()
-  userStore.fetchUsers().catch(() => {})
-})
 
 function formatDate(value) {
   if (!value) return '-'
@@ -1078,117 +1788,78 @@ function formatDate(value) {
   }
 }
 
-// Decoration management functions
-function editDecoration(decoration) {
-  editingDecoration.value = { ...decoration }
-  isNewDecoration.value = false
-  decorationModalVisible.value = true
-}
-
-function deleteDecoration(name) {
-  if (!confirm(`Are you sure you want to delete the "${name}" decoration?`)) return
-  decorations.value = decorations.value.filter((d) => d.name !== name)
-  saveDecorations()
-  showToast('Decoration deleted', `"${name}" was removed`)
-}
-
-function openAddDecorationModal() {
-  editingDecoration.value = { name: '', src: '', requiredLevel: 0 }
-  isNewDecoration.value = true
-  decorationModalVisible.value = true
-}
-
-function cancelDecorationEdit() {
-  decorationModalVisible.value = false
-  editingDecoration.value = null
-  // Reset file input
-  if (decorationFileInput.value) {
-    decorationFileInput.value.value = ''
+onMounted(async () => {
+  if (userStore.loadFromLocalStorage) userStore.loadFromLocalStorage()
+  syncUsers()
+  syncDecorations()
+  syncImpacts()
+  try {
+    await habitStore.fetchHabitsAndTasks()
+  } catch (err) {
+    console.error('Failed to initialize admin dashboard panels:', err)
   }
-}
-
-function handleDecorationFileUpload(event) {
-  const file = event.target.files[0]
-  if (!file) return
-
-  // Validate file type
-  if (!file.type.startsWith('image/')) {
-    showToast('Invalid file', 'Please select an image file')
-    return
-  }
-
-  // Validate file size (max 5MB)
-  if (file.size > 5 * 1024 * 1024) {
-    showToast('File too large', 'Please select an image smaller than 5MB')
-    return
-  }
-
-  // Convert to base64
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    editingDecoration.value.src = e.target.result
-  }
-  reader.onerror = () => {
-    showToast('Error', 'Failed to read the image file')
-  }
-  reader.readAsDataURL(file)
-}
-
-function saveDecoration() {
-  if (!editingDecoration.value.name || !editingDecoration.value.src) {
-    showToast('Error', 'Please fill in all fields')
-    return
-  }
-
-  if (isNewDecoration.value) {
-    // Check for duplicate name
-    if (decorations.value.some((d) => d.name === editingDecoration.value.name)) {
-      showToast('Error', 'A decoration with this name already exists')
-      return
-    }
-    decorations.value.push({ ...editingDecoration.value })
-    showToast('Decoration added', `"${editingDecoration.value.name}" was added`)
-  } else {
-    const idx = decorations.value.findIndex((d) => d.name === editingDecoration.value.name)
-    if (idx !== -1) {
-      decorations.value[idx] = { ...editingDecoration.value }
-    }
-    showToast('Decoration updated', `"${editingDecoration.value.name}" was updated`)
-  }
-
-  saveDecorations()
-  decorationModalVisible.value = false
-  editingDecoration.value = null
-}
-
-/* 
-Basic structure of habit card to create a habit component in the future, for the id "habit-item".
-  For now, we will keep it simple and static, but in the future we can make it dynamic and reusable.
-
->> There´s a duplicate on "ExploreHabitsView.vue" that we can also use as a reference to create the habit component.
-
-<div class="habit-item" id="habit-item">
-  <div class="card h-100">
-    <div class="card-header-custom">
-      <div class="habit-title-section">
-        <div class="habit-title">
-          <i class="fa-solid fa-seedling"></i>
-          <h3>Gardening</h3>
-        </div>
-      </div>
-    </div>
-
-    <div class="habit-content">
-      <div class="habit-category-description mt-2">
-        <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quas, suscipit sunt! Distinctio dolore iure aspernatur explicabo tempore amet? Aperiam officia ipsam qui, et iure reprehenderit quod ea fuga repudiandae labore!</p>
-      </div>
-      <hr style="margin: 5px;">
-      <button class="habit-details d-flex align-items-center gap-3">
-        <i class="fa-solid fa-list-check"></i>
-        <p>2 Tasks available</p>
-      </button>
-    </div>
-  </div>
-</div>
-*/
+})
 </script>
+
+<style scoped>
+.custom-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+}
+.modal-panel {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1.75rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  max-width: 440px;
+  width: 90%;
+  animation: modalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+@keyframes modalFadeIn {
+  from {
+    transform: scale(0.96);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+.sortable:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+.sort-indicator {
+  font-size: 0.75rem;
+  margin-left: 4px;
+  color: #355d4c;
+}
+.decoration-preview {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  border-radius: 6px;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+}
+.impact-badge {
+  font-size: 0.7rem;
+}
+.impact-form {
+  transition: all 0.15s ease;
+}
+</style>

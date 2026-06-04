@@ -1,152 +1,122 @@
 [
   {
+    "id_habito": 14,
+    "nome_habito": "Biodiversity Support",
+    "descricao_habito": "Build mini-habitats, protect pollinators, and nurture native flora around your local neighborhood.",
+    "categoria": "Biodiversity Support"
+  },
+  {
+    "id_habito": 4,
+    "nome_habito": "Energy",
+    "descricao_habito": "Conserve electricity by skipping elevators, using LED lighting, and adjusting appliance usage.",
+    "categoria": "Energy"
+  },
+  {
+    "id_habito": 9,
+    "nome_habito": "Digital Footprint",
+    "descricao_habito": "Minimize hidden cloud server emissions by cleaning up unneeded emails and digital data.",
+    "categoria": "Digital Footprint"
+  },
+  {
+    "id_habito": 1,
     "nome_habito": "Food",
-    "descricao_habito": "Support the campus farmers market or local food suppliers.",
+    "descricao_habito": "Support campus markets, source local goods, and choose sustainable vegetarian meals.",
     "categoria": "Food"
   },
   {
+    "id_habito": 18,
+    "nome_habito": "Kitchen Conservation",
+    "descricao_habito": "Optimize your cooking routines, preserve food safely, and maximize appliance efficiency.",
+    "categoria": "Kitchen Conservation"
+  },
+  {
+    "id_habito": 7,
+    "nome_habito": "Waste",
+    "descricao_habito": "Reduce consumer footprint with reusable items, composting, and digital invoicing.",
+    "categoria": "Waste"
+  },
+  {
+    "id_habito": 12,
+    "nome_habito": "Eco-Friendly Cleaning",
+    "descricao_habito": "Use non-toxic, biodegradable products to clean your living spaces without harming waterways.",
+    "categoria": "Eco-Friendly Cleaning"
+  },
+  {
+    "id_habito": 2,
     "nome_habito": "Water",
-    "descricao_habito": "Record daily water consumption to increase awareness.",
+    "descricao_habito": "Monitor your daily water usage, shorten showers, and proactively fix leaks.",
     "categoria": "Water"
   },
   {
+    "id_habito": 15,
+    "nome_habito": "Smart Heating & Cooling",
+    "descricao_habito": "Manage indoor ambient temperatures naturally before utilizing climate control appliances.",
+    "categoria": "Smart Heating & Cooling"
+  },
+  {
+    "id_habito": 11,
+    "nome_habito": "Paper Saving",
+    "descricao_habito": "Eliminate single-use paper items by switching to digital alternatives and cloth items.",
+    "categoria": "Paper Saving"
+  },
+  {
+    "id_habito": 6,
+    "nome_habito": "Community",
+    "descricao_habito": "Organize clothing drives, collect local litter, and back neighborhood eco-initiatives.",
+    "categoria": "Community"
+  },
+  {
+    "id_habito": 20,
+    "nome_habito": "Advocacy & Sharing",
+    "descricao_habito": "Share dynamic ecological tips and collaborate on group sustainability ideas with peers.",
+    "categoria": "Advocacy & Sharing"
+  },
+  {
+    "id_habito": 3,
     "nome_habito": "Recycling",
-    "descricao_habito": "Sort household waste into the respective recycling bins.",
+    "descricao_habito": "Sort standard domestic waste collections cleanly into dedicated recycling networks.",
     "categoria": "Recycling"
   },
   {
-    "nome_habito": "Energy",
-    "descricao_habito": "Dry clothes on a drying rack instead of using a machine.",
-    "categoria": "Energy"
+    "id_habito": 16,
+    "nome_habito": "Plastic Reductions",
+    "descricao_habito": "Refuse hidden single-use plastics like produce wraps, cutlery, and microplastic sources.",
+    "categoria": "Plastic Reductions"
   },
   {
-    "nome_habito": "Energy",
-    "descricao_habito": "Avoid the elevator to save electricity and get exercise.",
-    "categoria": "Energy"
-  },
-  {
-    "nome_habito": "Gardening / Watering",
-    "descricao_habito": "Take care of houseplants or the garden regularly.",
-    "categoria": "Gardening / Watering"
-  },
-  {
-    "nome_habito": "Water",
-    "descricao_habito": "Report and fix water leaks / use campus refill stations.",
-    "categoria": "Water"
-  },
-  {
-    "nome_habito": "Community",
-    "descricao_habito": "Pick up trash found during a walk.",
-    "categoria": "Community"
-  },
-  {
-    "nome_habito": "Waste",
-    "descricao_habito": "Buy second-hand or campus-swapped clothes instead of new.",
-    "categoria": "Waste"
-  },
-  {
-    "nome_habito": "Gardening / Watering",
-    "descricao_habito": "Take care of houseplants or the garden regularly.",
-    "categoria": "Gardening / Watering"
-  },
-  {
-    "nome_habito": "Community",
-    "descricao_habito": "Participate in a reforestation initiative.",
-    "categoria": "Community"
-  },
-  {
-    "nome_habito": "Community",
-    "descricao_habito": "Participate in a reforestation initiative.",
-    "categoria": "Community"
-  },
-  {
-    "nome_habito": "Waste",
-    "descricao_habito": "Request invoices via email instead of paper.",
-    "categoria": "Waste"
-  },
-  {
-    "nome_habito": "Waste",
-    "descricao_habito": "Place organic waste in the composter.",
-    "categoria": "Waste"
-  },
-  {
-    "nome_habito": "Food",
-    "descricao_habito": "Eat exclusively vegetarian meals once a week.",
-    "categoria": "Food"
-  },
-  {
-    "nome_habito": "Food",
-    "descricao_habito": "Buy fresh produce at the local market.",
-    "categoria": "Food"
-  },
-  {
-    "nome_habito": "Waste",
-    "descricao_habito": "Use a reusable water bottle daily.",
-    "categoria": "Waste"
-  },
-  {
-    "nome_habito": "Food",
-    "descricao_habito": "Buy fresh produce at the local market.",
-    "categoria": "Food"
-  },
-  {
-    "nome_habito": "Community",
-    "descricao_habito": "Sort old clothes for donation.",
-    "categoria": "Community"
-  },
-  {
-    "nome_habito": "Energy",
-    "descricao_habito": "Replace old light bulbs with LED technology.",
-    "categoria": "Energy"
-  },
-  {
-    "nome_habito": "Energy",
-    "descricao_habito": "Avoid the elevator to save electricity and get exercise.",
-    "categoria": "Energy"
-  },
-  {
-    "nome_habito": "Water",
-    "descricao_habito": "Report and fix water leaks / use campus refill stations.",
-    "categoria": "Water"
-  },
-  {
-    "nome_habito": "Waste",
-    "descricao_habito": "Buy second-hand or campus-swapped clothes instead of new.",
-    "categoria": "Waste"
-  },
-  {
-    "nome_habito": "Community",
-    "descricao_habito": "Pick up trash found during a walk.",
-    "categoria": "Community"
-  },
-  {
-    "nome_habito": "Gardening / Watering",
-    "descricao_habito": "Take care of houseplants or the garden regularly.",
-    "categoria": "Gardening / Watering"
-  },
-  {
-    "nome_habito": "Waste",
-    "descricao_habito": "Place organic waste in the composter.",
-    "categoria": "Waste"
-  },
-  {
+    "id_habito": 8,
     "nome_habito": "Sustainable Mobility",
-    "descricao_habito": "Use a bicycle instead of a car for short distances.",
+    "descricao_habito": "Reduce travel emissions by using bicycles, walking, carpooling, or riding public transit.",
     "categoria": "Sustainable Mobility"
   },
   {
-    "nome_habito": "Energy",
-    "descricao_habito": "Avoid the elevator to save electricity and get exercise.",
-    "categoria": "Energy"
+    "id_habito": 13,
+    "nome_habito": "Circular Fashion",
+    "descricao_habito": "Repair old garments, upcycle worn textiles, and swap clothes instead of buying new.",
+    "categoria": "Circular Fashion"
   },
   {
-    "nome_habito": "Energy",
-    "descricao_habito": "Avoid the elevator to save electricity and get exercise.",
-    "categoria": "Energy"
+    "id_habito": 5,
+    "nome_habito": "Gardening / Watering",
+    "descricao_habito": "Cultivate biodiversity by taking care of green spaces and maintaining domestic plants.",
+    "categoria": "Gardening / Watering"
   },
   {
-    "nome_habito": "Waste",
-    "descricao_habito": "Use a reusable water bottle daily.",
-    "categoria": "Waste"
+    "id_habito": 10,
+    "nome_habito": "Conscious Shopping",
+    "descricao_habito": "Prioritize ethical certifications, minimal packaging, and durable goods over fast trends.",
+    "categoria": "Conscious Shopping"
+  },
+  {
+    "id_habito": 17,
+    "nome_habito": "Sustainable Learning",
+    "descricao_habito": "Dedicate regular time to reading, listening, or watching materials on environmental science.",
+    "categoria": "Sustainable Learning"
+  },
+  {
+    "id_habito": 19,
+    "nome_habito": "Green Workspace",
+    "descricao_habito": "Adopt environmentally conscious workflows within your office, desk setup, or campus classroom.",
+    "categoria": "Green Workspace"
   }
 ]

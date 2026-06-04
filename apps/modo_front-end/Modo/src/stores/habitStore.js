@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import Habit from '../Models/habitModel'
+import Habit from '../models/habitModel'
 import { useUserStore } from '@/stores/userStore'
 import {
   createHabit as apiCreateHabit,

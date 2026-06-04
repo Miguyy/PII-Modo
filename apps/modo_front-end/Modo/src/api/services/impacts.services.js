@@ -80,8 +80,8 @@ export async function getAllImpacts(token) {
  *   - valor_por_unidade (number > 0)
  *   - unidade (string: Litters | kWh | kg | km | kg CO2e)
  */
-export async function createImpact(payload, token) {
-  const res = await fetch(`${BASE_URL}/impacts`, {
+export async function createImpact(payload, token, taskId) {
+  const res = await fetch(`${BASE_URL}/tasks/${taskId}/impacts`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -115,8 +115,24 @@ export async function deleteImpact(impactId, token) {
   return handleResponse(res)
 }
 
+/**
+ * getTaskImpacts(taskId, token)
+ * * Retrieves all impact entries associated with a specific task ID.
+ * Backend route: GET /tasks/:taskId/impacts
+ */
+export async function getTaskImpacts(taskId, token) {
+  const res = await fetch(`${BASE_URL}/tasks/${taskId}/impacts`, {
+    headers: {
+      ...bearerHeaders(token),
+    },
+  })
+
+  return handleResponse(res)
+}
+
 export default {
   getAllImpacts,
   createImpact,
   deleteImpact,
+  getTaskImpacts,
 }
