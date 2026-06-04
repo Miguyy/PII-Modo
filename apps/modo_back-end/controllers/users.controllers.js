@@ -173,6 +173,8 @@ export const createUser = async (req, res, next) => {
     // Create user using model column names
     const user = await User.create(payload);
 
+    console.log(`[ADMIN ACTION] User ${requester ? (requester.id_utilizador || requester.dataValues?.id_utilizador) : 'Unknown Admin'} CREATED new User: ${email} (ID: ${user.id_utilizador})`);
+
     // Include HATEOAS links in the response
     const response = {
       ...user.toJSON(),
@@ -363,6 +365,7 @@ export const updateUser = async (req, res, next) => {
       imagem_utilizador: imageFromBody,
       avatarDecoration,
       id_decoracao,
+      pontos,
     } = req.body;
     const requester = req.user; // authenticated requester
 
@@ -433,6 +436,7 @@ export const updateUser = async (req, res, next) => {
     if (password !== undefined)
       updates.hashed_password = await bcrypt.hash(password, 10);
     if (nome !== undefined) updates.nome = nome;
+    if (pontos !== undefined && requesterRole === "admin") updates.pontos = Number(pontos);
     if (avatar !== undefined) updates.imagem_utilizador = avatar;
     if (imageFromBody !== undefined)
       updates.imagem_utilizador = imageFromBody;
@@ -477,6 +481,8 @@ export const updateUser = async (req, res, next) => {
         id_decoracao !== undefined ? id_decoracao : avatarDecoration,
       );
     }
+
+    console.log(`[ADMIN ACTION] User ${requesterId || 'Unknown Admin'} UPDATED User ID: ${userId}`);
 
     // Include HATEOAS links in the response
     res.status(200).json(await buildUserResponse(targetUser));
@@ -554,6 +560,8 @@ export const deleteUser = async (req, res, next) => {
 
     // Finally remove the user record itself
     await targetUser.destroy();
+
+    console.log(`[ADMIN ACTION] User ${requesterId || 'Unknown Admin'} DELETED User ID: ${userId}`);
 
     res.status(204).send();
   } catch (error) {

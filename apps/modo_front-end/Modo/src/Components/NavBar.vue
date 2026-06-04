@@ -2,7 +2,7 @@
 /* Imports */
 import { useUserStore } from '../stores/userStore'
 import { useRouter, useRoute } from 'vue-router'
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 
 /* Logic */
 const userStore = useUserStore()
@@ -10,7 +10,28 @@ const router = useRouter()
 const route = useRoute()
 
 const user = computed(() => userStore.currentUser)
-const isAdmin = computed(() => user.value && user.value.priority === 2)
+
+const isAdmin = computed(
+  () => (userStore.currentUser?.tipo_utilizador || '').toLowerCase() === 'admin',
+)
+
+onMounted(async () => {
+  if (!userStore.currentUser && userStore.loadFromLocalStorage) {
+    await userStore.loadFromLocalStorage()
+
+    // opcional mas recomendado: se tens token mas não tens user, rehidrata
+    if (userStore.token && !userStore.currentUser) {
+      try {
+        const payload = JSON.parse(atob(userStore.token.split('.')[1]))
+        if (payload?.id || payload?.id_utilizador) {
+          await userStore.fetchCurrentUser(payload.id || payload.id_utilizador)
+        }
+      } catch (e) {
+        console.warn('Token decode failed:', e)
+      }
+    }
+  }
+})
 
 const scrollToSection = (hash) => {
   if (route.path === '/') {

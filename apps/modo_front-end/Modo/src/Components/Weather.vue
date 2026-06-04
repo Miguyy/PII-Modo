@@ -32,60 +32,26 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { useOpenWeatherApiStore } from '@/stores/openWeatherApiStore'
+import { computed } from 'vue'
 
-export default {
-  name: 'WeatherView',
+const weatherStore = useOpenWeatherApiStore()
 
-  data() {
-    return {
-      city: 'Vila do Conde',
-      country: 'PT',
-    }
-  },
+const isDay = computed(() => {
+  if (!weatherStore.weatherData) return false
+  return weatherStore.weatherData.weather[0].icon.endsWith('d')
+})
 
-  computed: {
-    weatherStore() {
-      return useOpenWeatherApiStore()
-    },
-    isDay() {
-      if (!this.weatherStore.weatherData) return false
-      return this.weatherStore.weatherData.weather[0].icon.endsWith('d')
-    },
-    iconUrl() {
-      if (!this.weatherStore.weatherData) return ''
-      const icon = this.weatherStore.weatherData.weather[0].icon
-      return `https://openweathermap.org/img/wn/${icon}@2x.png`
-    },
-  },
+const iconUrl = computed(() => {
+  if (!weatherStore.weatherData) return ''
+  const icon = weatherStore.weatherData.weather[0].icon
+  return `https://openweathermap.org/img/wn/${icon}@2x.png`
+})
 
-  methods: {
-    loadWeather() {
-      this.weatherStore.fetchCurrentWeather(this.city, this.country)
-    },
-
-    loadWeatherByUserLocation() {
-      if (!navigator.geolocation) {
-        this.weatherStore.error = 'Gelocation is not supported by your browser'
-        return
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords
-          this.weatherStore.fetchCurrentWeatherByLocation(latitude, longitude)
-        },
-        (error) => {
-          this.weatherStore.error = 'Permission to access location was denied'
-          console.error(error)
-        },
-      )
-    },
-  },
-
-  mounted() {
-    this.loadWeatherByUserLocation()
-  },
+// To allow manual refresh, emit an event or just do nothing since weather doesn't change rapidly
+const emit = defineEmits(['refresh'])
+function loadWeather() {
+  emit('refresh')
 }
 </script>

@@ -20,6 +20,7 @@ export const useUserStore = defineStore('user', {
     usersMeta: { total: 0, page: 1, limit: 5, pages: 1 },
     loading: false,
     error: null,
+    token: null,
   }),
 
   getters: {
@@ -120,6 +121,14 @@ export const useUserStore = defineStore('user', {
         const parsed = JSON.parse(raw)
         this.currentUser = this._normalizeUser(parsed.currentUser || null)
         this.role = parsed.role || null
+        this.users = parsed.users || []
+        this.notifications = parsed.notifications || []
+        this.decorations = parsed.decorations || []
+        this.usersMeta = parsed.usersMeta || { total: 0, page: 1, limit: 5, pages: 1 }
+        this.token = parsed.token || null
+        if (this.token) {
+          sessionStorage.setItem('modo_token', this.token)
+        }
         const savedUserId = this.currentUser?.id_utilizador ?? this.currentUser?.id
         if (savedUserId) {
           await this.fetchCurrentUser(savedUserId)
@@ -135,6 +144,11 @@ export const useUserStore = defineStore('user', {
         localStorage.setItem(STORAGE_KEY, JSON.stringify({
           currentUser: this.currentUser,
           role: this.role,
+          users: this.users,
+          notifications: this.notifications,
+          decorations: this.decorations,
+          usersMeta: this.usersMeta,
+          token: this.token,
         }))
       } catch (err) {
         console.error('Failed saving user to localStorage', err)
@@ -152,6 +166,10 @@ export const useUserStore = defineStore('user', {
       this.error = null
       try {
         const data = await login(email, password)
+        if (data.token) {
+          this.token = data.token
+          sessionStorage.setItem('modo_token', data.token)
+        }
         this.role = data.tipo_utilizador || data.role
         const userId = data.id_utilizador ?? data.id
         if (!userId) throw new Error(`Login response missing user ID: ${JSON.stringify(data)}`)
@@ -169,6 +187,8 @@ export const useUserStore = defineStore('user', {
       try {
         await logoutApi()
       } finally {
+        sessionStorage.removeItem('modo_token')
+        this.token = null
         this._clearSession()
       }
     },
@@ -273,7 +293,7 @@ export const useUserStore = defineStore('user', {
 
     async loadDecorations() {
       // Request up to 200 so we always get all decorations regardless of default page limit
-      const data = await getAllDecorations({ limit: 200 })
+      const data = await getAllDecorations({ limit: 200 }, this.token)
       const list = data?.data || data || []
       this.decorations = list
         .map((d) => this._normalizeDecoration(d))
@@ -292,7 +312,7 @@ export const useUserStore = defineStore('user', {
       this.loading = true
       this.error = null
       try {
-        const data = await getAllUsers(params)
+        const data = await getAllUsers(this.token, params)
         this.users = data.data || []
         this.usersMeta = data.meta || this.usersMeta
         return data

@@ -56,8 +56,15 @@ function bearerHeaders(token) {
  * Authentication:
  *   Required
  */
-export async function getAllHabits(token) {
-  const res = await fetch(`${BASE_URL}/habits`, {
+export async function getAllHabits(token, params = {}) {
+  const qs = new URLSearchParams()
+  Object.entries(params).forEach(([k, v]) => {
+    if (v !== undefined && v !== null && v !== '') qs.set(k, v)
+  })
+  const query = qs.toString() ? `?${qs.toString()}` : ''
+
+  const res = await fetch(`${BASE_URL}/habits${query}`, {
+    credentials: 'include',
     headers: {
       ...bearerHeaders(token),
     },

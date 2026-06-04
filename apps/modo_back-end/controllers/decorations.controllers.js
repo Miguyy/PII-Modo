@@ -5,9 +5,8 @@
   Includes protections against Mass Assignment by destructuring req.body.
 */
 
-import { AvatarDecoration } from "../config/db.config.js";
+import { AvatarDecoration, UserDecorations, User, Notification } from "../config/db.config.js";
 import { Op } from "sequelize";
-import { UserDecorations } from "../config/db.config.js";
 import {
   conflictError,
   notFoundError,
@@ -119,6 +118,26 @@ export const createDecoration = async (req, res, next) => {
       nivel_necessario,
       caminho_decoracao,
     });
+
+    const requesterId = req.user ? (req.user.id_utilizador || req.user.dataValues?.id_utilizador) : 'Unknown Admin';
+    console.log(`[ADMIN ACTION] User ${requesterId} CREATED new Decoration: ${nome_decoracao} (ID: ${decoration.id_decoracao})`);
+
+    // Auto-broadcast new feature
+    try {
+      const users = await User.findAll({ attributes: ["id_utilizador"] });
+      if (users && users.length > 0) {
+        const notificationsToInsert = users.map(u => ({
+          id_utilizador: u.id_utilizador,
+          mensagem: `The system was updated with new features: ${nome_decoracao}`,
+          tipo_notificacao: 'System',
+          lida: false,
+        }));
+        await Notification.bulkCreate(notificationsToInsert);
+        console.log(`[ADMIN ACTION] Auto-broadcasted new decoration feature to ${users.length} users.`);
+      }
+    } catch (bcError) {
+      console.error('Failed to auto-broadcast decoration creation:', bcError);
+    }
 
     res.status(201).json({
       ...decoration.toJSON(),
@@ -232,6 +251,9 @@ export const updateDecoration = async (req, res, next) => {
       caminho_decoracao: newCaminho,
     });
 
+    const requesterId = req.user ? (req.user.id_utilizador || req.user.dataValues?.id_utilizador) : 'Unknown Admin';
+    console.log(`[ADMIN ACTION] User ${requesterId} UPDATED Decoration ID: ${decoration.id_decoracao}`);
+
     res.status(200).json({
       ...updated.toJSON(),
       links: [
@@ -272,6 +294,10 @@ export const deleteDecoration = async (req, res, next) => {
       where: { id_decoracao: decoration.id_decoracao },
     });
     await decoration.destroy();
+
+    const requesterId = req.user ? (req.user.id_utilizador || req.user.dataValues?.id_utilizador) : 'Unknown Admin';
+    console.log(`[ADMIN ACTION] User ${requesterId} DELETED Decoration ID: ${id}`);
+
     res.status(204).send();
   } catch (error) {
     return next(genericError());
