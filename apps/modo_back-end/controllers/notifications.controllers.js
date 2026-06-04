@@ -4,7 +4,7 @@
   Includes protections against Mass Assignment by destructuring req.body.
 */
 
-import { Notification } from "../config/db.config.js";
+import { Notification, User } from "../config/db.config.js";
 import {
   validationError,
   forbiddenError,
@@ -102,6 +102,54 @@ export const createNotification = async (req, res, next) => {
           href: `/notifications/${notification.id_notificacao}`,
         },
       ],
+    });
+  } catch (error) {
+    return next(genericError());
+  }
+};
+
+export const broadcastNotification = async (req, res, next) => {
+  try {
+    const requester = req.user;
+    const requesterRole = (
+      (requester &&
+        (requester.tipo_utilizador || requester.dataValues?.tipo_utilizador)) ||
+      ""
+    ).toLowerCase();
+    if (requesterRole !== "admin") return next(forbiddenError());
+
+    const { mensagem, tipo_notificacao } = req.body;
+
+    if (!mensagem || !tipo_notificacao) {
+      return next(
+        validationError({
+          mensagem: ["mensagem is required"],
+          tipo_notificacao: ["tipo_notificacao is required"],
+        }),
+      );
+    }
+
+    // Get all users
+    const users = await User.findAll({ attributes: ["id_utilizador"] });
+    if (!users || users.length === 0) {
+      return res.status(200).json({ message: "No users found to notify." });
+    }
+
+    // Prepare bulk insert
+    const notificationsToInsert = users.map(u => ({
+      id_utilizador: u.id_utilizador,
+      mensagem,
+      tipo_notificacao,
+      lida: false,
+    }));
+
+    await Notification.bulkCreate(notificationsToInsert);
+
+    const requesterId = req.user ? (req.user.id_utilizador || req.user.dataValues?.id_utilizador) : 'Unknown Admin';
+    console.log(`[ADMIN ACTION] User ${requesterId} BROADCASTED Notification (${tipo_notificacao}): ${mensagem}`);
+
+    res.status(201).json({
+      message: `Successfully broadcasted notification to ${notificationsToInsert.length} users.`,
     });
   } catch (error) {
     return next(genericError());

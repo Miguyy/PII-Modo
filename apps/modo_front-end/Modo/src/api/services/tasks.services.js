@@ -39,8 +39,15 @@ function bearerHeaders(token) {
  * Authentication:
  *   Required (admin + users allowed by backend)
  */
-export async function getAllTasks(token) {
-  const res = await fetch(`${BASE_URL}/tasks`, {
+export async function getAllTasks(token, params = {}) {
+  const qs = new URLSearchParams()
+  Object.entries(params).forEach(([k, v]) => {
+    if (v !== undefined && v !== null && v !== '') qs.set(k, v)
+  })
+  const query = qs.toString() ? `?${qs.toString()}` : ''
+
+  const res = await fetch(`${BASE_URL}/tasks${query}`, {
+    credentials: 'include',
     headers: {
       ...bearerHeaders(token),
     },

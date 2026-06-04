@@ -56,7 +56,7 @@
                     sortDir === 'asc' ? '▲' : '▼'
                   }}</span>
                 </th>
-                <th class="sortable" @click="toggleSort('name')">
+                <th style="width: 200px" class="sortable" @click="toggleSort('name')">
                   Name
                   <span class="sort-indicator" v-if="sortKey === 'name'">{{
                     sortDir === 'asc' ? '▲' : '▼'
@@ -86,7 +86,7 @@
                     sortDir === 'asc' ? '▲' : '▼'
                   }}</span>
                 </th>
-                <th style="width: 120px">Actions</th>
+                <th style="width: 180px">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -100,6 +100,13 @@
                 </td>
                 <td>{{ formatDate(user.createdAt) }}</td>
                 <td>
+                  <button
+                    class="action-icon action-edit me-2"
+                    @click="openDirectMessageModal(user)"
+                    title="Direct Message"
+                  >
+                    <i class="bi bi-envelope" aria-hidden="true"></i>
+                  </button>
                   <button
                     class="action-icon action-edit me-2"
                     @click="openEditModal(user)"
@@ -138,6 +145,34 @@
               </li>
             </ul>
           </nav>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!--  GLOBAL NOTIFICATIONS                                           -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="container mb-5">
+      <div class="card shadow-sm border-0" style="background: linear-gradient(to right, #f8fffe, #ffffff);">
+        <div class="card-header bg-transparent border-0 pt-4 pb-0 d-flex align-items-center gap-2">
+          <i class="bi bi-broadcast fs-4 text-success" style="color: #355d4c !important;"></i>
+          <h5 class="mb-0" style="color: #355d4c; font-weight: 600;">Broadcast Notification</h5>
+        </div>
+        <div class="card-body pt-2">
+          <p class="text-muted small mb-3">Send a system-wide or admin message to <strong>all registered users</strong>.</p>
+          <div class="row g-3 align-items-end">
+            <div class="col-md-12">
+              <label class="form-label small text-muted fw-semibold mb-1">Message content</label>
+              <div class="input-group">
+                <input type="text" class="form-control border-success-subtle" v-model="notifMessage" placeholder="Type notification message here..." @keyup.enter="sendAdminNotification" />
+                <button class="btn text-white px-4 shadow-sm" style="background-color: #355d4c;" @click="sendAdminNotification" :disabled="notifSending">
+                  <i v-if="notifSending" class="bi bi-hourglass-split me-1"></i>
+                  <i v-else class="bi bi-send-fill me-1"></i>
+                  {{ notifSending ? 'Sending...' : 'Broadcast' }}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -637,6 +672,44 @@
   </div>
 
   <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!--  DIRECT MESSAGE MODAL                                           -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div v-if="dmModalVisible" class="custom-modal-backdrop">
+    <div class="modal-panel" style="max-width: 480px; width: 100%">
+      <h5 class="mb-3 fw-bold" style="color: #355d4c">
+        Send Direct Message
+      </h5>
+      <p class="text-muted small mb-3">
+        Sending notification to: <strong>{{ dmTargetUser?.nome || dmTargetUser?.name || dmTargetUser?.id }}</strong>
+      </p>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Message</label>
+        <textarea
+          class="form-control"
+          rows="3"
+          v-model="dmMessage"
+          placeholder="Type message here..."
+        ></textarea>
+      </div>
+
+      <div class="d-flex justify-content-end gap-2 mt-4">
+        <button class="btn btn-outline-secondary" @click="closeDirectMessageModal" :disabled="dmSending">Cancel</button>
+        <button
+          class="btn btn-success px-4"
+          @click="sendDirectMessage"
+          style="background-color: #355d4c; border-color: #355d4c"
+          :disabled="dmSending"
+        >
+          <i v-if="dmSending" class="bi bi-hourglass-split me-1"></i>
+          <i v-else class="bi bi-send-fill me-1"></i>
+          {{ dmSending ? 'Sending...' : 'Send' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
   <!--  DECORATION MODAL                                              -->
   <!-- ═══════════════════════════════════════════════════════════════ -->
   <div v-if="decorationModalVisible" class="custom-modal-backdrop">
@@ -826,7 +899,7 @@
         <select v-model="editingTask.id_habito" class="form-select">
           <option :value="null">-- None --</option>
           <option
-            v-for="habit in habitStore.habits"
+            v-for="habit in allHabitsForDropdown"
             :key="habit.id_habito"
             :value="habit.id_habito"
           >
@@ -956,7 +1029,8 @@
           color: toast.title.includes('deleted') || toast.title === 'Error' ? '#b4554d' : '#00cc66',
         }"
       >
-        {{ toast.title.includes('deleted') || toast.title === 'Error' ? '🗑️' : '✅' }}
+        <i v-if="toast.title.includes('deleted') || toast.title === 'Error'" class="bi bi-trash"></i>
+        <i v-else class="bi bi-check-circle"></i>
       </div>
       <div class="toast-content">
         <strong>{{ toast.title }}</strong>
@@ -973,6 +1047,7 @@ import { useUserStore } from '@/stores/userStore'
 import { useHabitStore } from '@/stores/habitStore'
 import { updateUser as apiUpdateUser } from '../api/services/users.services.js'
 import {
+  getAllHabits,
   createHabit as apiCreateHabit,
   updateHabit as apiUpdateHabit,
   deleteHabit as apiDeleteHabit,
@@ -993,6 +1068,10 @@ import {
   updateDecoration,
   deleteDecoration,
 } from '../api/services/decorations.services.js'
+import {
+  broadcastNotification,
+  createNotification,
+} from '../api/services/notifications.services.js'
 
 const userStore = useUserStore()
 const habitStore = useHabitStore()
@@ -1004,6 +1083,84 @@ const taskSearch = ref('')
 
 const perPage = ref(5)
 let debounceTimer = null
+
+// All Habits for Task Assigment Dropdown
+const allHabitsForDropdown = ref([])
+async function syncAllHabitsForDropdown() {
+  try {
+    const res = await getAllHabits(userStore.token, { limit: 1000 })
+    allHabitsForDropdown.value = res.data || []
+  } catch (e) {
+    console.error('Failed to load all habits for dropdown:', e)
+  }
+}
+
+// Notifications State
+const notifType = ref('System')
+const notifMessage = ref('')
+const notifSending = ref(false)
+
+async function sendAdminNotification() {
+  if (!notifMessage.value.trim()) {
+    showToast('Error', 'Message cannot be empty')
+    return
+  }
+  notifSending.value = true
+  try {
+    const payload = {
+      tipo_notificacao: notifType.value,
+      mensagem: notifMessage.value.trim()
+    }
+    await broadcastNotification(payload, userStore.token)
+    showToast('Broadcast Sent', 'Notification sent to all users')
+    notifMessage.value = ''
+  } catch (err) {
+    showToast('Error', err.message || 'Failed to send notification')
+  } finally {
+    notifSending.value = false
+  }
+}
+
+// Direct Message State
+const dmModalVisible = ref(false)
+const dmTargetUser = ref(null)
+const dmType = ref('Admin')
+const dmMessage = ref('')
+const dmSending = ref(false)
+
+function openDirectMessageModal(user) {
+  dmTargetUser.value = user
+  dmType.value = 'Admin'
+  dmMessage.value = ''
+  dmModalVisible.value = true
+}
+
+function closeDirectMessageModal() {
+  dmModalVisible.value = false
+  dmTargetUser.value = null
+  dmMessage.value = ''
+}
+
+async function sendDirectMessage() {
+  if (!dmMessage.value.trim()) {
+    showToast('Error', 'Message cannot be empty')
+    return
+  }
+  dmSending.value = true
+  try {
+    const payload = {
+      tipo_notificacao: dmType.value,
+      mensagem: dmMessage.value.trim()
+    }
+    await createNotification(dmTargetUser.value.id || dmTargetUser.value.id_utilizador, payload, userStore.token)
+    showToast('Notification Sent', `Message sent to user ${dmTargetUser.value.name || dmTargetUser.value.id}`)
+    closeDirectMessageModal()
+  } catch(err) {
+    showToast('Error', err.message || 'Failed to send direct message')
+  } finally {
+    dmSending.value = false
+  }
+}
 let decorationDebounceTimer = null
 let habitDebounceTimer = null
 let taskDebounceTimer = null
@@ -1149,17 +1306,6 @@ async function confirmEdit() {
       tipo_utilizador: editingUser.value.priority,
     }
     await apiUpdateUser(userId, payload, userStore.token)
-    const idx = userStore.users.findIndex((u) => String(u.id_utilizador) === String(userId))
-    if (idx !== -1) {
-      userStore.users[idx] = {
-        ...userStore.users[idx],
-        nome: payload.nome,
-        email: payload.email,
-        pontos: payload.pontos,
-        tipo_utilizador: payload.tipo_utilizador,
-      }
-      if (userStore.saveToLocalStorage) userStore.saveToLocalStorage()
-    }
     await syncUsers()
     showToast('User modified', `${payload.nome} was modified successfully`)
   } catch (e) {
@@ -1205,13 +1351,13 @@ const imagePreviewUrl = ref('')
 
 async function syncDecorations() {
   try {
-    const response = await getAllDecorations(userStore.token || null, {
+    const response = await getAllDecorations({
       page: decorationCurrentPage.value,
       limit: decorationLimit.value,
       sort: decorationSortKey.value || 'id_decoracao',
       order: decorationSortDir.value.toUpperCase(),
       q: (decorationSearch.value || '').trim() || undefined,
-    })
+    }, userStore.token || null)
     if (response && response.data) {
       decorationsList.value = response.data
       decorationTotal.value = response.meta.total
@@ -1379,57 +1525,57 @@ function toggleHabitSort(key) {
     habitSortKey.value = key
     habitSortDir.value = 'asc'
   }
+  habitCurrentPage.value = 1
+  syncHabits()
 }
 
-const filteredHabits = computed(() => {
-  const q = (habitSearch.value || '').trim().toLowerCase()
-  let list = (habitStore.habits || []).map((h) => ({
+async function syncHabits() {
+  try {
+    await habitStore.fetchAdminHabits({
+      page: habitCurrentPage.value,
+      limit: habitLimit.value,
+      sort: habitSortKey.value === 'id' ? 'id_habito' : habitSortKey.value === 'title' ? 'nome_habito' : 'categoria',
+      order: habitSortDir.value.toUpperCase(),
+      q: habitSearch.value.trim() || undefined,
+    })
+  } catch (err) {
+    console.error('Failed to sync habits:', err)
+  }
+}
+
+const paginatedHabitsList = computed(() => {
+  return (habitStore.adminHabits || []).map((h) => ({
     id: h.id_habito ?? h.id,
     title: h.nome_habito ?? h.titulo ?? h.name ?? h.title ?? '',
     description: h.descricao_habito ?? h.descricao ?? h.description ?? '',
     category: h.categoria ?? h.category ?? '',
   }))
-  if (q)
-    list = list.filter(
-      (h) =>
-        h.title.toLowerCase().includes(q) ||
-        h.description.toLowerCase().includes(q) ||
-        h.category.toLowerCase().includes(q),
-    )
-  const key = habitSortKey.value
-  const dir = habitSortDir.value === 'asc' ? 1 : -1
-  list.sort((a, b) => {
-    if (key === 'id') return (Number(a.id || 0) - Number(b.id || 0)) * dir
-    return (
-      String(a[key] || '')
-        .toLowerCase()
-        .localeCompare(String(b[key] || '').toLowerCase()) * dir
-    )
-  })
-  return list
 })
 
-const totalHabitCount = computed(() => filteredHabits.value.length)
-const habitTotalPages = computed(() => Math.ceil(totalHabitCount.value / habitLimit.value) || 1)
-const paginatedHabitsList = computed(() => {
-  const start = (habitCurrentPage.value - 1) * habitLimit.value
-  return filteredHabits.value.slice(start, start + habitLimit.value)
-})
+const totalHabitCount = computed(() => habitStore.adminHabitsMeta?.total || 0)
+const habitTotalPages = computed(() => habitStore.adminHabitsMeta?.pages || 1)
 const habitPageLabel = computed(
   () =>
     `${String(habitCurrentPage.value).padStart(2, '0')} of ${String(habitTotalPages.value).padStart(2, '0')}`,
 )
 
 function prevHabitPage() {
-  if (habitCurrentPage.value > 1) habitCurrentPage.value--
+  if (habitCurrentPage.value > 1) {
+    habitCurrentPage.value--
+    syncHabits()
+  }
 }
 function nextHabitPage() {
-  if (habitCurrentPage.value < habitTotalPages.value) habitCurrentPage.value++
+  if (habitCurrentPage.value < habitTotalPages.value) {
+    habitCurrentPage.value++
+    syncHabits()
+  }
 }
 function handleHabitSearch() {
   clearTimeout(habitDebounceTimer)
   habitDebounceTimer = setTimeout(() => {
     habitCurrentPage.value = 1
+    syncHabits()
   }, 300)
 }
 function openAddHabitModal() {
@@ -1456,17 +1602,13 @@ async function saveHabit() {
       categoria: editingHabit.value.category || '',
     }
     if (isNewHabit.value) {
-      const created = await apiCreateHabit(payload, token)
-      habitStore.habits.push(created)
+      await apiCreateHabit(payload, token)
       showToast('Habit added', `"${payload.nome_habito}" was created successfully`)
     } else {
       await apiUpdateHabit(editingHabit.value.id, payload, token)
-      const idx = habitStore.habits.findIndex(
-        (h) => (h.id_habito ?? h.id) === editingHabit.value.id,
-      )
-      if (idx !== -1) habitStore.habits[idx] = { ...habitStore.habits[idx], ...payload }
       showToast('Habit updated', `"${payload.nome_habito}" was updated`)
     }
+    syncHabits()
   } catch (error) {
     const msg = error?.errors
       ? Object.values(error.errors).flat().join(', ')
@@ -1481,11 +1623,11 @@ async function handleDeleteHabit(id, title) {
   if (!confirm(`Are you sure you want to delete the habit "${title}"?`)) return
   try {
     await apiDeleteHabit(id, userStore.token)
-    const idx = habitStore.habits.findIndex((h) => (h.id_habito ?? h.id) === id)
-    if (idx !== -1) habitStore.habits.splice(idx, 1)
     showToast('Habit deleted', `"${title}" was removed`)
-    if (paginatedHabitsList.value.length === 0 && habitCurrentPage.value > 1)
+    if (paginatedHabitsList.value.length === 1 && habitCurrentPage.value > 1) {
       habitCurrentPage.value--
+    }
+    syncHabits()
   } catch (error) {
     showToast('Error', error?.message || 'Failed to delete habit')
   }
@@ -1538,11 +1680,26 @@ function toggleTaskSort(key) {
     taskSortKey.value = key
     taskSortDir.value = 'asc'
   }
+  taskCurrentPage.value = 1
+  syncTasks()
 }
 
-const filteredTasks = computed(() => {
-  const q = (taskSearch.value || '').trim().toLowerCase()
-  let list = (habitStore.tasks || []).map((t) => ({
+async function syncTasks() {
+  try {
+    await habitStore.fetchAdminTasks({
+      page: taskCurrentPage.value,
+      limit: taskLimit.value,
+      sort: taskSortKey.value === 'id' ? 'id_tarefa' : taskSortKey.value === 'title' ? 'nome_tarefa' : taskSortKey.value === 'points' ? 'pontos_tarefa' : taskSortKey.value === 'type' ? 'tipo_tarefa' : taskSortKey.value === 'priority' ? 'prioridade_tarefa' : 'id_tarefa',
+      order: taskSortDir.value.toUpperCase(),
+      q: taskSearch.value.trim() || undefined,
+    })
+  } catch (err) {
+    console.error('Failed to sync tasks:', err)
+  }
+}
+
+const paginatedTasksList = computed(() => {
+  return (habitStore.adminTasks || []).map((t) => ({
     id: t.id_tarefa ?? t.id,
     title: t.nome_tarefa ?? t.title ?? 'Untitled Task',
     points: t.pontos_tarefa ?? t.points ?? 0,
@@ -1553,41 +1710,32 @@ const filteredTasks = computed(() => {
     quantidade_necessaria: t.quantidade_necessaria ?? null,
     id_habito: t.id_habito ?? null,
   }))
-  if (q) list = list.filter((t) => t.title.toLowerCase().includes(q))
-  const key = taskSortKey.value
-  const dir = taskSortDir.value === 'asc' ? 1 : -1
-  list.sort((a, b) => {
-    if (key === 'id' || key === 'points') return (Number(a[key] || 0) - Number(b[key] || 0)) * dir
-    return (
-      String(a[key] || '')
-        .toLowerCase()
-        .localeCompare(String(b[key] || '').toLowerCase()) * dir
-    )
-  })
-  return list
 })
 
-const totalTaskCount = computed(() => filteredTasks.value.length)
-const taskTotalPages = computed(() => Math.ceil(totalTaskCount.value / taskLimit.value) || 1)
-const paginatedTasksList = computed(() => {
-  const start = (taskCurrentPage.value - 1) * taskLimit.value
-  return filteredTasks.value.slice(start, start + taskLimit.value)
-})
+const totalTaskCount = computed(() => habitStore.adminTasksMeta?.total || 0)
+const taskTotalPages = computed(() => habitStore.adminTasksMeta?.pages || 1)
 const taskPageLabel = computed(
   () =>
     `${String(taskCurrentPage.value).padStart(2, '0')} of ${String(taskTotalPages.value).padStart(2, '0')}`,
 )
 
 function prevTaskPage() {
-  if (taskCurrentPage.value > 1) taskCurrentPage.value--
+  if (taskCurrentPage.value > 1) {
+    taskCurrentPage.value--
+    syncTasks()
+  }
 }
 function nextTaskPage() {
-  if (taskCurrentPage.value < taskTotalPages.value) taskCurrentPage.value++
+  if (taskCurrentPage.value < taskTotalPages.value) {
+    taskCurrentPage.value++
+    syncTasks()
+  }
 }
 function handleTaskSearch() {
   clearTimeout(taskDebounceTimer)
   taskDebounceTimer = setTimeout(() => {
     taskCurrentPage.value = 1
+    syncTasks()
   }, 300)
 }
 
@@ -1674,15 +1822,13 @@ async function saveTask() {
   try {
     const token = userStore.token
     if (isNewTask.value) {
-      const created = await apiCreateTask(payload, token)
-      habitStore.tasks.push(created)
+      await apiCreateTask(payload, token)
       showToast('Task added', `"${payload.nome_tarefa}" was created`)
     } else {
       await apiUpdateTask(editingTask.value.id, payload, token)
-      const idx = habitStore.tasks.findIndex((t) => (t.id_tarefa ?? t.id) === editingTask.value.id)
-      if (idx !== -1) habitStore.tasks[idx] = { ...habitStore.tasks[idx], ...payload }
       showToast('Task updated', `"${payload.nome_tarefa}" was updated`)
     }
+    syncTasks()
   } catch (error) {
     const msg = error?.errors
       ? Object.values(error.errors).flat().join(', ')
@@ -1697,12 +1843,13 @@ async function handleDeleteTask(id, title) {
   if (!confirm(`Are you sure you want to delete the task "${title}"?`)) return
   try {
     await apiDeleteTask(id, userStore.token)
-    const idx = habitStore.tasks.findIndex((t) => (t.id_tarefa ?? t.id) === id)
-    if (idx !== -1) habitStore.tasks.splice(idx, 1)
     // Also remove impacts for this task from local cache
     allImpacts.value = allImpacts.value.filter((imp) => imp.id_tarefa !== id)
     showToast('Task deleted', `"${title}" was removed`)
-    if (paginatedTasksList.value.length === 0 && taskCurrentPage.value > 1) taskCurrentPage.value--
+    if (paginatedTasksList.value.length === 1 && taskCurrentPage.value > 1) {
+      taskCurrentPage.value--
+    }
+    syncTasks()
   } catch (error) {
     showToast('Error', error?.message || 'Failed to delete task')
   }
@@ -1793,11 +1940,9 @@ onMounted(async () => {
   syncUsers()
   syncDecorations()
   syncImpacts()
-  try {
-    await habitStore.fetchHabitsAndTasks()
-  } catch (err) {
-    console.error('Failed to initialize admin dashboard panels:', err)
-  }
+  syncHabits()
+  syncTasks()
+  syncAllHabitsForDropdown()
 })
 </script>
 

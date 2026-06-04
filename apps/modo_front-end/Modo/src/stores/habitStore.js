@@ -20,6 +20,13 @@ export const PRIORITY_POINTS = {
 export const useHabitStore = defineStore('habitStore', {
   state: () => ({
     habits: [],
+    catalogHabits: [],
+    catalogTasks: [],
+    catalogTasksByHabitId: {},
+    adminHabits: [],
+    adminHabitsMeta: { page: 1, limit: 5, total: 0, pages: 1 },
+    adminTasks: [],
+    adminTasksMeta: { page: 1, limit: 5, total: 0, pages: 1 },
   }),
 
   getters: {
@@ -30,6 +37,97 @@ export const useHabitStore = defineStore('habitStore', {
   },
 
   actions: {
+    async fetchHabitsAndTasks(filters = {}) {
+      try {
+        const { getAllHabits } = await import('@/api/services/habits.services');
+        const { getAllTasks } = await import('@/api/services/tasks.services');
+        
+        // Extract modo_user token if missing from sessionStorage
+        let token = sessionStorage.getItem('modo_token');
+        if (!token) {
+          try {
+            const raw = localStorage.getItem('modo_user');
+            if (raw) {
+               const parsed = JSON.parse(raw);
+               if (parsed.token) token = parsed.token;
+            }
+          } catch(e) {}
+        }
+        
+        // Ensure filters are appropriately passed
+        const habitParams = filters.q ? { q: filters.q } : {};
+        const [habitsData, tasksData] = await Promise.all([
+          getAllHabits(token, habitParams).catch(() => []),
+          getAllTasks(token, filters).catch(() => [])
+        ]);
+
+        this.catalogHabits = Array.isArray(habitsData) ? habitsData : (habitsData?.data || []);
+        this.catalogTasks = Array.isArray(tasksData) ? tasksData : (tasksData?.data || []);
+
+        const tasksByHabit = {};
+        this.catalogTasks.forEach(task => {
+          if (!tasksByHabit[task.id_habito]) {
+            tasksByHabit[task.id_habito] = [];
+          }
+          tasksByHabit[task.id_habito].push(task);
+        });
+        this.catalogTasksByHabitId = tasksByHabit;
+
+      } catch (err) {
+        console.error('Error fetching global catalog for explore page:', err);
+      }
+    },
+
+    async fetchAdminHabits(params = {}) {
+      try {
+        const { getAllHabits } = await import('@/api/services/habits.services');
+        let token = sessionStorage.getItem('modo_token');
+        if (!token) {
+          try {
+            const raw = localStorage.getItem('modo_user');
+            if (raw) {
+               const parsed = JSON.parse(raw);
+               if (parsed.token) token = parsed.token;
+            }
+          } catch(e) {}
+        }
+        const data = await getAllHabits(token, params);
+        if (data && Array.isArray(data.data)) {
+           this.adminHabits = data.data;
+           if (data.meta) this.adminHabitsMeta = data.meta;
+        } else if (Array.isArray(data)) {
+           this.adminHabits = data;
+        }
+      } catch (err) {
+        console.error('Failed to fetch admin habits:', err);
+      }
+    },
+
+    async fetchAdminTasks(params = {}) {
+      try {
+        const { getAllTasks } = await import('@/api/services/tasks.services');
+        let token = sessionStorage.getItem('modo_token');
+        if (!token) {
+          try {
+            const raw = localStorage.getItem('modo_user');
+            if (raw) {
+               const parsed = JSON.parse(raw);
+               if (parsed.token) token = parsed.token;
+            }
+          } catch(e) {}
+        }
+        const data = await getAllTasks(token, params);
+        if (data && Array.isArray(data.data)) {
+           this.adminTasks = data.data;
+           if (data.meta) this.adminTasksMeta = data.meta;
+        } else if (Array.isArray(data)) {
+           this.adminTasks = data;
+        }
+      } catch (err) {
+        console.error('Failed to fetch admin tasks:', err);
+      }
+    },
+
     // ----- Persistência -----
     loadFromLocalStorage() {
       const raw = localStorage.getItem(LOCAL_KEY)

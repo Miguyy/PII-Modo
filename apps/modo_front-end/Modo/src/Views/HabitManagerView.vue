@@ -10,13 +10,13 @@
       <div class="col-12 col-md-4 col-lg-4">
         <div class="weather-box shadow p-3 h-100">
           <!-- Weather Component Box -->
-          <Weather />
+          <Weather @refresh="fetchLocationAndWeather" />
         </div>
       </div>
       <div class="col-12 col-md-4 col-lg-4">
         <div class="charts-box p-3 h-100">
           <!-- Habit Stats Chart Box -->
-          <HabitStatsChart />
+          <HabitStatsChart :tasks="apiUserTasks" />
         </div>
       </div>
       <div class="col-12 col-md-4 col-lg-4">
@@ -452,6 +452,8 @@ import * as bootstrap from 'bootstrap'
 import NavBar from '../Components/NavBar.vue'
 import Weather from '@/Components/Weather.vue'
 import HabitStatsChart from '@/Components/HabitStatsChart.vue'
+import { getLocation, createLocation, updateLocation } from '@/api/services/locations.services'
+import { getUserTasks, deleteUserTask, completeUserTask, updateUserTask } from '@/api/services/userTasks.services'
 
 // Initialize stores
 const habitStore = useHabitStore()
@@ -490,12 +492,91 @@ function showToast(title, message, duration = 3000) {
   }, duration)
 }
 
-// Lifecycle hook: restore persisted state and reconcile timers
-onMounted(() => {
+onMounted(async () => {
   habitStore.loadFromLocalStorage()
   habitStore.reconcileRunningTimers()
-  if (userStore.loadFromLocalStorage) userStore.loadFromLocalStorage()
+  if (userStore.loadFromLocalStorage) await userStore.loadFromLocalStorage()
+  
+  await fetchLocationAndWeather()
+  await fetchUserTasks()
 })
+
+const apiUserTasks = ref([])
+
+async function fetchUserTasks() {
+  const token = userStore.token
+  const userId = currentUser.value?.id_utilizador || currentUser.value?.id
+  if (!userId || !token) return
+  
+  try {
+    const res = await getUserTasks(userId, token, { limit: 100 })
+    apiUserTasks.value = res.data || []
+  } catch(e) {
+    console.error('Failed to fetch tasks', e)
+  }
+}
+
+async function fetchLocationAndWeather() {
+  const token = userStore.token
+  const userId = currentUser.value?.id_utilizador || currentUser.value?.id
+  if (!userId || !token) return
+
+  try {
+    const locRes = await getLocation(userId, token)
+    if (locRes && locRes.latitude) {
+      weatherStore.fetchCurrentWeatherByLocation(locRes.latitude, locRes.longitude)
+      // We could optionally trigger a PATCH here if browser GPS moved significantly, 
+      // but for now, rely on what's in the DB.
+    } else {
+      requestBrowserLocationAndSave(userId, token, 'POST')
+    }
+  } catch(err) {
+    // If not found, attempt to post it
+    if (err.status === 404 || err.statusCode === 404 || (err.message && String(err.message).toLowerCase().includes('not found'))) {
+      requestBrowserLocationAndSave(userId, token, 'POST')
+    } else {
+      console.error('Failed to get location:', err)
+      // fallback
+      weatherStore.fetchCurrentWeather('Vila do Conde', 'PT')
+    }
+  }
+}
+
+function requestBrowserLocationAndSave(userId, token, method = 'POST') {
+  if (!navigator.geolocation) {
+    showToast('Location Error', 'Geolocation is not supported by your browser', 5000)
+    weatherStore.fetchCurrentWeather('Vila do Conde', 'PT')
+    return
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      const { latitude, longitude } = pos.coords
+      weatherStore.fetchCurrentWeatherByLocation(latitude, longitude)
+      
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
+        const data = await res.json()
+        const city = data.address?.city || data.address?.town || data.address?.village || 'Unknown'
+        const country = data.address?.country_code?.toUpperCase() || 'Unknown'
+        
+        const payload = { latitude, longitude, cidade: city, pais: country }
+        if (method === 'POST') {
+          await createLocation(userId, payload, token)
+        } else {
+          await updateLocation(userId, payload, token)
+        }
+      } catch(e) {
+        console.error('Reverse geocoding or saving location failed:', e)
+      }
+    },
+    (err) => {
+      console.warn('Location permission denied', err)
+      // fallback
+      weatherStore.fetchCurrentWeather('Vila do Conde', 'PT')
+    }
+  )
+}
 
 const currentUser = computed(() => userStore.currentUser)
 const userLevel = computed(() => {
@@ -513,8 +594,30 @@ const userInitials = computed(() => {
   return initials ? initials.toUpperCase() : '?'
 })
 const userHabits = computed(() => {
-  if (!currentUser.value) return []
-  return habitStore.getHabitsByUser(currentUser.value.id)
+  return apiUserTasks.value.map(t => {
+    const taskData = t.task || {}
+    const isCompleted = t.estado_tarefa === 'Completed' || t.progresso >= 100 || (taskData.tipo_tarefa === 'Check' && t.progresso > 0)
+    
+    return {
+      id: t.id_tarefa,
+      description: taskData.nome_tarefa || 'Unknown Task',
+      category: taskData.categoria || '',
+      location: (taskData.localizacao_tarefa || 'inside').toLowerCase(),
+      priority: (taskData.prioridade_tarefa || 'low').toLowerCase(),
+      type: (taskData.tipo_tarefa || 'check').toLowerCase() === 'timer' ? 'time' : (taskData.tipo_tarefa || 'check').toLowerCase(),
+      current_progress: {
+        checked: isCompleted,
+        count: t.progresso || 0,
+        seconds: (t.progresso || 0) * 60 // Assuming progress is saved in minutes on backend
+      },
+      target_count: taskData.quantidade_necessaria || 1,
+      target_minutes: taskData.duracao_temporizador || 15,
+      created_at: t.created_at || new Date(),
+      remaining_seconds: Math.max(0, ((taskData.duracao_temporizador || 15) * 60) - ((t.progresso || 0) * 60)),
+      timer_last_started_at: null,
+      concluido: isCompleted ? 1 : 0
+    }
+  })
 })
 
 // Filters + Sorting state
@@ -651,64 +754,73 @@ function handleAdd() {
 }
 
 // Delete a habit after confirmation and show a toast
-function deleteHabit(id) {
-  if (confirm('Delete habit?')) {
-    const habit = habitStore.getHabitById(id)
-    habitStore.deleteHabit(id)
-    showToast('Habit deleted', `${habit.description} · ${habit.priority} · ${habit.location}`)
+async function deleteHabit(id) {
+  if (confirm('Delete task?')) {
+    const userId = currentUser.value?.id_utilizador || currentUser.value?.id
+    try {
+      await deleteUserTask(userId, id, userStore.token)
+      showToast('Task deleted', 'Removed from your list')
+      await fetchUserTasks()
+    } catch(e) { console.error(e) }
   }
 }
 
-// Action helpers that delegate to the habit store
-function increment(id) {
-  habitStore.incrementCount(id)
-}
-function decrement(id) {
-  habitStore.decrementCount(id)
-}
-function toggleCheck(id) {
-  habitStore.toggleCheck(id)
-}
-function complete(id) {
-  habitStore.completeHabit(id)
-}
-function completeAndRemoveHabit(id) {
-  // Increment completed count in localStorage
-  const userId = userStore.currentUser?.id
-  if (userId) {
-    const key = `completedHabits_${userId}`
-    const current = parseInt(localStorage.getItem(key) || '0', 10)
-    localStorage.setItem(key, String(current + 1))
-  }
-
-  habitStore.completeHabit(id)
-  habitStore.deleteHabit(id)
-  showToast('Success', 'Habit completed! Points awarded.', 'success')
-
-  // Dispatch event for chart update
-  window.dispatchEvent(new Event('habitCompleted'))
+async function increment(id) {
+  const userId = currentUser.value?.id_utilizador || currentUser.value?.id
+  const userTask = apiUserTasks.value.find(t => t.id_tarefa === id)
+  if (!userTask) return
+  try {
+    await updateUserTask(userId, id, { progresso: (userTask.progresso || 0) + 1 }, userStore.token)
+    await fetchUserTasks()
+  } catch(e) { console.error(e) }
 }
 
-function completeTimerHabit() {
+async function decrement(id) {
+  const userId = currentUser.value?.id_utilizador || currentUser.value?.id
+  const userTask = apiUserTasks.value.find(t => t.id_tarefa === id)
+  if (!userTask || (userTask.progresso || 0) <= 0) return
+  try {
+    await updateUserTask(userId, id, { progresso: (userTask.progresso || 0) - 1 }, userStore.token)
+    await fetchUserTasks()
+  } catch(e) { console.error(e) }
+}
+
+async function toggleCheck(id) {
+  const userId = currentUser.value?.id_utilizador || currentUser.value?.id
+  const userTask = apiUserTasks.value.find(t => t.id_tarefa === id)
+  if (!userTask) return
+  const newProgress = (userTask.progresso || 0) > 0 ? 0 : 100
+  try {
+    await updateUserTask(userId, id, { progresso: newProgress }, userStore.token)
+    await fetchUserTasks()
+  } catch(e) { console.error(e) }
+}
+
+async function completeAndRemoveHabit(id) {
+  const userId = currentUser.value?.id_utilizador || currentUser.value?.id
+  try {
+    await completeUserTask(userId, id, userStore.token)
+    showToast('Success', 'Task completed! Points awarded.', 'success')
+    window.dispatchEvent(new Event('habitCompleted'))
+    await userStore.fetchCurrentUser(userId)
+    await fetchUserTasks()
+  } catch(e) { console.error(e) }
+}
+
+async function completeTimerHabit() {
   if (activeTimerHabit.value) {
     const id = activeTimerHabit.value.id
     pauseTimerButton()
     timerInstance.value?.hide()
 
-    // Increment completed count in localStorage
-    const userId = userStore.currentUser?.id
-    if (userId) {
-      const key = `completedHabits_${userId}`
-      const current = parseInt(localStorage.getItem(key) || '0', 10)
-      localStorage.setItem(key, String(current + 1))
-    }
-
-    habitStore.completeHabit(id)
-    habitStore.deleteHabit(id)
-    showToast('Success', 'Habit completed! Points awarded.', 'success')
-
-    // Dispatch event for chart update
-    window.dispatchEvent(new Event('habitCompleted'))
+    const userId = userStore.currentUser?.id_utilizador || userStore.currentUser?.id
+    try {
+      await completeUserTask(userId, id, userStore.token)
+      showToast('Success', 'Task completed! Points awarded.', 'success')
+      window.dispatchEvent(new Event('habitCompleted'))
+      await userStore.fetchCurrentUser(userId)
+      await fetchUserTasks()
+    } catch(e) { console.error(e) }
   }
 }
 
@@ -777,24 +889,12 @@ onUnmounted(() => {
 })
 
 function openTimer(id) {
-  const habit = habitStore.getHabitById(id)
+  const habit = userHabits.value.find(h => h.id === id)
   activeTimerHabit.value = habit
 
-  // Get remaining seconds from habit (or calculate from target_minutes)
-  const targetSeconds = (habit.target_minutes ?? 0) * 60
-  remainingSeconds.value = habit.remaining_seconds ?? targetSeconds
-  timerIsRunning.value = !!habit.timer_last_started_at
-
-  // If timer was already running, calculate current remaining time
-  if (habit.timer_last_started_at) {
-    const elapsed = Date.now() - habit.timer_last_started_at
-    const elapsedSec = Math.floor(elapsed / 1000)
-    remainingSeconds.value = Math.max(0, remainingSeconds.value - elapsedSec)
-
-    if (remainingSeconds.value > 0) {
-      startCountdown()
-    }
-  }
+  // Get remaining seconds from habit
+  remainingSeconds.value = habit.remaining_seconds
+  timerIsRunning.value = false
 
   if (!timerInstance.value && timerModalEl.value) {
     timerInstance.value = new bootstrap.Modal(timerModalEl.value)
@@ -818,8 +918,7 @@ function startCountdown() {
 
       // Auto-complete the habit
       if (activeTimerHabit.value) {
-        habitStore.completeHabit(activeTimerHabit.value.id)
-        showToast('Timer Complete!', `${activeTimerHabit.value.description} has been completed!`)
+        completeTimerHabit()
       }
       return
     }
@@ -827,12 +926,12 @@ function startCountdown() {
     // Decrement by 1 second
     remainingSeconds.value--
 
-    // Update habit progress in real-time for the progress bar
+    // Real-time update local display variable (so progress bar moves)
     if (activeTimerHabit.value) {
-      const habit = habitStore.getHabitById(activeTimerHabit.value.id)
-      if (habit) {
-        habit.remaining_seconds = remainingSeconds.value
-        habit.current_progress.seconds = habit.target_minutes * 60 - remainingSeconds.value
+      const task = apiUserTasks.value.find(t => t.id_tarefa === activeTimerHabit.value.id)
+      if (task) {
+        // We only update the reactive array temporarily here
+        // The API call happens on pause or close
       }
     }
   }, 1000)
@@ -847,35 +946,48 @@ function stopCountdown() {
 
 function startTimerButton() {
   if (!activeTimerHabit.value) return
-  habitStore.startTimer(activeTimerHabit.value.id)
 
-  // If remainingSeconds is 0, reset to full time
   if (remainingSeconds.value <= 0) {
-    const h = habitStore.getHabitById(activeTimerHabit.value.id)
-    const targetSeconds = (h.target_minutes ?? 0) * 60
-    remainingSeconds.value = h.remaining_seconds ?? targetSeconds
+    const h = activeTimerHabit.value
+    remainingSeconds.value = (h.target_minutes ?? 0) * 60
   }
 
   timerIsRunning.value = true
   startCountdown()
 }
 
-function pauseTimerButton() {
+async function pauseTimerButton() {
   if (!activeTimerHabit.value) return
   stopCountdown()
-  // Pass current remaining seconds to store
-  habitStore.pauseTimer(activeTimerHabit.value.id, remainingSeconds.value)
   timerIsRunning.value = false
+  await saveTimerProgress()
 }
 
-function onCloseTimerModal() {
+async function onCloseTimerModal() {
   stopCountdown()
-  if (activeTimerHabit.value && timerIsRunning.value) {
-    // Save current state when closing modal while running
-    habitStore.pauseTimer(activeTimerHabit.value.id, remainingSeconds.value)
+  if (activeTimerHabit.value) {
+    await saveTimerProgress()
   }
   activeTimerHabit.value = null
   timerIsRunning.value = false
+}
+
+async function saveTimerProgress() {
+  const userId = currentUser.value?.id_utilizador || currentUser.value?.id
+  const task = apiUserTasks.value.find(t => t.id_tarefa === activeTimerHabit.value.id)
+  if (!task || !userId) return
+  
+  // Calculate progress in minutes
+  const targetSeconds = (task.progresso_alvo || 0) * 60
+  const elapsedSeconds = targetSeconds - remainingSeconds.value
+  const elapsedMinutes = Math.floor(elapsedSeconds / 60)
+  
+  try {
+    await updateUserTask(userId, task.id_tarefa, { progress_value: elapsedMinutes }, userStore.token)
+    await fetchUserTasks()
+  } catch (e) {
+    console.error('Failed to save timer progress', e)
+  }
 }
 </script>
 <style></style>

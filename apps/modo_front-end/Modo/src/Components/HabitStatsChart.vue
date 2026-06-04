@@ -87,7 +87,7 @@
     </div>
     <div v-show="!showDownloadOptions" class="stats-summary mt-2 text-center">
       <small class="text-muted">
-        <span class="me-3">🎯 Active: {{ activeTasks }}</span>
+        <span class="me-3">🎯 Active: {{ activeTasksCount }}</span>
         <span>✅ Completed: {{ completedCount }}</span>
       </small>
     </div>
@@ -95,13 +95,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import Chart from 'chart.js/auto'
-import { useHabitStore } from '@/stores/habitStore'
 import { useUserStore } from '@/stores/userStore'
-
-// Add this import at top:
-import { jsPDF } from 'jspdf' // requires installing jspdf
+import { createReportForUser } from '@/api/services/reports.services'
 
 // Add reactive state
 const showDownloadOptions = ref(false)
@@ -130,84 +127,78 @@ function toggleDownloadOptions() {
   } */
 }
 
-// This simulates the countdown/progress and then generates a PDF
-function startDownloadReport() {
+const props = defineProps({
+  tasks: {
+    type: Array,
+    default: () => []
+  }
+})
+
+async function startDownloadReport() {
   if (isDownloading.value) return
   isDownloading.value = true
-  downloadProgress.value = 0
+  downloadProgress.value = 10 // Start progress
 
-  // Simulate progress (adjust duration as you like)
-  const totalDuration = 1500 // ms to reach 100%
-  const stepMs = 50
-  const steps = Math.ceil(totalDuration / stepMs)
-  const stepInc = Math.ceil(100 / steps)
+  const userId = userStore.currentUser?.id_utilizador || userStore.currentUser?.id
+  const token = userStore.token
+  
+  if (!userId || !token) {
+    isDownloading.value = false
+    alert('User not logged in.')
+    return
+  }
 
-  downloadInterval = setInterval(() => {
-    downloadProgress.value = Math.min(100, downloadProgress.value + stepInc)
-    if (downloadProgress.value >= 100) {
-      clearInterval(downloadInterval)
-      downloadInterval = null
-      // After short delay, generate the PDF and reset UI
-      setTimeout(() => {
-        generatePdfReport()
-        isDownloading.value = false
-        downloadProgress.value = 0
-        showDownloadOptions.value = false
-      }, 300)
+  // Simulate progress while waiting for backend
+  const progressInterval = setInterval(() => {
+    if (downloadProgress.value < 90) {
+      downloadProgress.value += 5
     }
-  }, stepMs)
-}
+  }, 500)
 
-// Create a simple PDF with user stats (customize layout/content as needed)
-function generatePdfReport() {
-  const doc = new jsPDF({ unit: 'pt', format: 'a4' })
-  const user = userStore.currentUser || { name: 'Unknown', id: 'N/A', points: 0 }
-  const now = new Date()
-  const title = `User Report - ${user.name}`
-  const subtitle = `Month ${selectedMonth.value} · Week ${selectedWeek.value} · Generated ${now.toLocaleString()}`
+  try {
+    const formData = new FormData()
+    formData.append('mes', selectedMonth.value)
+    formData.append('semana', selectedWeek.value)
 
-  doc.setFontSize(18)
-  doc.text(title, 40, 60)
-  doc.setFontSize(12)
-  doc.text(subtitle, 40, 85)
+    const res = await createReportForUser(userId, formData, token)
+    clearInterval(progressInterval)
+    downloadProgress.value = 100
 
-  // Basic stats
-  doc.setFontSize(14)
-  doc.text(`User ID: ${user.id}`, 40, 120)
-  doc.text(`Name: ${user.name}`, 40, 140)
-  doc.text(`Points: ${user.points ?? 0}`, 40, 160)
-  doc.text(`Active Habits: ${activeTasks.value}`, 40, 180)
-  doc.text(`Completed Habits: ${completedCount.value}`, 40, 200)
-
-  // Optionally add more details here (tables, charts as images, etc.)
-  const filename = `report_${user.id || 'user'}_m${selectedMonth.value}_w${selectedWeek.value}.pdf`
-  doc.save(filename)
+    setTimeout(() => {
+      isDownloading.value = false
+      showDownloadOptions.value = false
+      downloadProgress.value = 0
+      
+      if (res && res.caminho_relatorio) {
+        window.open(res.caminho_relatorio, '_blank')
+      } else {
+        alert('Report generated but no file link was returned.')
+      }
+    }, 500)
+  } catch(e) {
+    clearInterval(progressInterval)
+    isDownloading.value = false
+    alert('Failed to generate report.')
+    console.error(e)
+  }
 }
 
 const canvas = ref(null)
 let chart = null
-const habitStore = useHabitStore()
-const userStore = useUserStore()
 const chartType = ref('doughnut')
 
-// Get completed count from localStorage
-function getCompletedCount() {
-  const userId = userStore.currentUser?.id
-  if (!userId) return 0
-  const key = `completedHabits_${userId}`
-  return parseInt(localStorage.getItem(key) || '0', 10)
-}
+const activeTasksCount = computed(() => {
+  if (!props.tasks) return 0
+  return props.tasks.filter(t => t.estado_tarefa !== 'Completed').length
+})
 
-const completedCount = ref(getCompletedCount())
-
-const activeTasks = computed(() => {
-  const user = userStore.currentUser
-  if (!user) return 0
-  return (habitStore.getHabitsByUser(user.id) || []).length
+const completedCount = computed(() => {
+  if (!props.tasks) return 0
+  return props.tasks.filter(t => t.estado_tarefa === 'Completed').length
 })
 
 function counts() {
-  return [activeTasks.value, completedCount.value]
+  return [activeTasksCount.value, completedCount.value]
 }
 
 function getChartConfig() {
@@ -276,12 +267,10 @@ watch(chartType, () => {
 
 // update when habits or currentUser change
 watch(
-  () => [userStore.currentUser, habitStore.habits.length],
+  () => [props.tasks],
   () => {
-    completedCount.value = getCompletedCount()
-    const data = counts()
     if (chart) {
-      chart.data.datasets[0].data = data
+      chart.data.datasets[0].data = counts()
       chart.update()
     }
   },
@@ -290,24 +279,20 @@ watch(
 
 // also listen for localStorage changes (for completed count updates)
 function handleStorageChange() {
-  completedCount.value = getCompletedCount()
-  const data = counts()
   if (chart) {
-    chart.data.datasets[0].data = data
+    chart.data.datasets[0].data = counts()
     chart.update()
   }
 }
 
 onMounted(() => {
   createChart()
-  window.addEventListener('storage', handleStorageChange)
-  window.addEventListener('taskCompleted', handleStorageChange)
+  window.addEventListener('habitCompleted', handleStorageChange)
 })
 
 onBeforeUnmount(() => {
   if (chart) chart.destroy()
-  window.removeEventListener('storage', handleStorageChange)
-  window.removeEventListener('taskCompleted', handleStorageChange)
+  window.removeEventListener('habitCompleted', handleStorageChange)
   // inside onBeforeUnmount or onUnmounted section
   if (downloadInterval) {
     clearInterval(downloadInterval)

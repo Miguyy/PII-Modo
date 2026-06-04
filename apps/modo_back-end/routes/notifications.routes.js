@@ -13,6 +13,7 @@ import {
   updateNotification,
   updateNotificationByBody,
   deleteNotification,
+  broadcastNotification,
 } from "../controllers/notifications.controllers.js";
 import {
   validateNotificationId,
@@ -29,6 +30,14 @@ router.get(
   authenticateUser,
   authorizeAdmin,
   getAllNotifications,
+);
+
+// POST /notifications/broadcast - send notification to all users
+router.post(
+  "/notifications/broadcast",
+  authenticateUser,
+  authorizeAdmin,
+  broadcastNotification,
 );
 
 // Route to get all notifications for a specific user (requires auth)
