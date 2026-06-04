@@ -82,6 +82,8 @@ export const useUserStore = defineStore('user', {
         mensagem: notification.message ?? notification.mensagem ?? '',
         date,
         data: date,
+        tipo_notificacao: notification.tipo_notificacao ?? notification.type ?? 'System',
+        type: notification.tipo_notificacao ?? notification.type ?? 'System',
       }
     },
 

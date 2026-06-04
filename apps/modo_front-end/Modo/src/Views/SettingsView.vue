@@ -81,6 +81,9 @@
         <div class="profile-info">
           <h2>Welcome back, {{ user.name }}</h2>
           <p>{{ user.email }}</p>
+          <span class="profile-level-badge">
+            <FontAwesomeIcon icon="star" /> Level {{ userLevel }}
+          </span>
         </div>
         <button class="change-picture" @click="promptAvatar">Change picture</button>
       </header>
@@ -216,24 +219,26 @@
             id="notification-section"
             v-show="activeSection === 'notifications'"
           >
-            <h3 class="section-title"><FontAwesomeIcon icon="bell" /> Notifications</h3>
-            <div class="notification-toggle">
-              <label style="font-weight: 700">Enable Notifications</label>
-              <label class="switch">
-                <input
-                  type="checkbox"
-                  v-model="notificationsEnabled"
-                  @change="saveNotificationsEnabled"
-                />
-                <span class="slider"></span>
-              </label>
-            </div>
+            <h3 class="section-title">
+              <span><FontAwesomeIcon icon="bell" /> Notifications</span>
+              <span class="notification-toggle-inline">
+                <span class="toggle-label">Enable Notifications</span>
+                <label class="switch">
+                  <input
+                    type="checkbox"
+                    v-model="notificationsEnabled"
+                    @change="saveNotificationsEnabled"
+                  />
+                  <span class="slider"></span>
+                </label>
+              </span>
+            </h3>
 
             <div v-if="!notificationsEnabled" class="no-notifications">
               <p>Notifications are turned off.</p>
             </div>
 
-            <div v-else>
+            <div v-else class="notification-list">
               <div v-if="notifications.length === 0" class="no-notifications">
                 <p>No notifications yet!</p>
               </div>
@@ -242,13 +247,20 @@
                 :key="index"
                 class="notification-card"
               >
-                <h3 class="notification-title">{{ notification.title }}</h3>
-                <p class="notification-content">
-                  {{ notification.message }}
-                </p>
-                <small class="notification-date">{{
-                  formatNotificationDate(notification.date || notification.data)
-                }}</small>
+                <div class="notification-body">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                    <span v-if="notification.type || notification.tipo_notificacao" class="badge" style="background: var(--green); font-size: 10px; padding: 4px 6px;">
+                      {{ notification.type || notification.tipo_notificacao }}
+                    </span>
+                    <h3 class="notification-title" style="margin: 0;">{{ notification.title || 'Notification' }}</h3>
+                  </div>
+                  <p class="notification-content">
+                    {{ notification.message || notification.mensagem }}
+                  </p>
+                  <small class="notification-date">{{
+                    formatNotificationDate(notification.date || notification.data)
+                  }}</small>
+                </div>
                 <button class="clear-notification-btn" @click="readNotification(index)">
                   Read
                 </button>

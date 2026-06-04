@@ -6,6 +6,7 @@ import {
   deleteHabit as apiDeleteHabit,
   patch as apiPatch,
 } from '@/api/modoApi'
+import { createNotification } from '@/api/services/notifications.services'
 
 const LOCAL_KEY = 'habits_v1'
 
@@ -300,7 +301,11 @@ export const useHabitStore = defineStore('habitStore', {
         if (!user) return
 
         const points = PRIORITY_POINTS[habit.priority] ?? PRIORITY_POINTS.low
-        user.points = (Number(user.points) || 0) + points
+        const oldPoints = Number(user.points) || 0
+        const oldLevel = Math.floor(oldPoints / 100)
+        
+        user.points = oldPoints + points
+        const newLevel = Math.floor(user.points / 100)
 
         habit.points_awarded = true
 
@@ -313,6 +318,20 @@ export const useHabitStore = defineStore('habitStore', {
         apiPatch(`/habits/${habit.id}`, { points_awarded: true }).catch((err) =>
           console.warn('Failed to patch habit.points_awarded on API:', err),
         )
+
+        // Trigger Level Up Notification if level increases
+        if (newLevel > oldLevel) {
+          const payload = {
+            mensagem: `Congratulations! You leveled up to Level ${newLevel}!`,
+            tipo_notificacao: 'Level'
+          }
+          createNotification(user.id, payload).then(newNotif => {
+            if (userStore.notifications && typeof userStore._normalizeNotification === 'function') {
+              const notifData = newNotif.notification || newNotif;
+              userStore.notifications.unshift(userStore._normalizeNotification(notifData));
+            }
+          }).catch(err => console.warn('Failed to create level up notification:', err))
+        }
       } catch (e) {
         console.error('Error awarding points:', e)
       }
