@@ -9,7 +9,12 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import cloudinary from "../config/cloudinary.config.js";
 // Import users data
-import { User, Habit } from "../config/db.config.js";
+import {
+  User,
+  Habit,
+  UserDecorations,
+  AvatarDecoration,
+} from "../config/db.config.js";
 import { Op } from "sequelize";
 import {
   validationError,
@@ -22,6 +27,93 @@ import {
 } from "../utils/errors.utils.js";
 
 const getUploadedFileUrl = (file) => file?.path || file?.secure_url || null;
+
+const normalizeDecorationPath = (decoration) => {
+  if (!decoration) return null;
+  if (decoration.caminho_decoracao) return decoration.caminho_decoracao;
+
+  const decorationName = decoration.nome_decoracao || decoration.name;
+  return decorationName
+    ? `/src/images/avatar_decoration/${decorationName}.png`
+    : null;
+};
+
+const resolveCurrentDecoration = async (userId) => {
+  const userDecoration = await UserDecorations.findOne({
+    where: { id_utilizador: Number(userId) },
+  });
+
+  if (!userDecoration || !userDecoration.id_decoracao) {
+    return null;
+  }
+
+  const decoration = await AvatarDecoration.findByPk(userDecoration.id_decoracao);
+  return {
+    path: normalizeDecorationPath(decoration),
+    name: decoration?.nome_decoracao || decoration?.name || null,
+  };
+};
+
+const resolveDecorationId = async (value) => {
+  if (value === null || value === undefined || value === "" || value === "null") {
+    return null;
+  }
+
+  const numericValue = Number(value);
+  if (Number.isInteger(numericValue) && numericValue > 0) {
+    return numericValue;
+  }
+
+  const rawValue = String(value);
+  const baseName = rawValue.split("/").pop()?.replace(/\.[^.]+$/, "") || rawValue;
+  const decoration = await AvatarDecoration.findOne({
+    where: {
+      [Op.or]: [
+        { nome_decoracao: rawValue },
+        { nome_decoracao: baseName },
+        { caminho_decoracao: rawValue },
+      ],
+    },
+  });
+
+  return decoration?.id_decoracao ?? null;
+};
+
+const applyDecorationUpdate = async (userId, value) => {
+  if (value === undefined) return;
+
+  const decorationId = await resolveDecorationId(value);
+  const existing = await UserDecorations.findOne({
+    where: { id_utilizador: Number(userId) },
+  });
+
+  if (existing) {
+    await existing.update({ id_decoracao: decorationId });
+    return;
+  }
+
+  await UserDecorations.create({
+    id_utilizador: Number(userId),
+    id_decoracao: decorationId,
+  });
+};
+
+const buildUserResponse = async (user) => {
+  const response = user.toJSON();
+  const currentDecoration = await resolveCurrentDecoration(user.id_utilizador);
+  response.avatarDecoration = currentDecoration?.path ?? null;
+  response.avatarDecorationName = currentDecoration?.name ?? null;
+  return {
+    ...response,
+    links: [
+      {
+        rel: "self",
+        method: "GET",
+        href: `/users/${user.id_utilizador}`,
+      },
+    ],
+  };
+};
 
 /**
  * createUser(req, res, next)
@@ -61,6 +153,7 @@ export const createUser = async (req, res, next) => {
       mappedRole = "Client";
     }
 
+    const normalizedEmail = typeof email === "string" ? email.trim().toLowerCase() : email;
     const hashed = await bcrypt.hash(password, 10);
 
     // Get Cloudinary URL if file was uploaded
@@ -68,7 +161,7 @@ export const createUser = async (req, res, next) => {
 
     const payload = {
       nome,
-      email,
+      email: normalizedEmail,
       hashed_password: hashed,
       pontos,
       nivel,
@@ -245,17 +338,7 @@ export const getUserById = async (req, res, next) => {
     }
 
     // Include HATEOAS links in the response
-    const response = {
-      ...targetUser.toJSON(),
-      links: [
-        {
-          rel: "self",
-          method: "GET",
-          href: `/users/${targetUser.id_utilizador}`,
-        },
-      ],
-    };
-    res.status(200).json(response);
+    res.status(200).json(await buildUserResponse(targetUser));
   } catch (error) {
     // Handle specific errors: 500
     return next(genericError());
@@ -272,7 +355,15 @@ export const getUserById = async (req, res, next) => {
 export const updateUser = async (req, res, next) => {
   try {
     const { userId } = req.params;
-    const { email, password, nome, pontos } = req.body;
+    const {
+      email,
+      password,
+      nome,
+      avatar,
+      imagem_utilizador: imageFromBody,
+      avatarDecoration,
+      id_decoracao,
+    } = req.body;
     const requester = req.user; // authenticated requester
 
     // load target user by id param
@@ -342,15 +433,12 @@ export const updateUser = async (req, res, next) => {
     if (password !== undefined)
       updates.hashed_password = await bcrypt.hash(password, 10);
     if (nome !== undefined) updates.nome = nome;
+    if (avatar !== undefined) updates.imagem_utilizador = avatar;
+    if (imageFromBody !== undefined)
+      updates.imagem_utilizador = imageFromBody;
     // Handle profile picture update if file was uploaded
     if (req.file) {
       updates.imagem_utilizador = getUploadedFileUrl(req.file);
-    }
-    if (pontos !== undefined) {
-      const pointsValue = Number(pontos);
-
-      updates.pontos = pointsValue;
-      updates.nivel = Math.floor(pointsValue / 100);
     }
 
     // If a profile image was uploaded as multipart/form-data (field: imagem_utilizador), upload to Cloudinary
@@ -383,18 +471,15 @@ export const updateUser = async (req, res, next) => {
 
     await targetUser.update(updates);
 
+    if (avatarDecoration !== undefined || id_decoracao !== undefined) {
+      await applyDecorationUpdate(
+        userId,
+        id_decoracao !== undefined ? id_decoracao : avatarDecoration,
+      );
+    }
+
     // Include HATEOAS links in the response
-    const response = {
-      ...targetUser.toJSON(),
-      links: [
-        {
-          rel: "self",
-          method: "GET",
-          href: `/users/${targetUser.id_utilizador}`,
-        },
-      ],
-    };
-    res.status(200).json(response);
+    res.status(200).json(await buildUserResponse(targetUser));
   } catch (error) {
     // Handle specific errors: 409 and 500
     if (error.name === "SequelizeUniqueConstraintError") {
@@ -577,7 +662,8 @@ export const logout = async (req, res) => {
 export const loginUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ where: { email } });
+    const normalizedEmail = typeof email === "string" ? email.trim().toLowerCase() : email;
+    const user = await User.findOne({ where: { email: normalizedEmail } });
 
     if (!user) {
       return next(unauthorizedError("Invalid credentials."));
@@ -612,11 +698,15 @@ export const loginUser = async (req, res, next) => {
 
     res.cookie("token", token, cookieOptions);
     // Return cookie plus a single JSON response that includes the token
+    const currentDecoration = await resolveCurrentDecoration(user.id_utilizador);
+
     return res.status(200).json({
       message: "User login was a success!",
       token,
       id_utilizador: user.id_utilizador,
       role: (user.tipo_utilizador || "").toLowerCase(),
+      avatarDecoration: currentDecoration?.path ?? null,
+      avatarDecorationName: currentDecoration?.name ?? null,
     });
   } catch (error) {
     // Handle specific errors: 500

@@ -81,6 +81,9 @@
         <div class="profile-info">
           <h2>Welcome back, {{ user.name }}</h2>
           <p>{{ user.email }}</p>
+          <span class="profile-level-badge">
+            <FontAwesomeIcon icon="star" /> Level {{ userLevel }}
+          </span>
         </div>
         <button class="change-picture" @click="promptAvatar">Change picture</button>
       </header>
@@ -181,10 +184,18 @@
               <label><FontAwesomeIcon icon="lock" /> Password</label>
               <div class="inline">
                 <input
-                  :type="isEditingPassword ? 'text' : 'password'"
+                  v-if="isEditingPassword"
+                  type="text"
                   v-model="userPassword"
-                  :readonly="!isEditingPassword"
-                  :style="{ opacity: isEditingPassword ? 1 : 0.5 }"
+                  placeholder="Enter new password"
+                />
+                <input
+                  v-else
+                  type="password"
+                  value="placeholder"
+                  placeholder="••••••••"
+                  readonly
+                  :style="{ opacity: 0.5 }"
                 />
                 <button
                   id="toggle-password"
@@ -208,24 +219,26 @@
             id="notification-section"
             v-show="activeSection === 'notifications'"
           >
-            <h3 class="section-title"><FontAwesomeIcon icon="bell" /> Notifications</h3>
-            <div class="notification-toggle">
-              <label style="font-weight: 700">Enable Notifications</label>
-              <label class="switch">
-                <input
-                  type="checkbox"
-                  v-model="notificationsEnabled"
-                  @change="saveNotificationsEnabled"
-                />
-                <span class="slider"></span>
-              </label>
-            </div>
+            <h3 class="section-title">
+              <span><FontAwesomeIcon icon="bell" /> Notifications</span>
+              <span class="notification-toggle-inline">
+                <span class="toggle-label">Enable Notifications</span>
+                <label class="switch">
+                  <input
+                    type="checkbox"
+                    v-model="notificationsEnabled"
+                    @change="saveNotificationsEnabled"
+                  />
+                  <span class="slider"></span>
+                </label>
+              </span>
+            </h3>
 
             <div v-if="!notificationsEnabled" class="no-notifications">
               <p>Notifications are turned off.</p>
             </div>
 
-            <div v-else>
+            <div v-else class="notification-list">
               <div v-if="notifications.length === 0" class="no-notifications">
                 <p>No notifications yet!</p>
               </div>
@@ -234,13 +247,20 @@
                 :key="index"
                 class="notification-card"
               >
-                <h3 class="notification-title">{{ notification.title }}</h3>
-                <p class="notification-content">
-                  {{ notification.message }}
-                </p>
-                <small class="notification-date">{{
-                  formatNotificationDate(notification.date)
-                }}</small>
+                <div class="notification-body">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                    <span v-if="notification.type || notification.tipo_notificacao" class="badge" style="background: var(--green); font-size: 10px; padding: 4px 6px;">
+                      {{ notification.type || notification.tipo_notificacao }}
+                    </span>
+                    <h3 class="notification-title" style="margin: 0;">{{ notification.title || 'Notification' }}</h3>
+                  </div>
+                  <p class="notification-content">
+                    {{ notification.message || notification.mensagem }}
+                  </p>
+                  <small class="notification-date">{{
+                    formatNotificationDate(notification.date || notification.data)
+                  }}</small>
+                </div>
                 <button class="clear-notification-btn" @click="readNotification(index)">
                   Read
                 </button>
@@ -360,23 +380,25 @@ function toggleSection(section) {
 const notifications = ref([])
 const notificationsEnabled = ref(true)
 
-function loadNotifications() {
+async function loadNotifications() {
   const userId = user.value?.id
   if (!userId) return
-  const saved = localStorage.getItem(`notifications_${userId}`)
-  if (saved) {
-    try {
-      notifications.value = JSON.parse(saved)
-    } catch {
-      notifications.value = []
+  try {
+    notifications.value = await userStore.loadNotifications()
+  } catch {
+    const saved = localStorage.getItem(`notifications_${userId}`)
+    if (saved) {
+      try {
+        notifications.value = JSON.parse(saved)
+      } catch {
+        notifications.value = []
+      }
     }
   }
 }
 
 function saveNotifications() {
-  const userId = user.value?.id
-  if (!userId) return
-  localStorage.setItem(`notifications_${userId}`, JSON.stringify(notifications.value))
+  userStore.notifications = notifications.value
 }
 
 function addNotification(title, message) {
@@ -388,13 +410,29 @@ function addNotification(title, message) {
   saveNotifications()
 }
 
-function dismissNotification(index) {
+async function dismissNotification(index) {
+  const notification = notifications.value[index]
+  if (notification?.id_notificacao) {
+    try {
+      await userStore.markNotificationAsRead(notification.id_notificacao)
+    } catch {
+      // keep local dismissal even if the backend is unavailable
+    }
+  }
   notifications.value.splice(index, 1)
   saveNotifications()
   showToast('Notification dismissed', '', 'success')
 }
 
-function readNotification(index) {
+async function readNotification(index) {
+  const notification = notifications.value[index]
+  if (notification?.id_notificacao) {
+    try {
+      await userStore.markNotificationAsRead(notification.id_notificacao)
+    } catch {
+      // fall through to local removal
+    }
+  }
   // Mark as read by removing from the list (keeps existing behavior)
   notifications.value.splice(index, 1)
   saveNotifications()
@@ -414,7 +452,16 @@ function loadNotificationsEnabled() {
   if (val === '0') notificationsEnabled.value = false
 }
 
-function clearAllNotifications() {
+async function clearAllNotifications() {
+  for (const notification of notifications.value) {
+    if (notification?.id_notificacao) {
+      try {
+        await userStore.markNotificationAsRead(notification.id_notificacao)
+      } catch {
+        // continue clearing locally
+      }
+    }
+  }
   notifications.value = []
   saveNotifications()
   showToast('All notifications cleared', '', 'success')
@@ -612,15 +659,14 @@ const toggleEditEmail = () => {
 
 // password
 const isEditingPassword = ref(false)
-const userPassword = ref(user.value?.password || '********') // Valor inicial ou da store
+const userPassword = ref('') // empty by default; user types a new password when editing
 
 const toggleEditPassword = () => {
   if (isEditingPassword.value) {
-    if (user.value) user.value.password = userPassword.value
+    // Just stage the value — Save Changes will send it to the API
     isEditingPassword.value = false
   } else {
-    // Ao clicar em change, garante que o rascunho tem a senha atual
-    userPassword.value = user.value?.password || ''
+    userPassword.value = '' // clear so the user types a fresh new password
     isEditingPassword.value = true
   }
 }
@@ -648,21 +694,35 @@ const userInitials = computed(() => {
 })
 
 // Default decorations (fallback) with requiredLevel
+const decorationAsset = (name) => new URL(`../images/avatar_decoration/${name}.png`, import.meta.url).href
+
 const defaultDecorations = [
-  { name: 'solarSystem', src: '/src/images/avatar_decoration/solarSystem.png', requiredLevel: 0 },
-  { name: 'garden', src: '/src/images/avatar_decoration/garden.png', requiredLevel: 5 },
-  { name: 'olives', src: '/src/images/avatar_decoration/olives.png', requiredLevel: 10 },
-  { name: 'cat', src: '/src/images/avatar_decoration/cat.png', requiredLevel: 15 },
-  { name: 'summer', src: '/src/images/avatar_decoration/summer.png', requiredLevel: 20 },
-  { name: 'zoo', src: '/src/images/avatar_decoration/zoo.png', requiredLevel: 25 },
+  { name: 'solarSystem', src: decorationAsset('solarSystem'), requiredLevel: 0 },
+  { name: 'garden', src: decorationAsset('garden'), requiredLevel: 5 },
+  { name: 'olives', src: decorationAsset('olives'), requiredLevel: 10 },
+  { name: 'cat', src: decorationAsset('cat'), requiredLevel: 15 },
+  { name: 'summer', src: decorationAsset('summer'), requiredLevel: 20 },
+  { name: 'zoo', src: decorationAsset('zoo'), requiredLevel: 25 },
 ]
 
 // Load decorations from localStorage (synced with Admin Panel)
 function loadDecorations() {
+  if (userStore.decorations.length > 0) {
+    return userStore.decorations
+      .map((decoration) => ({
+        name: decoration.name || decoration.nome_decoracao,
+        src: decoration.src,
+        requiredLevel: decoration.nivel_necessario ?? 0,
+        id_decoracao: decoration.id_decoracao,
+      }))
+      .sort((a, b) => (a.requiredLevel ?? 0) - (b.requiredLevel ?? 0))
+  }
+
   const saved = localStorage.getItem('avatarDecorations')
   if (saved) {
     try {
-      return JSON.parse(saved)
+      const parsed = JSON.parse(saved)
+      return parsed.sort((a, b) => (a.requiredLevel ?? 0) - (b.requiredLevel ?? 0))
     } catch {
       return [...defaultDecorations]
     }
@@ -674,6 +734,12 @@ const decorations = ref(loadDecorations())
 
 // Load saved decoration and profile pic on mount
 onMounted(() => {
+  userStore
+    .loadDecorations()
+    .then(() => {
+      decorations.value = loadDecorations()
+    })
+    .catch(() => {})
   if (user.value?.avatarDecoration) {
     selectedDecoration.value = user.value.avatarDecoration
   }
@@ -719,11 +785,16 @@ const handleFileUpload = (event) => {
 
   // Convert to base64 and store
   const reader = new FileReader()
-  reader.onload = (e) => {
+  reader.onload = async (e) => {
     profilePic.value = e.target.result
     if (user.value) {
-      user.value.avatar = e.target.result
-      userStore.saveToLocalStorage()
+      try {
+        const updated = await userStore.updateUserProfile({}, file)
+        profilePic.value = updated.avatar || updated.imagem_utilizador || e.target.result
+      } catch {
+        user.value.avatar = e.target.result
+        userStore.saveToLocalStorage()
+      }
     }
     showToast('Picture updated', 'Your profile picture has been changed.', 'success')
   }
@@ -787,7 +858,7 @@ const selectDecoration = async (src) => {
   // Save to user profile using updateUserProfile for proper persistence
   if (user.value) {
     try {
-      await userStore.updateUserProfile({ avatarDecoration: src })
+      await userStore.updateAvatarDecoration(decoration || src)
     } catch {
       // Fallback: save directly
       user.value.avatarDecoration = src
@@ -829,16 +900,36 @@ const handleDeleteAccount = () => {
 // Save all changes
 const saveChanges = async () => {
   try {
-    await userStore.updateUserProfile({
+    const updates = {
       name: userName.value,
       email: userEmail.value,
-      password: userPassword.value,
-      avatar: profilePic.value,
-      avatarDecoration: selectedDecoration.value,
-    })
+    }
+
+    // Include the new password only if the user typed one
+    if (userPassword.value.trim()) {
+      updates.password = userPassword.value.trim()
+    }
+
+    // Only send avatarDecoration if one is selected
+    if (selectedDecoration.value) {
+      updates.avatarDecoration = selectedDecoration.value
+    }
+
+    if (profilePic.value && !String(profilePic.value).startsWith('data:')) {
+      updates.avatar = profilePic.value
+    }
+
+    await userStore.updateUserProfile(updates)
+    userPassword.value = '' // clear staged password after successful save
+    isEditingPassword.value = false
     showToast('Success', 'Changes saved successfully!', 'success')
   } catch (e) {
-    showToast('Error', 'Failed to save changes: ' + e.message, 'error')
+    // Handle 409 email-already-exists conflict with a friendly message
+    if (e.status === 409 || (e.errors && e.errors.email)) {
+      showToast('Email unavailable', 'That email is already registered to another account.', 'error')
+    } else {
+      showToast('Error', 'Failed to save changes: ' + e.message, 'error')
+    }
   }
 }
 </script>

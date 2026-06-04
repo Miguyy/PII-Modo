@@ -1,17 +1,8 @@
 /*
   Purpose: Service layer for authentication-related API calls.
-  Covers login, logout, forgot-password and reset-password,
-  matching the routes defined in users.routes.js:
-    POST /users/login
-    POST /users/logout          (requires Bearer token)
-    POST /users/forgot-password
-    POST /users/forgot-password/:token
-    POST /users/reset-password
 */
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
-
-// ── helpers ──────────────────────────────────────────────────────────────────
 
 async function handleResponse(res) {
   const data = await res.json().catch(() => ({}))
@@ -24,31 +15,19 @@ async function handleResponse(res) {
   return data
 }
 
-// ── auth calls ───────────────────────────────────────────────────────────────
-
-/**
- * POST /users/login
- * Body: { email, password }
- * Returns: { message, token, role }
- *   - token: JWT signed with { id, tipo_utilizador }
- *   - role:  'admin' | 'client'
- */
 export async function login(email, password) {
   const res = await fetch(`${BASE_URL}/users/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    credentials: 'include', // <-- send/receive cookies
-    body: JSON.stringify({ email, password }),
+    credentials: 'include',
+    body: JSON.stringify({
+      email: typeof email === 'string' ? email.trim().toLowerCase() : email,
+      password,
+    }),
   })
-  return handleResponse(res) // server should return id and role (no token required)
+  return handleResponse(res)
 }
 
-/**
- * POST /users/logout
- * Requires Authorization: Bearer <token>
- * Stateless on the backend — client must discard its token.
- * Returns: { message }
- */
 export async function logout() {
   const res = await fetch(`${BASE_URL}/users/logout`, {
     method: 'POST',
@@ -57,12 +36,6 @@ export async function logout() {
   return handleResponse(res)
 }
 
-/**
- * POST /users/forgot-password
- * Body: { email }
- * Returns: { message } — always 200 to avoid leaking whether email exists.
- * In dev the response also includes { token } for testing.
- */
 export async function forgotPassword(email) {
   const res = await fetch(`${BASE_URL}/users/forgot-password`, {
     method: 'POST',
@@ -72,11 +45,6 @@ export async function forgotPassword(email) {
   return handleResponse(res)
 }
 
-/**
- * POST /users/reset-password
- * Body: { token, password }
- * Returns: { message }
- */
 export async function resetPassword(token, password) {
   const res = await fetch(`${BASE_URL}/users/reset-password`, {
     method: 'POST',

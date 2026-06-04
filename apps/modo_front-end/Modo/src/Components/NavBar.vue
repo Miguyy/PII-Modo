@@ -1,35 +1,16 @@
 <script setup>
+/* Imports */
 import { useUserStore } from '../stores/userStore'
 import { useRouter, useRoute } from 'vue-router'
-import { computed, onMounted } from 'vue'
+import { computed } from 'vue'
 
+/* Logic */
 const userStore = useUserStore()
 const router = useRouter()
 const route = useRoute()
 
 const user = computed(() => userStore.currentUser)
-
-const isAdmin = computed(
-  () => (userStore.currentUser?.tipo_utilizador || '').toLowerCase() === 'admin',
-)
-
-onMounted(async () => {
-  if (!userStore.currentUser && userStore.loadFromLocalStorage) {
-    await userStore.loadFromLocalStorage()
-
-    // opcional mas recomendado: se tens token mas não tens user, rehidrata
-    if (userStore.token && !userStore.currentUser) {
-      try {
-        const payload = JSON.parse(atob(userStore.token.split('.')[1]))
-        if (payload?.id || payload?.id_utilizador) {
-          await userStore.fetchCurrentUser(payload.id || payload.id_utilizador)
-        }
-      } catch (e) {
-        console.warn('Token decode failed:', e)
-      }
-    }
-  }
-})
+const isAdmin = computed(() => user.value && user.value.priority === 2)
 
 const scrollToSection = (hash) => {
   if (route.path === '/') {
@@ -48,11 +29,17 @@ const scrollToSection = (hash) => {
     router.push({ path: '/', hash: hash })
   }
 }
+
+/* Logout function, just if we want to test it */
+/* const logout = () => {
+  userStore.logout()
+  router.push('/login')
+} */
 </script>
 
 <template>
   <!-- Navbar component with conditional links based on user authentication and role. 
-  Displays user name and imagem_utilizador when logged in, and a login link when not authenticated. 
+  Displays user name and avatar when logged in, and a login link when not authenticated. 
   Includes smooth scrolling to sections on the homepage. -->
   <div class="navbar-wrapper">
     <nav class="navbar navbar-expand-lg custom-navbar px-3">
@@ -183,15 +170,28 @@ const scrollToSection = (hash) => {
           </RouterLink>
         </div>
 
-        <span class="me-3 bold" style="color: #ededed">{{ user.nome }}</span>
+        <span class="me-3 bold" style="color: #ededed">{{ user.name }}</span>
         <RouterLink to="/settings">
-          <img
-            v-if="user.imagem_utilizador"
-            :src="user.imagem_utilizador"
-            alt="imagem_utilizador"
-            class="rounded-circle me-2"
-            style="width: 40px; height: 40px; object-fit: cover"
-          />
+          <div class="navbar-avatar-wrapper">
+            <!-- Profile picture -->
+            <img
+              v-if="user.avatar"
+              :src="user.avatar"
+              alt="avatar"
+              class="navbar-avatar-img"
+            />
+            <!-- Initials fallback -->
+            <div v-else class="navbar-avatar-fallback">
+              {{ (user.name || '?').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() }}
+            </div>
+            <!-- Decoration overlay -->
+            <img
+              v-if="user.avatarDecoration"
+              :src="user.avatarDecoration"
+              class="navbar-avatar-decoration"
+              alt=""
+            />
+          </div>
         </RouterLink>
 
         <!-- Logout button, currently for testing purposes -->
