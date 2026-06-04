@@ -153,8 +153,8 @@
     <!--  GLOBAL NOTIFICATIONS                                           -->
     <!-- ═══════════════════════════════════════════════════════════════ -->
     <div class="container mb-5">
-      <div class="card shadow-sm border-0" style="background: linear-gradient(to right, #f8fffe, #ffffff);">
-        <div class="card-header bg-transparent border-0 pt-4 pb-0 d-flex align-items-center gap-2">
+      <div class="card shadow-sm border-0" style="background: linear-gradient(to right, var(--bg-surface-alt), var(--bg-surface));">
+        <div class="card-header bg-transparent border-0 py-3 d-flex align-items-center gap-2">
           <i class="bi bi-broadcast fs-4 text-success" style="color: #355d4c !important;"></i>
           <h5 class="mb-0" style="color: #355d4c; font-weight: 600;">Broadcast Notification</h5>
         </div>
@@ -549,12 +549,12 @@
                     <span
                       v-if="task.type === 'Timer' && task.duracao_temporizador"
                       class="text-muted small"
-                      >⏱ {{ task.duracao_temporizador }}s</span
+                      >{{ task.duracao_temporizador }}s</span
                     >
                     <span
                       v-else-if="task.type === 'Count' && task.quantidade_necessaria"
                       class="text-muted small"
-                      >🔢 {{ task.quantidade_necessaria }}x</span
+                      >{{ task.quantidade_necessaria }}x</span
                     >
                     <span v-else-if="task.type === 'Check'" class="text-muted small">✔ Check</span>
                     <span v-else class="text-muted small">-</span>
@@ -935,11 +935,11 @@
               >
               <select v-model="newImpact.tipo_impacto" class="form-select form-select-sm">
                 <option value="">-- Select --</option>
-                <option value="Water">💧 Water</option>
-                <option value="Energy">⚡ Energy</option>
-                <option value="Residuals">♻️ Residuals</option>
-                <option value="Mobility">🚗 Mobility</option>
-                <option value="Emissions">🌫️ Emissions</option>
+                <option value="Water">Water</option>
+                <option value="Energy">Energy</option>
+                <option value="Residuals">Residuals</option>
+                <option value="Mobility">Mobility</option>
+                <option value="Emissions">Emissions</option>
               </select>
             </div>
             <div class="col">
@@ -1201,8 +1201,7 @@ function impactBadgeClass(tipo) {
 }
 
 function impactIcon(tipo) {
-  const icons = { Water: '💧', Energy: '⚡', Residuals: '♻️', Mobility: '🚗', Emissions: '🌫️' }
-  return icons[tipo] || '•'
+  return ''
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -1961,7 +1960,7 @@ onMounted(async () => {
   z-index: 1050;
 }
 .modal-panel {
-  background: #ffffff;
+  background: var(--bg-surface);
   border-radius: 12px;
   padding: 1.75rem;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);

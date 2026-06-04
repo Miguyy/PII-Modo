@@ -192,7 +192,7 @@ const scrollToSection = (hash) => {
         </div>
 
         <span class="me-3 bold" style="color: #ededed">{{ user.name }}</span>
-        <RouterLink to="/settings">
+        <RouterLink to="/settings" style="text-decoration: none;">
           <div class="navbar-avatar-wrapper">
             <!-- Profile picture -->
             <img

@@ -32,7 +32,7 @@ export default (sequelize, DataTypes) =>
       },
       nivel: {
         type: DataTypes.INTEGER,
-        defaultValue: 1,
+        defaultValue: 0,
       },
       imagem_utilizador: { type: DataTypes.STRING, allowNull: true },
     },

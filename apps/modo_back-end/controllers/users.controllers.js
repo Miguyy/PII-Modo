@@ -14,6 +14,7 @@ import {
   Habit,
   UserDecorations,
   AvatarDecoration,
+  Notification,
 } from "../config/db.config.js";
 import { Op } from "sequelize";
 import {
@@ -436,7 +437,10 @@ export const updateUser = async (req, res, next) => {
     if (password !== undefined)
       updates.hashed_password = await bcrypt.hash(password, 10);
     if (nome !== undefined) updates.nome = nome;
-    if (pontos !== undefined && requesterRole === "admin") updates.pontos = Number(pontos);
+    if (pontos !== undefined && requesterRole === "admin") {
+      updates.pontos = Number(pontos);
+      updates.nivel = Math.floor(updates.pontos / 100);
+    }
     if (avatar !== undefined) updates.imagem_utilizador = avatar;
     if (imageFromBody !== undefined)
       updates.imagem_utilizador = imageFromBody;
@@ -473,8 +477,33 @@ export const updateUser = async (req, res, next) => {
       }
     }
 
+    const oldNivel = targetUser.nivel || 0;
     await targetUser.update(updates);
-
+    
+    if (updates.nivel && updates.nivel > oldNivel) {
+      await Notification.create({
+        id_utilizador: targetUser.id_utilizador,
+        tipo_notificacao: 'Level',
+        mensagem: `Congratulations! You've leveled up to Level ${updates.nivel}!`,
+      });
+      
+      const unlockedDecorations = await AvatarDecoration.findAll({
+        where: {
+          nivel_necessario: {
+            [Op.gt]: oldNivel,
+            [Op.lte]: updates.nivel
+          }
+        }
+      });
+      
+      for (const dec of unlockedDecorations) {
+        await Notification.create({
+          id_utilizador: targetUser.id_utilizador,
+          tipo_notificacao: 'Avatar',
+          mensagem: `Congratulations! You've unlocked the "${dec.nome_decoracao}" avatar decoration!`,
+        });
+      }
+    }
     if (avatarDecoration !== undefined || id_decoracao !== undefined) {
       await applyDecorationUpdate(
         userId,

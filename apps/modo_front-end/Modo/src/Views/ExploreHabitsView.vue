@@ -212,6 +212,19 @@
       </div>
     </div>
   </div>
+
+  <!-- Toast notification -->
+  <Transition name="toast-slide">
+    <div v-if="toast.visible" class="toast-notification" :class="toast.type">
+      <div class="toast-icon">
+        <FontAwesomeIcon :icon="toast.type === 'error' ? 'times-circle' : toast.type === 'warning' ? 'exclamation-triangle' : 'check-circle'" />
+      </div>
+      <div class="toast-content">
+        <strong>{{ toast.title }}</strong>
+        <small>{{ toast.message }}</small>
+      </div>
+    </div>
+  </Transition>
 </template>
 
 <script>
@@ -451,20 +464,41 @@ export default {
       sortOrder.value = 'desc'
     }
 
+    const toast = ref({
+      visible: false,
+      title: '',
+      message: '',
+      type: 'success', // 'success', 'error', 'warning'
+      timeout: null,
+    })
+
+    function showToast(title, message, type = 'success', duration = 3000) {
+      toast.value.title = title
+      toast.value.message = message
+      toast.value.type = type
+      toast.value.visible = true
+
+      if (toast.value.timeout) clearTimeout(toast.value.timeout)
+
+      toast.value.timeout = setTimeout(() => {
+        toast.value.visible = false
+      }, duration)
+    }
+
     const addHabit = async (habit) => {
       if (!habit) return
       try {
         const token = sessionStorage.getItem('modo_token') || userStore.token
         const userId = userStore.currentUser?.id_utilizador || userStore.currentUser?.id
         if (!userId) {
-          alert('You must be logged in to add habits.')
+          showToast('Not Logged In', 'You must be logged in to add habits.', 'error')
           return
         }
         await assignHabitTasksToUser(userId, { id_habito: habit.id_habito }, token)
-        alert(`Successfully added all tasks from ${habit.categoria} to your habits!`)
+        showToast('Success', `Successfully added all tasks from ${habit.categoria} to your habits!`, 'success')
       } catch(e) {
         console.error(e)
-        alert('Failed to add habit.')
+        showToast('Error', 'Failed to add habit.', 'error')
       }
     }
 
@@ -474,14 +508,14 @@ export default {
         const token = sessionStorage.getItem('modo_token') || userStore.token
         const userId = userStore.currentUser?.id_utilizador || userStore.currentUser?.id
         if (!userId) {
-          alert('You must be logged in to add tasks.')
+          showToast('Not Logged In', 'You must be logged in to add tasks.', 'error')
           return
         }
         await assignTaskToUser(userId, { taskId: task.id_tarefa }, token)
-        alert(`Successfully added task "${task.nome_tarefa}" to your habits!`)
+        showToast('Success', `Successfully added task "${task.nome_tarefa}" to your habits!`, 'success')
       } catch(e) {
         console.error(e)
-        alert('Failed to add task.')
+        showToast('Error', 'Failed to add task.', 'error')
       }
     }
 
@@ -498,6 +532,8 @@ export default {
       selectedLocation,
       sortBy,
       sortOrder,
+      toast,
+      showToast,
       uniqueHabits,
       recommendedHabits,
       getIcon,
@@ -745,13 +781,13 @@ export default {
 }
 
 .panel-inner-content {
-  background: #ffffff;
+  background: var(--bg-surface);
   padding: 16px;
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
   font-size: 13px;
   line-height: 1.6;
-  color: #44554a;
+  color: var(--text-main);
   min-height: 110px;
 }
 

@@ -3,7 +3,7 @@ import multer from "multer";
 // Use memory storage so uploaded files are available as `req.file.buffer`
 const storage = multer.memoryStorage();
 
-// Accept PDFs and common image/document types
+// Accept PDFs, common image/document types and plain text (for generated reports)
 const ALLOWED_MIME_TYPES = new Set([
   "application/pdf",
   "image/png",
@@ -12,6 +12,7 @@ const ALLOWED_MIME_TYPES = new Set([
   "image/gif",
   "application/msword",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "text/plain",
 ]);
 
 const fileFilter = (req, file, cb) => {
