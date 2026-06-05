@@ -153,19 +153,35 @@
     <!--  GLOBAL NOTIFICATIONS                                           -->
     <!-- ═══════════════════════════════════════════════════════════════ -->
     <div class="container mb-5">
-      <div class="card shadow-sm border-0" style="background: linear-gradient(to right, var(--bg-surface-alt), var(--bg-surface));">
+      <div
+        class="card shadow-sm border-0"
+        style="background: linear-gradient(to right, var(--bg-surface-alt), var(--bg-surface))"
+      >
         <div class="card-header bg-transparent border-0 py-3 d-flex align-items-center gap-2">
-          <i class="bi bi-broadcast fs-4 text-success" style="color: #355d4c !important;"></i>
-          <h5 class="mb-0" style="color: #355d4c; font-weight: 600;">Broadcast Notification</h5>
+          <i class="bi bi-broadcast fs-4 text-success" style="color: #355d4c !important"></i>
+          <h5 class="mb-0" style="color: #355d4c; font-weight: 600">Broadcast Notification</h5>
         </div>
         <div class="card-body pt-2">
-          <p class="text-muted small mb-3">Send a system-wide or admin message to <strong>all registered users</strong>.</p>
+          <p class="text-muted small mb-3">
+            Send a system-wide or admin message to <strong>all registered users</strong>.
+          </p>
           <div class="row g-3 align-items-end">
             <div class="col-md-12">
               <label class="form-label small text-muted fw-semibold mb-1">Message content</label>
               <div class="input-group">
-                <input type="text" class="form-control border-success-subtle" v-model="notifMessage" placeholder="Type notification message here..." @keyup.enter="sendAdminNotification" />
-                <button class="btn text-white px-4 shadow-sm" style="background-color: #355d4c;" @click="sendAdminNotification" :disabled="notifSending">
+                <input
+                  type="text"
+                  class="form-control border-success-subtle"
+                  v-model="notifMessage"
+                  placeholder="Type notification message here..."
+                  @keyup.enter="sendAdminNotification"
+                />
+                <button
+                  class="btn text-white px-4 shadow-sm"
+                  style="background-color: #355d4c"
+                  @click="sendAdminNotification"
+                  :disabled="notifSending"
+                >
                   <i v-if="notifSending" class="bi bi-hourglass-split me-1"></i>
                   <i v-else class="bi bi-send-fill me-1"></i>
                   {{ notifSending ? 'Sending...' : 'Broadcast' }}
@@ -676,11 +692,10 @@
   <!-- ═══════════════════════════════════════════════════════════════ -->
   <div v-if="dmModalVisible" class="custom-modal-backdrop">
     <div class="modal-panel" style="max-width: 480px; width: 100%">
-      <h5 class="mb-3 fw-bold" style="color: #355d4c">
-        Send Direct Message
-      </h5>
+      <h5 class="mb-3 fw-bold" style="color: #355d4c">Send Direct Message</h5>
       <p class="text-muted small mb-3">
-        Sending notification to: <strong>{{ dmTargetUser?.nome || dmTargetUser?.name || dmTargetUser?.id }}</strong>
+        Sending notification to:
+        <strong>{{ dmTargetUser?.nome || dmTargetUser?.name || dmTargetUser?.id }}</strong>
       </p>
 
       <div class="mb-3">
@@ -694,7 +709,13 @@
       </div>
 
       <div class="d-flex justify-content-end gap-2 mt-4">
-        <button class="btn btn-outline-secondary" @click="closeDirectMessageModal" :disabled="dmSending">Cancel</button>
+        <button
+          class="btn btn-outline-secondary"
+          @click="closeDirectMessageModal"
+          :disabled="dmSending"
+        >
+          Cancel
+        </button>
         <button
           class="btn btn-success px-4"
           @click="sendDirectMessage"
@@ -1029,7 +1050,10 @@
           color: toast.title.includes('deleted') || toast.title === 'Error' ? '#b4554d' : '#00cc66',
         }"
       >
-        <i v-if="toast.title.includes('deleted') || toast.title === 'Error'" class="bi bi-trash"></i>
+        <i
+          v-if="toast.title.includes('deleted') || toast.title === 'Error'"
+          class="bi bi-trash"
+        ></i>
         <i v-else class="bi bi-check-circle"></i>
       </div>
       <div class="toast-content">
@@ -1038,6 +1062,10 @@
       </div>
     </div>
   </Transition>
+
+  <footer class="modo-footer">
+    <img src="../images/footer.svg" alt="Modo Footer" class="footer-content" />
+  </footer>
 </template>
 
 <script setup>
@@ -1109,7 +1137,7 @@ async function sendAdminNotification() {
   try {
     const payload = {
       tipo_notificacao: notifType.value,
-      mensagem: notifMessage.value.trim()
+      mensagem: notifMessage.value.trim(),
     }
     await broadcastNotification(payload, userStore.token)
     showToast('Broadcast Sent', 'Notification sent to all users')
@@ -1150,12 +1178,19 @@ async function sendDirectMessage() {
   try {
     const payload = {
       tipo_notificacao: dmType.value,
-      mensagem: dmMessage.value.trim()
+      mensagem: dmMessage.value.trim(),
     }
-    await createNotification(dmTargetUser.value.id || dmTargetUser.value.id_utilizador, payload, userStore.token)
-    showToast('Notification Sent', `Message sent to user ${dmTargetUser.value.name || dmTargetUser.value.id}`)
+    await createNotification(
+      dmTargetUser.value.id || dmTargetUser.value.id_utilizador,
+      payload,
+      userStore.token,
+    )
+    showToast(
+      'Notification Sent',
+      `Message sent to user ${dmTargetUser.value.name || dmTargetUser.value.id}`,
+    )
     closeDirectMessageModal()
-  } catch(err) {
+  } catch (err) {
     showToast('Error', err.message || 'Failed to send direct message')
   } finally {
     dmSending.value = false
@@ -1350,13 +1385,16 @@ const imagePreviewUrl = ref('')
 
 async function syncDecorations() {
   try {
-    const response = await getAllDecorations({
-      page: decorationCurrentPage.value,
-      limit: decorationLimit.value,
-      sort: decorationSortKey.value || 'id_decoracao',
-      order: decorationSortDir.value.toUpperCase(),
-      q: (decorationSearch.value || '').trim() || undefined,
-    }, userStore.token || null)
+    const response = await getAllDecorations(
+      {
+        page: decorationCurrentPage.value,
+        limit: decorationLimit.value,
+        sort: decorationSortKey.value || 'id_decoracao',
+        order: decorationSortDir.value.toUpperCase(),
+        q: (decorationSearch.value || '').trim() || undefined,
+      },
+      userStore.token || null,
+    )
     if (response && response.data) {
       decorationsList.value = response.data
       decorationTotal.value = response.meta.total
@@ -1533,7 +1571,12 @@ async function syncHabits() {
     await habitStore.fetchAdminHabits({
       page: habitCurrentPage.value,
       limit: habitLimit.value,
-      sort: habitSortKey.value === 'id' ? 'id_habito' : habitSortKey.value === 'title' ? 'nome_habito' : 'categoria',
+      sort:
+        habitSortKey.value === 'id'
+          ? 'id_habito'
+          : habitSortKey.value === 'title'
+            ? 'nome_habito'
+            : 'categoria',
       order: habitSortDir.value.toUpperCase(),
       q: habitSearch.value.trim() || undefined,
     })
@@ -1688,7 +1731,18 @@ async function syncTasks() {
     await habitStore.fetchAdminTasks({
       page: taskCurrentPage.value,
       limit: taskLimit.value,
-      sort: taskSortKey.value === 'id' ? 'id_tarefa' : taskSortKey.value === 'title' ? 'nome_tarefa' : taskSortKey.value === 'points' ? 'pontos_tarefa' : taskSortKey.value === 'type' ? 'tipo_tarefa' : taskSortKey.value === 'priority' ? 'prioridade_tarefa' : 'id_tarefa',
+      sort:
+        taskSortKey.value === 'id'
+          ? 'id_tarefa'
+          : taskSortKey.value === 'title'
+            ? 'nome_tarefa'
+            : taskSortKey.value === 'points'
+              ? 'pontos_tarefa'
+              : taskSortKey.value === 'type'
+                ? 'tipo_tarefa'
+                : taskSortKey.value === 'priority'
+                  ? 'prioridade_tarefa'
+                  : 'id_tarefa',
       order: taskSortDir.value.toUpperCase(),
       q: taskSearch.value.trim() || undefined,
     })
@@ -2005,5 +2059,20 @@ onMounted(async () => {
 }
 .impact-form {
   transition: all 0.15s ease;
+}
+.modo-footer {
+  width: 100%;
+  background: #3f6b56; /* green rectangle */
+  padding: 40px 0;
+  margin-top: 160px;
+  display: flex;
+  justify-content: center;
+}
+
+.footer-content {
+  width: 60%;
+  max-width: 1100px;
+  height: auto;
+  display: block;
 }
 </style>

@@ -248,11 +248,17 @@
                 class="notification-card"
               >
                 <div class="notification-body">
-                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                    <span v-if="notification.type || notification.tipo_notificacao" class="badge" style="background: var(--green); font-size: 10px; padding: 4px 6px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px">
+                    <span
+                      v-if="notification.type || notification.tipo_notificacao"
+                      class="badge"
+                      style="background: var(--green); font-size: 10px; padding: 4px 6px"
+                    >
                       {{ notification.type || notification.tipo_notificacao }}
                     </span>
-                    <h3 class="notification-title" style="margin: 0;">{{ notification.title || 'Notification' }}</h3>
+                    <h3 class="notification-title" style="margin: 0">
+                      {{ notification.title || 'Notification' }}
+                    </h3>
                   </div>
                   <p class="notification-content">
                     {{ notification.message || notification.mensagem }}
@@ -325,7 +331,15 @@
   <Transition name="toast-slide">
     <div v-if="toast.visible" class="toast-notification" :class="toast.type">
       <div class="toast-icon">
-        <FontAwesomeIcon :icon="toast.type === 'error' ? 'times-circle' : toast.type === 'warning' ? 'exclamation-triangle' : 'check-circle'" />
+        <FontAwesomeIcon
+          :icon="
+            toast.type === 'error'
+              ? 'times-circle'
+              : toast.type === 'warning'
+                ? 'exclamation-triangle'
+                : 'check-circle'
+          "
+        />
       </div>
       <div class="toast-content">
         <strong>{{ toast.title }}</strong>
@@ -353,6 +367,10 @@
       </div>
     </div>
   </Transition>
+
+  <footer class="modo-footer">
+    <img src="../images/footer.svg" alt="Modo Footer" class="footer-content" />
+  </footer>
 </template>
 
 <script setup>
@@ -636,7 +654,8 @@ const userInitials = computed(() => {
 })
 
 // Default decorations (fallback) with requiredLevel
-const decorationAsset = (name) => new URL(`../images/avatar_decoration/${name}.png`, import.meta.url).href
+const decorationAsset = (name) =>
+  new URL(`../images/avatar_decoration/${name}.png`, import.meta.url).href
 
 const defaultDecorations = [
   { name: 'solarSystem', src: decorationAsset('solarSystem'), requiredLevel: 0 },
@@ -859,10 +878,31 @@ const saveChanges = async () => {
   } catch (e) {
     // Handle 409 email-already-exists conflict with a friendly message
     if (e.status === 409 || (e.errors && e.errors.email)) {
-      showToast('Email unavailable', 'That email is already registered to another account.', 'error')
+      showToast(
+        'Email unavailable',
+        'That email is already registered to another account.',
+        'error',
+      )
     } else {
       showToast('Error', 'Failed to save changes: ' + e.message, 'error')
     }
   }
 }
 </script>
+<style scoped>
+.modo-footer {
+  width: 100%;
+  background: #3f6b56; /* green rectangle */
+  padding: 40px 0;
+  margin-top: 160px;
+  display: flex;
+  justify-content: center;
+}
+
+.footer-content {
+  width: 60%;
+  max-width: 1100px;
+  height: auto;
+  display: block;
+}
+</style>

@@ -82,7 +82,14 @@ onUnmounted(() => {
       <div class="wave-front">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1512 985" preserveAspectRatio="none">
           <defs>
-            <linearGradient id="heroGradient" x1="756" y1="-239" x2="756" y2="968.18" gradientUnits="userSpaceOnUse">
+            <linearGradient
+              id="heroGradient"
+              x1="756"
+              y1="-239"
+              x2="756"
+              y2="968.18"
+              gradientUnits="userSpaceOnUse"
+            >
               <stop offset="0%" stop-color="#CBEDDA" stop-opacity="0.7" />
               <stop offset="58%" stop-color="#97DBB4" />
             </linearGradient>
@@ -110,7 +117,8 @@ onUnmounted(() => {
       <div class="hero-content">
         <div class="container">
           <h1 class="hero-title">
-            Change your <br/> habits create <br/>
+            Change your <br />
+            habits create <br />
             your new you.
           </h1>
           <p class="hero-description">
@@ -124,13 +132,9 @@ onUnmounted(() => {
     </section>
 
     <section id="case_studies" class="carousel-section">
-      <div class="section-titles">
-        <div>
-          <h1>CASE STUDIES</h1>
-        </div>
-        <div>
-          <h1>&#x2022;</h1>
-        </div>
+      <div class="page-title">
+        <h4>CASE STUDIES</h4>
+        <h1>&#x2022;</h1>
       </div>
 
       <div class="carousel">
@@ -172,17 +176,19 @@ onUnmounted(() => {
         </div>
 
         <div class="appear-content">
-          <div class="appear-text"> <!-- max 1024 -->
+          <div class="appear-text">
+            <!-- max 1024 -->
             <h2 :class="{ active: titleActive }">Why we built Modo.</h2>
 
             <p :class="{ active: textActive }">
-              We built Modo because we believe that while many people want to live a more eco-conscious life, 
-              the path to true sustainability can feel overwhelming. 
-              In a world of convenience and fast consumption, it is easy to lose track of the small, 
-              daily actions that lead to a significant environmental impact.
-              <br><br>
-              Modo was designed to bridge the gap between intention and action. 
-              We’ve created a dedicated space for sustainable habit-tracking that helps you stay committed to a greener lifestyle.
+              We built Modo because we believe that while many people want to live a more
+              eco-conscious life, the path to true sustainability can feel overwhelming. In a world
+              of convenience and fast consumption, it is easy to lose track of the small, daily
+              actions that lead to a significant environmental impact.
+              <br /><br />
+              Modo was designed to bridge the gap between intention and action. We’ve created a
+              dedicated space for sustainable habit-tracking that helps you stay committed to a
+              greener lifestyle.
             </p>
           </div>
 
@@ -278,9 +284,10 @@ onUnmounted(() => {
                 data-bs-parent="#faqAccordion"
               >
                 <div class="accordion-body">
-                  Modo is a sustainability tracker designed to help you build a greener lifestyle. 
-                  It gamifies your environmental impact by rewarding you with points for every eco-friendly action you complete, 
-                  turning personal growth into a win for the planet.
+                  Modo is a sustainability tracker designed to help you build a greener lifestyle.
+                  It gamifies your environmental impact by rewarding you with points for every
+                  eco-friendly action you complete, turning personal growth into a win for the
+                  planet.
                 </div>
               </div>
             </div>
@@ -305,9 +312,9 @@ onUnmounted(() => {
                 data-bs-parent="#faqAccordion"
               >
                 <div class="accordion-body">
-                  Right now, Modo is available via web browser on all devices. 
-                  We’re working hard on native iOS and Android apps to make sustainable living even easier for our community. 
-                  Stay tuned for updates!
+                  Right now, Modo is available via web browser on all devices. We’re working hard on
+                  native iOS and Android apps to make sustainable living even easier for our
+                  community. Stay tuned for updates!
                 </div>
               </div>
             </div>
@@ -332,7 +339,8 @@ onUnmounted(() => {
                 data-bs-parent="#faqAccordion"
               >
                 <div class="accordion-body">
-                  As many as you need to make a real impact, though we recommend starting with 3 to 5 core rituals.
+                  As many as you need to make a real impact, though we recommend starting with 3 to
+                  5 core rituals.
                 </div>
               </div>
             </div>

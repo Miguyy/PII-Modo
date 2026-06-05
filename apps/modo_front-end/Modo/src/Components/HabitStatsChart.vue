@@ -41,10 +41,12 @@
     <div v-if="showDownloadOptions" class="report-panel mt-3">
       <div class="report-period-info d-flex flex-wrap align-items-center gap-2 mb-3">
         <span class="period-badge text-nowrap">
-          <FontAwesomeIcon icon="calendar" class="me-1" v-if="false" /> Month {{ currentMes }} — Week {{ currentSemana }}
+          <FontAwesomeIcon icon="calendar" class="me-1" v-if="false" /> Month {{ currentMes }} —
+          Week {{ currentSemana }}
         </span>
         <span class="completed-badge text-nowrap">
-          <FontAwesomeIcon icon="check-circle" class="me-1" /> {{ completedThisPeriod.length }} completed
+          <FontAwesomeIcon icon="check-circle" class="me-1" />
+          {{ completedThisPeriod.length }} completed
         </span>
       </div>
 
@@ -111,7 +113,7 @@
     <div v-show="!showDownloadOptions" class="stats-summary mt-2 text-center">
       <small class="text-muted">
         <span class="me-3">Active: {{ activeTasksCount }}</span>
-        <span><FontAwesomeIcon icon="check-circle" class="me-1" /> Completed: {{ completedCount }}</span>
+        <span> Completed: {{ completedCount }}</span>
       </small>
     </div>
   </div>
@@ -120,7 +122,15 @@
   <Transition name="toast-slide">
     <div v-if="toast.visible" class="toast-notification" :class="toast.type">
       <div class="toast-icon">
-        <FontAwesomeIcon :icon="toast.type === 'error' ? 'times-circle' : toast.type === 'warning' ? 'exclamation-triangle' : 'check-circle'" />
+        <FontAwesomeIcon
+          :icon="
+            toast.type === 'error'
+              ? 'times-circle'
+              : toast.type === 'warning'
+                ? 'exclamation-triangle'
+                : 'check-circle'
+          "
+        />
       </div>
       <div class="toast-content">
         <strong>{{ toast.title }}</strong>
@@ -141,13 +151,13 @@ const props = defineProps({
   /** Raw API userTasks array (for chart counts and report content) */
   tasks: {
     type: Array,
-    default: () => []
+    default: () => [],
   },
   /** Alias accepted for backward compat */
   rawTasks: {
     type: Array,
-    default: null
-  }
+    default: null,
+  },
 })
 
 const userStore = useUserStore()
@@ -172,7 +182,6 @@ function showToast(title, message, type = 'success', duration = 3000) {
     toast.value.visible = false
   }, duration)
 }
-
 
 /* ─── Report panel state ─── */
 const showDownloadOptions = ref(false)
@@ -209,7 +218,7 @@ const completedThisPeriod = computed(() => {
   const start = new Date(year, month, weekStart)
   const end = new Date(year, month, weekEnd, 23, 59, 59)
 
-  return effectiveTasks.value.filter(t => {
+  return effectiveTasks.value.filter((t) => {
     if (t.estado_tarefa !== 'Completed') return false
     if (!t.data_conclusao) return true // no date — include by default
     const d = new Date(t.data_conclusao)
@@ -267,9 +276,9 @@ async function generateReport() {
       const task = t.task || {}
       lines.push(
         `${i + 1}. ${task.nome_tarefa || 'Task #' + t.id_tarefa}` +
-        ` | Category: ${task.categoria || 'N/A'}` +
-        ` | Points: ${task.pontos_tarefa ?? 0}` +
-        ` | Completed: ${t.data_conclusao ? new Date(t.data_conclusao).toLocaleDateString() : 'N/A'}`
+          ` | Category: ${task.categoria || 'N/A'}` +
+          ` | Points: ${task.pontos_tarefa ?? 0}` +
+          ` | Completed: ${t.data_conclusao ? new Date(t.data_conclusao).toLocaleDateString() : 'N/A'}`,
       )
     })
 
@@ -279,8 +288,8 @@ async function generateReport() {
       const task = t.task || {}
       lines.push(
         `${i + 1}. ${task.nome_tarefa || 'Task #' + t.id_tarefa}` +
-        ` | Status: ${t.estado_tarefa}` +
-        ` | Progress: ${t.progresso ?? 0}%`
+          ` | Status: ${t.estado_tarefa}` +
+          ` | Progress: ${t.progresso ?? 0}%`,
       )
     })
 
@@ -289,18 +298,18 @@ async function generateReport() {
     // Generate PDF using jsPDF
     const doc = new jsPDF()
     let y = 10
-    
+
     // Title
     doc.setFontSize(16)
     doc.text('MODO — Habit Report', 10, y)
     y += 10
-    
+
     // Body
     doc.setFontSize(11)
-    lines.forEach(line => {
+    lines.forEach((line) => {
       // Split text to fit within page width (190mm)
       const splitLines = doc.splitTextToSize(line, 190)
-      splitLines.forEach(splitLine => {
+      splitLines.forEach((splitLine) => {
         if (y > 280) {
           doc.addPage()
           y = 10
@@ -332,8 +341,8 @@ async function generateReport() {
 
       if (res?.caminho_relatorio) {
         lastReportUrl.value = res.caminho_relatorio
-        
-        // Trigger the local file download directly from the generated jsPDF instance 
+
+        // Trigger the local file download directly from the generated jsPDF instance
         // exactly like it was before the Cloudinary integration.
         doc.save(filename)
       } else {
@@ -357,12 +366,12 @@ const chartType = ref('doughnut')
 
 const activeTasksCount = computed(() => {
   if (!props.tasks) return 0
-  return props.tasks.filter(t => t.estado_tarefa !== 'Completed').length
+  return props.tasks.filter((t) => t.estado_tarefa !== 'Completed').length
 })
 
 const completedCount = computed(() => {
   if (!props.tasks) return 0
-  return props.tasks.filter(t => t.estado_tarefa === 'Completed').length
+  return props.tasks.filter((t) => t.estado_tarefa === 'Completed').length
 })
 
 function counts() {
@@ -406,13 +415,19 @@ function getChartConfig() {
 
 function createChart() {
   if (!canvas.value) return
-  if (chart) { chart.destroy(); chart = null }
+  if (chart) {
+    chart.destroy()
+    chart = null
+  }
   const ctx = canvas.value.getContext('2d')
   chart = new Chart(ctx, getChartConfig())
 }
 
 function updateChartType() {
-  if (!chart) { createChart(); return }
+  if (!chart) {
+    createChart()
+    return
+  }
   const config = getChartConfig()
   chart.config.type = config.type
   chart.config.data = config.data
@@ -430,7 +445,7 @@ watch(
       chart.update()
     }
   },
-  { deep: true }
+  { deep: true },
 )
 
 function handleStorageChange() {
@@ -448,7 +463,10 @@ onMounted(() => {
 onBeforeUnmount(() => {
   if (chart) chart.destroy()
   window.removeEventListener('habitCompleted', handleStorageChange)
-  if (progressInterval) { clearInterval(progressInterval); progressInterval = null }
+  if (progressInterval) {
+    clearInterval(progressInterval)
+    progressInterval = null
+  }
 })
 </script>
 
@@ -486,7 +504,9 @@ onBeforeUnmount(() => {
   font-weight: 600;
   font-size: 0.875rem;
   padding: 0.45rem 1rem;
-  transition: opacity 0.2s, transform 0.1s;
+  transition:
+    opacity 0.2s,
+    transform 0.1s;
 }
 
 .btn-generate:hover:not(:disabled) {
