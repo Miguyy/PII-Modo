@@ -1,14 +1,14 @@
 /**
- * Base de Conhecimento do Projeto Modo
- * Documento de referência completo para o assistente virtual (chatbot)
+ * Modo Project Knowledge Base
+ * Comprehensive reference document for the virtual assistant (chatbot)
  *
- * Este ficheiro contém toda a informação estruturada sobre o projeto,
- * funcionalidades, regras de negócio e terminologia do domínio.
+ * This file contains all the structured information about the project,
+ * its features, business rules and domain terminology.
  */
 
 export const projectInfo = {
   // ========================================
-  // 1. IDENTIFICAÇÃO DO PROJETO
+  // 1. Project Overview and Objectives
   // ========================================
   project: {
     name: 'Modo',
@@ -23,7 +23,7 @@ export const projectInfo = {
   },
 
   // ========================================
-  // 2. FUNCIONALIDADES PRINCIPAIS
+  // 2. Important Features and Functionalities
   // ========================================
   features: {
     authentication: {
@@ -39,7 +39,7 @@ export const projectInfo = {
         'src/views/LoginView.vue',
         'src/views/SigninView.vue',
         'src/stores/userStore.js',
-        'backend/sockets/auth.sockets.js'
+        'backend/sockets/auth.sockets.js',
       ],
     },
 
@@ -52,10 +52,7 @@ export const projectInfo = {
         'Temporizador integrado num modal interativo, com sincronização em tempo real na BD',
         'Alertas meteorológicos da OpenWeather API para tarefas no exterior quando chove',
       ],
-      relatedFiles: [
-        'src/views/HabitManagerView.vue',
-        'src/stores/habitStore.js'
-      ],
+      relatedFiles: ['src/views/HabitManagerView.vue', 'src/stores/habitStore.js'],
     },
 
     exploreHabits: {
@@ -66,9 +63,7 @@ export const projectInfo = {
         'Filtros por dificuldade (Fácil, Médio, Difícil)',
         'Secção de impactos (ex: CO2 Poupado, Água Poupada) gerados ao completar certos hábitos',
       ],
-      relatedFiles: [
-        'src/views/ExploreHabitsView.vue'
-      ],
+      relatedFiles: ['src/views/ExploreHabitsView.vue'],
     },
 
     gamification: {
@@ -80,10 +75,7 @@ export const projectInfo = {
         'Loja de Decorações de Avatar: compra de itens visuais com os pontos obtidos',
         'Equipar e desequipar decorações no perfil do utilizador',
       ],
-      relatedFiles: [
-        'src/views/ShopView.vue',
-        'src/views/ProfileView.vue'
-      ],
+      relatedFiles: ['src/views/ShopView.vue', 'src/views/ProfileView.vue'],
     },
 
     adminPanel: {
@@ -110,7 +102,7 @@ export const projectInfo = {
   },
 
   // ========================================
-  // 3. TIPOS DE UTILIZADOR E PERMISSÕES
+  // 3. Types of Users and Roles
   // ========================================
   userTypes: {
     admin: {
@@ -133,23 +125,21 @@ export const projectInfo = {
         'Comprar e equipar decorações',
         'Explorar o catálogo de hábitos',
       ],
-      restrictions: [
-        'Acesso restrito apenas aos seus dados',
-        'Sem acesso às rotas /adminpanel',
-      ],
+      restrictions: ['Acesso restrito apenas aos seus dados', 'Sem acesso às rotas /adminpanel'],
       identification: "userStore.role === 'user'",
     },
   },
 
   // ========================================
-  // 4. GLOSSÁRIO E TERMINOLOGIA DO DOMÍNIO
+  // 4. Domain-Specific Terminology and Glossary
   // ========================================
   glossary: {
     points: {
       term: 'Pontos (Points)',
       definition: 'Moeda da plataforma.',
       usage: 'Ganhos ao completar tarefas. Podem ser usados para comprar decorações.',
-      calculation: 'Atribuídos dinamicamente pela dificuldade ou configurados na criação da tarefa.',
+      calculation:
+        'Atribuídos dinamicamente pela dificuldade ou configurados na criação da tarefa.',
     },
 
     level: {
@@ -189,7 +179,7 @@ export const projectInfo = {
   },
 
   // ========================================
-  // 5. STACK TECNOLÓGICA
+  // 5. Technologies, Frameworks and Tools Used
   // ========================================
   technologies: {
     frontend: {
@@ -217,22 +207,27 @@ export const projectInfo = {
   },
 
   // ========================================
-  // 6. REGRAS DE NEGÓCIO E LÓGICA
+  // 6. Business Rules, Constraints and Validation Logic
   // ========================================
   businessRules: {
-    weatherAlerts: 'Se um utilizador tentar iniciar uma tarefa no exterior (Outside) e estiver a chover na sua área (via OpenWeather), o sistema mostra um Toast Alert a avisar.',
-    timerSaving: 'O progresso do temporizador é gravado em Segundos no backend, independentemente do objetivo ser definido em minutos.',
-    countingLimits: 'Tarefas de tipo Contador não podem ultrapassar o número estipulado pela quantidade necessária.',
-    authentication: 'O token expira passadas poucas horas. A aplicação tem um interceptor Axios/Fetch que força o logout para proteger a conta assim que recebe um erro 401 (Unauthorized).',
+    weatherAlerts:
+      'Se um utilizador tentar iniciar uma tarefa no exterior (Outside) e estiver a chover na sua área (via OpenWeather), o sistema mostra um Toast Alert a avisar.',
+    timerSaving:
+      'O progresso do temporizador é gravado em Segundos no backend, independentemente do objetivo ser definido em minutos.',
+    countingLimits:
+      'Tarefas de tipo Contador não podem ultrapassar o número estipulado pela quantidade necessária.',
+    authentication:
+      'O token expira passadas poucas horas. A aplicação tem um interceptor Axios/Fetch que força o logout para proteger a conta assim que recebe um erro 401 (Unauthorized).',
   },
 
   // ========================================
-  // 7. ESTRUTURA DE DADOS PRINCIPAIS (BACKEND MODELS)
+  // 7. Data Models, Database Schema and API Endpoints
   // ========================================
   dataModels: {
     User: 'id_utilizador, email, password, pontos, xp, role',
     Task: 'id_tarefa, nome_tarefa, tipo_tarefa, quantidade_necessaria, duracao_temporizador, prioridade',
-    UserTask: 'Tabela Pivot: id_utilizador, id_tarefa, progresso, estado_tarefa (Pending/Completed)',
+    UserTask:
+      'Tabela Pivot: id_utilizador, id_tarefa, progresso, estado_tarefa (Pending/Completed)',
     Decoration: 'id_decoracao, nome_decoracao, caminho_imagem, preco',
     Impact: 'id_impacto, tipo_impacto, valor_por_unidade',
   },

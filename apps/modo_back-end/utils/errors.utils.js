@@ -1,3 +1,8 @@
+/*
+  Purpose: Utility functions for creating standardized error objects in the application.
+  These functions help maintain consistency in error handling across the application by providing a common structure for error objects.
+*/
+
 export const createError = ({ status, description, errors }) => {
   const error = new Error(description);
   error.status = status;

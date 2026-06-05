@@ -1,6 +1,6 @@
 # <img src="./apps/modo_front-end/Modo/src/images/modoIcon.png" alt="Modo Icon" width="130" height="30"/> - Modo, sustainable habit tracker
 
-Modo is a lightweight habit-tracking project with three main parts: a Vue + Vite front-end, a Node/Sequelize back-end, and a Python data generator that uses Faker + SQLAlchemy to populate MySQL, for MySQL Workbench.
+Modo is a lightweight habit-tracking project with three main parts: a Vue + Vite front-end, a Node/Sequelize back-end, and a Python data generator that uses Faker to populate MySQL, for MySQL Workbench.
 
 ## What this repo contains
 
@@ -13,14 +13,15 @@ Modo is a lightweight habit-tracking project with three main parts: a Vue + Vite
 
 - Run the data generator to populate a local MySQL instance (or seed the mock DB).
 - Start the back-end (Sequelize-based) and then start the front-end dev server.
-- Register a user, create habits, add avatar decorations, and view habit charts.
+- Register a user, create habits, add avatar decorations, and view task charts.
 
 ## Tech used
 
-- Front-end: Vue 3, Vite, Pinia, Bootstrap, Font Awesome, Chart.js
+- Front-end: Vue 3, Vite, Pinia, Bootstrap, Font Awesome, Chart.js, Vitest, ESLint, Prettier, jsPDF and dark-mode.js
 - Back-end: Node.js, Express, Sequelize (MySQL)
 - Data generator: Python, Faker
 - Testing: Vitest for front-end unit tests
+- Chatbot: Used IAEdu to create a custom chatbot for this project.
 
 ## Getting started
 

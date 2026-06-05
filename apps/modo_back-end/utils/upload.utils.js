@@ -1,3 +1,8 @@
+/*
+  Purpose: Utility functions for handling file uploads in the application.
+  This module sets up a Multer middleware for handling file uploads, specifically for reports. It uses memory storage to keep uploaded files in memory and defines a file filter to restrict uploads to certain MIME types (PDFs, common image/document types, and plain text). The maximum file size is set to 20 MB by default.
+*/
+
 import multer from "multer";
 
 // Use memory storage so uploaded files are available as `req.file.buffer`

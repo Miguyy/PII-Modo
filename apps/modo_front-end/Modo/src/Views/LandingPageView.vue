@@ -5,20 +5,16 @@ import { useUserStore } from '../stores/userStore'
 
 const userStore = useUserStore()
 
-// Estado da animação
 const titleActive = ref(false)
 const textActive = ref(false)
 let hasAnimated = false
 
-// Timeouts
 let titleTimeout = null
 let textTimeout = null
 
-// Elementos DOM
 let sectionElement = null
 let scrollElement = null
 
-// Função de hover para animação
 function handleMouseEnter() {
   if (hasAnimated) return
   hasAnimated = true
@@ -32,7 +28,6 @@ function handleMouseEnter() {
   }, 1200)
 }
 
-// Função para scroll horizontal baseado no scroll vertical
 function handleScroll() {
   if (!sectionElement || !scrollElement) return
 
@@ -48,7 +43,6 @@ function handleScroll() {
   scrollElement.style.transform = `translateX(${-progress * maxMove}px)`
 }
 
-// Monta os elementos após render
 onMounted(() => {
   sectionElement = document.querySelector('.scroll-section-color')
   scrollElement = document.querySelector('.scroll-section')
@@ -56,11 +50,9 @@ onMounted(() => {
   window.addEventListener('scroll', handleScroll)
 })
 
-// Remove listeners
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
 
-  // Limpa timeouts caso componente seja destruído
   clearTimeout(titleTimeout)
   clearTimeout(textTimeout)
 })
@@ -128,7 +120,12 @@ onUnmounted(() => {
             Turn your goals into quests to beat <br />making a better world by a better you!
           </p>
           <div class="ms-auto">
-            <RouterLink class="letsStart-btn" :to="userStore.isAuthenticated ? '/habitsmanager' : '/signin'"> Let's start </RouterLink>
+            <RouterLink
+              class="letsStart-btn"
+              :to="userStore.isAuthenticated ? '/habitsmanager' : '/signin'"
+            >
+              Let's start
+            </RouterLink>
           </div>
         </div>
       </div>

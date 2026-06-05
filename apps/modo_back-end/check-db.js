@@ -1,3 +1,8 @@
+/*
+  Purpose: Check database connection and query AvatarDecoration table
+  Usage: node check-db.js
+*/
+
 import { AvatarDecoration } from "./config/db.config.js";
 try {
   const count = await AvatarDecoration.count();

@@ -125,6 +125,10 @@ export async function deleteReport(reportId, token) {
   return handleResponse(res)
 }
 
+/*
+  Export all service functions as a default object for easy imports in other modules.
+*/
+
 export default {
   getAllReports,
   getReportById,

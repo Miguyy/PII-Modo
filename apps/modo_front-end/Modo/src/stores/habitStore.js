@@ -1,3 +1,12 @@
+/*
+  Purpose: User's habits management: CRUD, progress tracking, and gamification points.
+  - Stores user's habits locally and syncs with API when possible.
+  - Supports three habit types: check (boolean), count (incremental), and time (timer-based).
+  - Awards points based on habit priority when completed, and triggers level-up notifications.
+  - Provides admin fetching for habits and tasks with pagination support.
+  Note: This store focuses on the user's own habits. Global catalog and admin-specific data are fetched but not deeply managed here.
+*/
+
 import { defineStore } from 'pinia'
 import Habit from '../models/habitModel'
 import { useUserStore } from '@/stores/userStore'
@@ -10,7 +19,7 @@ import { createNotification } from '@/api/services/notifications.services'
 
 const LOCAL_KEY = 'habits_v1'
 
-// pontos por prioridade (gamificação)
+// Gamification points based on habit priority
 export const PRIORITY_POINTS = {
   low: 5,
   medium: 10,
@@ -39,103 +48,101 @@ export const useHabitStore = defineStore('habitStore', {
   actions: {
     async fetchHabitsAndTasks(filters = {}) {
       try {
-        const { getAllHabits } = await import('@/api/services/habits.services');
-        const { getAllTasks } = await import('@/api/services/tasks.services');
-        
+        const { getAllHabits } = await import('@/api/services/habits.services')
+        const { getAllTasks } = await import('@/api/services/tasks.services')
+
         // Extract modo_user token if missing from sessionStorage
-        let token = sessionStorage.getItem('modo_token');
+        let token = sessionStorage.getItem('modo_token')
         if (!token) {
           try {
-            const raw = localStorage.getItem('modo_user');
+            const raw = localStorage.getItem('modo_user')
             if (raw) {
-               const parsed = JSON.parse(raw);
-               if (parsed.token) token = parsed.token;
+              const parsed = JSON.parse(raw)
+              if (parsed.token) token = parsed.token
             }
-          } catch(e) {}
+          } catch (e) {}
         }
-        
+
         // Ensure filters are appropriately passed
-        const habitParams = filters.q ? { q: filters.q, limit: 1000 } : { limit: 1000 };
-        const tasksParams = { ...filters, limit: 1000 };
+        const habitParams = filters.q ? { q: filters.q, limit: 1000 } : { limit: 1000 }
+        const tasksParams = { ...filters, limit: 1000 }
         const [habitsData, tasksData] = await Promise.all([
           getAllHabits(token, habitParams).catch(() => []),
-          getAllTasks(token, tasksParams).catch(() => [])
-        ]);
+          getAllTasks(token, tasksParams).catch(() => []),
+        ])
 
-        this.catalogHabits = Array.isArray(habitsData) ? habitsData : (habitsData?.data || []);
-        this.catalogTasks = Array.isArray(tasksData) ? tasksData : (tasksData?.data || []);
+        this.catalogHabits = Array.isArray(habitsData) ? habitsData : habitsData?.data || []
+        this.catalogTasks = Array.isArray(tasksData) ? tasksData : tasksData?.data || []
 
-        const tasksByHabit = {};
-        this.catalogTasks.forEach(task => {
+        const tasksByHabit = {}
+        this.catalogTasks.forEach((task) => {
           if (!tasksByHabit[task.id_habito]) {
-            tasksByHabit[task.id_habito] = [];
+            tasksByHabit[task.id_habito] = []
           }
-          tasksByHabit[task.id_habito].push(task);
-        });
-        this.catalogTasksByHabitId = tasksByHabit;
-
+          tasksByHabit[task.id_habito].push(task)
+        })
+        this.catalogTasksByHabitId = tasksByHabit
       } catch (err) {
-        console.error('Error fetching global catalog for explore page:', err);
+        console.error('Error fetching global catalog for explore page:', err)
       }
     },
 
     async fetchAdminHabits(params = {}) {
       try {
-        const { getAllHabits } = await import('@/api/services/habits.services');
-        let token = sessionStorage.getItem('modo_token');
+        const { getAllHabits } = await import('@/api/services/habits.services')
+        let token = sessionStorage.getItem('modo_token')
         if (!token) {
           try {
-            const raw = localStorage.getItem('modo_user');
+            const raw = localStorage.getItem('modo_user')
             if (raw) {
-               const parsed = JSON.parse(raw);
-               if (parsed.token) token = parsed.token;
+              const parsed = JSON.parse(raw)
+              if (parsed.token) token = parsed.token
             }
-          } catch(e) {}
+          } catch (e) {}
         }
-        const data = await getAllHabits(token, params);
+        const data = await getAllHabits(token, params)
         if (data && Array.isArray(data.data)) {
-           this.adminHabits = data.data;
-           if (data.meta) this.adminHabitsMeta = data.meta;
+          this.adminHabits = data.data
+          if (data.meta) this.adminHabitsMeta = data.meta
         } else if (Array.isArray(data)) {
-           this.adminHabits = data;
+          this.adminHabits = data
         }
       } catch (err) {
-        console.error('Failed to fetch admin habits:', err);
+        console.error('Failed to fetch admin habits:', err)
       }
     },
 
     async fetchAdminTasks(params = {}) {
       try {
-        const { getAllTasks } = await import('@/api/services/tasks.services');
-        let token = sessionStorage.getItem('modo_token');
+        const { getAllTasks } = await import('@/api/services/tasks.services')
+        let token = sessionStorage.getItem('modo_token')
         if (!token) {
           try {
-            const raw = localStorage.getItem('modo_user');
+            const raw = localStorage.getItem('modo_user')
             if (raw) {
-               const parsed = JSON.parse(raw);
-               if (parsed.token) token = parsed.token;
+              const parsed = JSON.parse(raw)
+              if (parsed.token) token = parsed.token
             }
-          } catch(e) {}
+          } catch (e) {}
         }
-        const data = await getAllTasks(token, params);
+        const data = await getAllTasks(token, params)
         if (data && Array.isArray(data.data)) {
-           this.adminTasks = data.data;
-           if (data.meta) this.adminTasksMeta = data.meta;
+          this.adminTasks = data.data
+          if (data.meta) this.adminTasksMeta = data.meta
         } else if (Array.isArray(data)) {
-           this.adminTasks = data;
+          this.adminTasks = data
         }
       } catch (err) {
-        console.error('Failed to fetch admin tasks:', err);
+        console.error('Failed to fetch admin tasks:', err)
       }
     },
 
-    // ----- Persistência -----
+    // Persistence
     loadFromLocalStorage() {
       const raw = localStorage.getItem(LOCAL_KEY)
       if (!raw) return
       try {
         const arr = JSON.parse(raw)
-        // reconstruir instâncias Habit
         this.habits = arr.map((o) => new Habit(o))
       } catch (e) {
         console.error('Failed to load habits:', e)
@@ -143,7 +150,7 @@ export const useHabitStore = defineStore('habitStore', {
     },
 
     saveToLocalStorage() {
-      // converte em JSON (habit.toJSON trata created_at)
+      // Convert Habit instances to plain objects if they have toJSON, otherwise store as is
       const serial = JSON.stringify(this.habits.map((h) => (h.toJSON ? h.toJSON() : h)))
       localStorage.setItem(LOCAL_KEY, serial)
     },
@@ -156,7 +163,9 @@ export const useHabitStore = defineStore('habitStore', {
         const payload = {
           ...habitData,
           created_at: new Date().toISOString(),
-          remaining_seconds: habitData.remaining_seconds ?? (habitData.target_minutes ? habitData.target_minutes * 60 : null),
+          remaining_seconds:
+            habitData.remaining_seconds ??
+            (habitData.target_minutes ? habitData.target_minutes * 60 : null),
           current_progress: habitData.current_progress ?? undefined,
         }
 
@@ -310,14 +319,14 @@ export const useHabitStore = defineStore('habitStore', {
     pauseTimer(id, remainingSeconds = null) {
       const habit = this.getHabitById(id)
       if (!habit || habit.type !== 'time') return
-      
+
       // If we have exact remaining seconds from UI, use that
       if (remainingSeconds !== null) {
         habit.remaining_seconds = remainingSeconds
         const totalTargetSeconds = (habit.target_minutes ?? 0) * 60
         const elapsedSeconds = totalTargetSeconds - remainingSeconds
         habit.current_progress.seconds = elapsedSeconds
-        
+
         if (remainingSeconds <= 0) {
           habit.remaining_seconds = 0
           habit.current_progress.seconds = totalTargetSeconds
@@ -329,17 +338,17 @@ export const useHabitStore = defineStore('habitStore', {
         const now = Date.now()
         const elapsedMs = now - habit.timer_last_started_at
         const elapsedSec = Math.floor(elapsedMs / 1000)
-        const currentRemaining = habit.remaining_seconds ?? (habit.target_minutes * 60)
+        const currentRemaining = habit.remaining_seconds ?? habit.target_minutes * 60
         habit.remaining_seconds = Math.max(0, currentRemaining - elapsedSec)
-        habit.current_progress.seconds = (habit.target_minutes * 60) - habit.remaining_seconds
-        
+        habit.current_progress.seconds = habit.target_minutes * 60 - habit.remaining_seconds
+
         if (habit.remaining_seconds <= 0) {
           habit.remaining_seconds = 0
           habit.completed = true
           this._awardPointsFor(habit)
         }
       }
-      
+
       // clear last started timestamp
       habit.timer_last_started_at = null
       this.saveToLocalStorage()
@@ -357,10 +366,10 @@ export const useHabitStore = defineStore('habitStore', {
         if (habit.type === 'time' && habit.timer_last_started_at) {
           const elapsedMs = now - habit.timer_last_started_at
           const elapsedSec = Math.floor(elapsedMs / 1000)
-          const currentRemaining = habit.remaining_seconds ?? (habit.target_minutes * 60)
+          const currentRemaining = habit.remaining_seconds ?? habit.target_minutes * 60
           habit.remaining_seconds = Math.max(0, currentRemaining - elapsedSec)
-          habit.current_progress.seconds = (habit.target_minutes * 60) - habit.remaining_seconds
-          
+          habit.current_progress.seconds = habit.target_minutes * 60 - habit.remaining_seconds
+
           if (habit.remaining_seconds <= 0) {
             habit.remaining_seconds = 0
             habit.completed = true
@@ -374,7 +383,6 @@ export const useHabitStore = defineStore('habitStore', {
       this.saveToLocalStorage()
     },
 
-    // Reset diário para todos (chamada manual ou ao iniciar novo dia)
     resetDailyForUser(user_id) {
       const list = this.getHabitsByUser(user_id)
       list.forEach((h) => {
@@ -385,8 +393,6 @@ export const useHabitStore = defineStore('habitStore', {
       })
       this.saveToLocalStorage()
     },
-
-    // ----- Gamificação: quando um hábito é completado -----
 
     _awardPointsFor(habit) {
       try {
@@ -402,7 +408,7 @@ export const useHabitStore = defineStore('habitStore', {
         const points = PRIORITY_POINTS[habit.priority] ?? PRIORITY_POINTS.low
         const oldPoints = Number(user.points) || 0
         const oldLevel = Math.floor(oldPoints / 100)
-        
+
         user.points = oldPoints + points
         const newLevel = Math.floor(user.points / 100)
 
@@ -422,21 +428,25 @@ export const useHabitStore = defineStore('habitStore', {
         if (newLevel > oldLevel) {
           const payload = {
             mensagem: `Congratulations! You leveled up to Level ${newLevel}!`,
-            tipo_notificacao: 'Level'
+            tipo_notificacao: 'Level',
           }
-          createNotification(user.id, payload).then(newNotif => {
-            if (userStore.notifications && typeof userStore._normalizeNotification === 'function') {
-              const notifData = newNotif.notification || newNotif;
-              userStore.notifications.unshift(userStore._normalizeNotification(notifData));
-            }
-          }).catch(err => console.warn('Failed to create level up notification:', err))
+          createNotification(user.id, payload)
+            .then((newNotif) => {
+              if (
+                userStore.notifications &&
+                typeof userStore._normalizeNotification === 'function'
+              ) {
+                const notifData = newNotif.notification || newNotif
+                userStore.notifications.unshift(userStore._normalizeNotification(notifData))
+              }
+            })
+            .catch((err) => console.warn('Failed to create level up notification:', err))
         }
       } catch (e) {
         console.error('Error awarding points:', e)
       }
     },
 
-    // explicit completion (marca e dá pontos)
     completeHabit(id) {
       const habit = this.getHabitById(id)
       if (!habit) return

@@ -1,5 +1,11 @@
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
+/*
+ * Helper function to handle API responses
+ * Parses JSON if possible, otherwise returns text
+ * Throws an error if response is not ok
+ */
+
 async function handleResponse(res) {
   const text = await res.text()
 
@@ -16,6 +22,8 @@ async function handleResponse(res) {
 
   return data
 }
+
+/* Helper function to create Authorization header if token is provided */
 
 function bearerHeaders(token) {
   return token ? { Authorization: `Bearer ${token}` } : {}
@@ -132,6 +140,10 @@ export async function deleteUserTask(userId, taskId, token) {
 
   return handleResponse(res)
 }
+
+/*
+  Export all service functions as a default object for easy imports in other modules.
+*/
 
 export default {
   getUserTasks,
