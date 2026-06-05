@@ -3,6 +3,7 @@ import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from './stores/userStore'
 import ChatbotComponent from './Components/Chatbot.vue'
+import Footer from './Components/Footer.vue'
 
 const isDark = ref(false)
 const route = useRoute()
@@ -41,9 +42,12 @@ onMounted(async () => {
 </script>
 
 <template>
-  <main>
+  <main class="app-main-content">
     <router-view></router-view>
   </main>
+  
+  <Footer v-if="!['/login', '/signin'].includes(route.path)" />
+
   <ChatbotComponent v-if="!lightOnlyRoutes.includes(route.path)" />
   <button v-if="!lightOnlyRoutes.includes(route.path)" class="custom-theme-toggle" @click="toggleTheme" :title="isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
     <FontAwesomeIcon :icon="isDark ? 'sun' : 'moon'" />
@@ -51,6 +55,16 @@ onMounted(async () => {
 </template>
 
 <style>
+/* Main content flex wrapper so footer stays at bottom */
+#app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.app-main-content {
+  flex: 1 0 auto;
+}
+
 .custom-theme-toggle {
   position: fixed;
   bottom: 64px;

@@ -451,9 +451,6 @@
       </div>
     </div>
   </Transition>
-  <footer class="modo-footer">
-    <img src="../images/footer.svg" alt="Modo Footer" class="footer-content" />
-  </footer>
 </template>
 
 <script setup>
@@ -1193,21 +1190,5 @@ async function saveTimerProgress() {
 .custom-action-btn:hover, .custom-complete-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-}
-
-.modo-footer {
-  width: 100%;
-  background: #3f6b56; /* green rectangle */
-  padding: 40px 0;
-  margin-top: 160px;
-  display: flex;
-  justify-content: center;
-}
-
-.footer-content {
-  width: 60%;
-  max-width: 1100px;
-  height: auto;
-  display: block;
 }
 </style>

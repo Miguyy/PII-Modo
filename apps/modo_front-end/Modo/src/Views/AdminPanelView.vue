@@ -1062,10 +1062,6 @@
       </div>
     </div>
   </Transition>
-
-  <footer class="modo-footer">
-    <img src="../images/footer.svg" alt="Modo Footer" class="footer-content" />
-  </footer>
 </template>
 
 <script setup>

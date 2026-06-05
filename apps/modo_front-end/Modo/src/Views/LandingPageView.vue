@@ -1,6 +1,9 @@
 <script setup>
 import NavBar from '../Components/NavBar.vue'
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useUserStore } from '../stores/userStore'
+
+const userStore = useUserStore()
 
 // Estado da animação
 const titleActive = ref(false)
@@ -125,7 +128,7 @@ onUnmounted(() => {
             Turn your goals into quests to beat <br />making a better world by a better you!
           </p>
           <div class="ms-auto">
-            <RouterLink class="letsStart-btn" to="/signin"> Let's start </RouterLink>
+            <RouterLink class="letsStart-btn" :to="userStore.isAuthenticated ? '/habitsmanager' : '/signin'"> Let's start </RouterLink>
           </div>
         </div>
       </div>
