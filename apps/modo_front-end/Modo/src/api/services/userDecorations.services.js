@@ -1,5 +1,9 @@
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
+/*
+  Helper function to handle API responses. It checks if the response is OK and parses the JSON data. If the response is not OK, it throws an error with the message from the response or the status text.
+*/
+
 async function handleResponse(res) {
   const text = await res.text()
 
@@ -16,6 +20,10 @@ async function handleResponse(res) {
 
   return data
 }
+
+/*
+  Helper function to create headers with Bearer token if provided.
+*/
 
 function bearerHeaders(token) {
   return token ? { Authorization: `Bearer ${token}` } : {}
@@ -67,6 +75,10 @@ export async function activateUserDecoration(userId, decorationId, payload, toke
 
   return handleResponse(res)
 }
+
+/*
+  Export all service functions as a default object for easy imports in other modules.
+*/
 
 export default {
   assignDecorationToUser,

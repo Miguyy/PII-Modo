@@ -19,6 +19,8 @@
       </svg>
     </button>
 
+    <!-- Show loading, error, or weather data -->
+
     <p v-if="weatherStore.loading">Loading...</p>
     <p v-if="weatherStore.error">{{ weatherStore.error }}</p>
 

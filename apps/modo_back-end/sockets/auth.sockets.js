@@ -1,3 +1,16 @@
+/*
+  Purpose: This module sets up WebSocket event handlers for authentication-related actions, specifically "forgot_password" and "reset_password". It uses JWT for token generation and verification, bcrypt for password hashing, and nodemailer for sending password reset emails.
+
+  Events:
+    - "forgot_password": Expects an email address. If the email exists, generates a JWT token and sends a password reset email. Always returns success to avoid leaking user existence.
+    - "reset_password": Expects a JWT token and a new password. Verifies the token, checks its purpose, and if valid, updates the user's password.
+  Security Considerations:
+    - The "forgot_password" event does not reveal whether an email exists in the system to prevent user enumeration attacks.
+    - JWT tokens are signed with a secret and have an expiration time to limit their validity.
+    - Passwords are hashed using bcrypt before being stored in the database.
+    - Error messages are generic to avoid leaking sensitive information.
+*/
+
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import nodemailer from "nodemailer";
@@ -35,11 +48,15 @@ export function setupAuthSockets(io) {
 
         // --- NODEMAILER INTEGRATION ---
         let transporter;
-        if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+        if (
+          process.env.SMTP_HOST &&
+          process.env.SMTP_USER &&
+          process.env.SMTP_PASS
+        ) {
           transporter = nodemailer.createTransport({
             host: process.env.SMTP_HOST,
             port: process.env.SMTP_PORT || 587,
-            secure: process.env.SMTP_SECURE === 'true',
+            secure: process.env.SMTP_SECURE === "true",
             auth: {
               user: process.env.SMTP_USER,
               pass: process.env.SMTP_PASS,
@@ -60,7 +77,8 @@ export function setupAuthSockets(io) {
         }
 
         // Send mail with defined transport object
-        const fromEmail = process.env.SMTP_FROM || '"Modo Team" <noreply@modo.app>';
+        const fromEmail =
+          process.env.SMTP_FROM || '"Modo Team" <noreply@modo.app>';
         const info = await transporter.sendMail({
           from: fromEmail,
           to: email,
@@ -71,14 +89,18 @@ export function setupAuthSockets(io) {
 
         console.log("Password Reset Email Sent: %s", info.messageId);
         if (!process.env.SMTP_HOST) {
-          console.log("Preview URL (Ethereal test email): %s", nodemailer.getTestMessageUrl(info));
+          console.log(
+            "Preview URL (Ethereal test email): %s",
+            nodemailer.getTestMessageUrl(info),
+          );
         }
         // ------------------------------
 
         // Emit the token to the client (for development purposes)
         socket.emit("forgot_password_result", {
           success: true,
-          message: "An email has been sent with instructions to reset your password.",
+          message:
+            "An email has been sent with instructions to reset your password.",
           token, // returning token for development purposes
         });
       } catch (err) {

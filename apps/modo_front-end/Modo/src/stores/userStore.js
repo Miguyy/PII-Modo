@@ -1,10 +1,27 @@
 /*
-  Purpose: Pinia store for user state.
+  Purpose: Centralized store for user authentication, profile management, and related data like notifications and decorations. Handles login/logout, user data fetching/updating, and session persistence via localStorage.
+  The store normalizes API responses to maintain a consistent internal data structure, abstracting away differences in field naming conventions across endpoints. It also provides utility methods for managing the user's avatar decoration and notifications.
+  The store's state includes:
+  - currentUser: The authenticated user's profile data.
+  - role: The user's role (e.g., 'admin', 'user').
+  - users: A list of all users (for admin management).
+  - notifications: The current user's notifications.
+  - decorations: Available avatar decorations.
+  - usersMeta: Metadata for paginated user lists.
+  - loading: Indicates if an API request is in progress.
+  - error: Stores error messages from API requests.
+  - token: The authentication token for API requests.
 */
 
 import { defineStore } from 'pinia'
 import { login, logout as logoutApi } from '../api/services/auth.services.js'
-import { getUserById, updateUser, getAllUsers, createUser, deleteUser } from '../api/services/users.services.js'
+import {
+  getUserById,
+  updateUser,
+  getAllUsers,
+  createUser,
+  deleteUser,
+} from '../api/services/users.services.js'
 import { getAllDecorations } from '../api/services/decorations.services.js'
 import { getUserNotifications, updateNotification } from '../api/services/notifications.services.js'
 
@@ -37,7 +54,10 @@ export const useUserStore = defineStore('user', {
       const avatar = user.imagem_utilizador ?? user.avatar ?? null
       const avatarDecorationName = user.avatarDecorationName ?? user.nome_decoracao ?? null
       const avatarDecorationSource = user.avatarDecoration ?? user.caminho_decoracao ?? null
-      const avatarDecoration = this._resolveDecorationAsset(avatarDecorationName, avatarDecorationSource)
+      const avatarDecoration = this._resolveDecorationAsset(
+        avatarDecorationName,
+        avatarDecorationSource,
+      )
       const points = user.pontos ?? user.points ?? 0
       const priority = user.nivel ?? user.priority ?? 1
 
@@ -141,15 +161,18 @@ export const useUserStore = defineStore('user', {
 
     saveToLocalStorage() {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({
-          currentUser: this.currentUser,
-          role: this.role,
-          users: this.users,
-          notifications: this.notifications,
-          decorations: this.decorations,
-          usersMeta: this.usersMeta,
-          token: this.token,
-        }))
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify({
+            currentUser: this.currentUser,
+            role: this.role,
+            users: this.users,
+            notifications: this.notifications,
+            decorations: this.decorations,
+            usersMeta: this.usersMeta,
+            token: this.token,
+          }),
+        )
       } catch (err) {
         console.error('Failed saving user to localStorage', err)
       }
@@ -220,7 +243,8 @@ export const useUserStore = defineStore('user', {
         if (Object.prototype.hasOwnProperty.call(updates, 'name')) payload.nome = updates.name
         if (Object.prototype.hasOwnProperty.call(updates, 'nome')) payload.nome = updates.nome
         if (Object.prototype.hasOwnProperty.call(updates, 'email')) payload.email = updates.email
-        if (Object.prototype.hasOwnProperty.call(updates, 'password')) payload.password = updates.password
+        if (Object.prototype.hasOwnProperty.call(updates, 'password'))
+          payload.password = updates.password
         if (Object.prototype.hasOwnProperty.call(updates, 'avatar')) payload.avatar = updates.avatar
         if (Object.prototype.hasOwnProperty.call(updates, 'imagem_utilizador')) {
           payload.imagem_utilizador = updates.imagem_utilizador
@@ -233,7 +257,12 @@ export const useUserStore = defineStore('user', {
         }
 
         // Passing this.token so the request doesn't fail with 401
-        const data = await updateUser(this.currentUser.id_utilizador, payload, this.token, imageFile)
+        const data = await updateUser(
+          this.currentUser.id_utilizador,
+          payload,
+          this.token,
+          imageFile,
+        )
         const normalized = this._normalizeUser(data)
         this.currentUser = { ...this.currentUser, ...normalized }
         this._syncUsersList(this.currentUser)
@@ -261,9 +290,7 @@ export const useUserStore = defineStore('user', {
       const data = await getUserNotifications(this.currentUser.id_utilizador)
       const list = data?.notifications || data || []
       // Only keep unread notifications so marking-as-read persists across reloads
-      this.notifications = list
-        .map((n) => this._normalizeNotification(n))
-        .filter((n) => !n.lida)
+      this.notifications = list.map((n) => this._normalizeNotification(n)).filter((n) => !n.lida)
       return this.notifications
     },
 

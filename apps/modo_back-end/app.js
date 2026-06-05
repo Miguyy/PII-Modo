@@ -1,3 +1,7 @@
+/*
+  Purpose: Main entry point for the Modo backend server. Sets up Express, Socket.IO, routes, and middleware.
+*/
+
 // Import express
 import express from "express";
 import { createServer } from "http";
@@ -16,15 +20,15 @@ const io = new Server(httpServer, {
   cors: {
     origin: "*", // Or match your express CORS configuration
     methods: ["GET", "POST", "PATCH", "DELETE"],
-    credentials: true
-  }
+    credentials: true,
+  },
 });
 
 app.use(express.json());
 // Enable CORS for the frontend during development. Set FRONTEND_URL
 // in env to restrict in other environments.
 const allowedOrigins = process.env.FRONTEND_URL
-  ? process.env.FRONTEND_URL.split(",").map(o => o.trim())
+  ? process.env.FRONTEND_URL.split(",").map((o) => o.trim())
   : [];
 
 app.use(

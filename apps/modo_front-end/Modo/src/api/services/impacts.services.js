@@ -130,6 +130,10 @@ export async function getTaskImpacts(taskId, token) {
   return handleResponse(res)
 }
 
+/*
+  Export all service functions as a default object for easy imports in other modules.
+*/
+
 export default {
   getAllImpacts,
   createImpact,

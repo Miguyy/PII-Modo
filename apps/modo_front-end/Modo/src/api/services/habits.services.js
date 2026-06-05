@@ -174,6 +174,10 @@ export async function deleteHabit(habitId, token) {
   return handleResponse(res)
 }
 
+/*
+  Exporting all service functions as a default object for easy imports.
+*/
+
 export default {
   getAllHabits,
   getHabitById,

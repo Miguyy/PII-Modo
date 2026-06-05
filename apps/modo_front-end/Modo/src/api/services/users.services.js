@@ -4,9 +4,17 @@
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
+/*
+  Helper function to handle API responses. It checks if the response is OK and parses the JSON data. If the response is not OK, it throws an error with the message from the response or the status text.
+*/
+
 function bearerHeaders(token) {
   return token ? { Authorization: `Bearer ${token}` } : {}
 }
+
+/*
+  Helper function to handle API responses. It checks if the response is OK and parses the JSON data. If the response is not OK, it throws an error with the message from the response or the status text.
+*/
 
 async function handleResponse(res) {
   if (res.status === 204) return { success: true }
@@ -21,7 +29,14 @@ async function handleResponse(res) {
   return data
 }
 
+/*
+  Create a new user with the provided data. If an image file is included, it sends a multipart/form-data request; otherwise, it sends a JSON request.
+*/
+
 export async function createUser(userData, token, imageFile = null) {
+  /*
+    If an image file is provided, we need to use FormData to send the request as multipart/form-data. We append all user data fields and the image file to the FormData object. If a token is provided, we include it in the Authorization header.
+  */
   if (imageFile) {
     const form = new FormData()
     Object.entries(userData).forEach(([k, v]) => {
@@ -40,6 +55,10 @@ export async function createUser(userData, token, imageFile = null) {
     return handleResponse(res)
   }
 
+  /*
+    If no image file is provided, we can send the user data as JSON. We set the Content-Type header to application/json and include the Bearer token if provided.
+  */
+
   const headers = { 'Content-Type': 'application/json', ...bearerHeaders(token) }
   const res = await fetch(`${BASE_URL}/users`, {
     method: 'POST',
@@ -49,6 +68,10 @@ export async function createUser(userData, token, imageFile = null) {
   })
   return handleResponse(res)
 }
+
+/*
+  Get a list of all users, optionally filtered by query parameters. The params object can include any valid query parameters supported by the API, such as search, page, limit, etc. The function constructs the query string from the params object and includes the Bearer token in the headers if provided.
+*/
 
 export async function getAllUsers(token, params = {}) {
   const qs = new URLSearchParams()
@@ -65,6 +88,10 @@ export async function getAllUsers(token, params = {}) {
   return handleResponse(res)
 }
 
+/*
+  Get a user by their ID. The function sends a GET request to the /users/:userId endpoint, including the Bearer token in the headers if provided.
+*/
+
 export async function getUserById(userId, token) {
   const res = await fetch(`${BASE_URL}/users/${userId}`, {
     method: 'GET',
@@ -73,6 +100,10 @@ export async function getUserById(userId, token) {
   })
   return handleResponse(res)
 }
+
+/*
+  Update a user's information. The function can handle both JSON updates and multipart/form-data updates if an image file is included. It sends a PATCH request to the /users/:userId endpoint with the appropriate headers and body based on whether an image file is provided.
+*/
 
 export async function updateUser(userId, updates, token, imageFile = null) {
   const isForm = imageFile != null
@@ -96,6 +127,10 @@ export async function updateUser(userId, updates, token, imageFile = null) {
   return handleResponse(res)
 }
 
+/*
+  Delete a user by their ID. The function sends a DELETE request to the /users/:userId endpoint, including the Bearer token in the headers if provided.
+*/
+
 export async function deleteUser(userId, token) {
   const res = await fetch(`${BASE_URL}/users/${userId}`, {
     method: 'DELETE',
@@ -104,6 +139,10 @@ export async function deleteUser(userId, token) {
   })
   return handleResponse(res)
 }
+
+/*  
+  Assign a habit to a user. The function sends a POST request to the /users/:userId/habits endpoint with the habit ID in the request body. It includes the Bearer token in the headers if provided.
+*/
 
 export async function assignHabitToUser(userId, habitId, token) {
   const res = await fetch(`${BASE_URL}/users/${userId}/habits`, {

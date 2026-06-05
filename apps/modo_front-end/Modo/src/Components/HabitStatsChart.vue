@@ -5,6 +5,7 @@
         <FontAwesomeIcon icon="chart-pie" class="pie-color me-2" />
         Habit Statistics
       </h5>
+      <!-- Statistics panel toggle -->
       <div class="btn-group" role="group">
         <button
           type="button"
