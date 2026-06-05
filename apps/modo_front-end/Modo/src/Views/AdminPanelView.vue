@@ -1898,7 +1898,6 @@ async function addImpactToTask() {
 }
 
 async function removeImpactFromTask(impactId) {
-  if (!confirm('Delete this impact?')) return
   try {
     await apiDeleteImpact(impactId, userStore.token)
     allImpacts.value = allImpacts.value.filter((i) => i.id_impacto !== impactId)

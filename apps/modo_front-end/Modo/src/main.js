@@ -119,7 +119,8 @@ window.fetch = async (...args) => {
     res.status === 401 && 
     url.startsWith(backendUrl) && 
     !url.includes('/users/login') && 
-    !url.includes('/users/register')
+    !url.includes('/users/register') &&
+    !url.includes('/users/logout')
   ) {
     import('@/stores/userStore.js').then(({ useUserStore }) => {
       const userStore = useUserStore()
