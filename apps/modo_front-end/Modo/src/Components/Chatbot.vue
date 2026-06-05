@@ -5,7 +5,7 @@
       class="chatbot-fab"
       :class="{ 'is-open': isOpen }"
       @click="toggleChat"
-      aria-label="Assistente Virtual Modo"
+      aria-label="Modo Virtual Assistant"
     >
       <span class="fab-icon fab-icon--chat">
         <FontAwesomeIcon icon="robot" style="font-size: 22px" />
@@ -18,7 +18,7 @@
 
     <!-- Chat Panel -->
     <Transition name="panel">
-      <div v-if="isOpen" class="chatbot-panel" role="dialog" aria-label="Assistente Modo">
+      <div v-if="isOpen" class="chatbot-panel" role="dialog" aria-label="Modo Assistant">
         <!-- Header -->
         <div class="panel-header">
           <div class="assistant-identity">
@@ -27,14 +27,26 @@
               <span class="status-dot"></span>
             </div>
             <div class="assistant-info">
-              <p class="assistant-name">Assistente Modo</p>
+              <p class="assistant-name">Modo Assistant</p>
               <p class="assistant-status">Online · IA powered by IAedu</p>
             </div>
           </div>
           <button class="btn-clear" @click="clearChat" title="Limpar conversa">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
-              <path d="M3 6H5H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <path d="M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6L18.1327 19.1425C18.0579 20.1891 17.187 21 16.1378 21H7.86224C6.81296 21 5.94208 20.1891 5.86732 19.1425L5 6H19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+            >
+              <path d="M3 6H5H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              <path
+                d="M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6L18.1327 19.1425C18.0579 20.1891 17.187 21 16.1378 21H7.86224C6.81296 21 5.94208 20.1891 5.86732 19.1425L5 6H19Z"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
             </svg>
           </button>
         </div>
@@ -44,8 +56,11 @@
           <!-- Welcome message -->
           <div v-if="messages.length === 0" class="welcome-block">
             <div class="welcome-orb"></div>
-            <p class="welcome-title">Olá! Sou o teu assistente Modo 👋</p>
-            <p class="welcome-subtitle">Posso ajudar-te com tarefas, hábitos, pontos, níveis e muito mais.</p>
+            <p class="welcome-title">Hey! I'm your Modo Assistent! 👋</p>
+            <p class="welcome-subtitle">
+              I can help you understand how to earn points, complete tasks, and make the most out of
+              Modo.
+            </p>
             <div class="quick-prompts">
               <button
                 v-for="prompt in quickPrompts"
@@ -67,7 +82,10 @@
               :class="msg.role === 'user' ? 'message-row--user' : 'message-row--assistant'"
             >
               <div v-if="msg.role === 'assistant'" class="msg-avatar">M</div>
-              <div class="message-bubble" :class="msg.role === 'user' ? 'bubble--user' : 'bubble--assistant'">
+              <div
+                class="message-bubble"
+                :class="msg.role === 'user' ? 'bubble--user' : 'bubble--assistant'"
+              >
                 <p class="bubble-text" v-html="formatMessage(msg.content)"></p>
                 <span class="bubble-time">{{ formatTime(msg.timestamp) }}</span>
               </div>
@@ -101,7 +119,7 @@
             ref="inputRef"
             v-model="userInput"
             class="chat-textarea"
-            placeholder="Escreve uma mensagem..."
+            placeholder="Write your message..."
             rows="1"
             :disabled="isLoading"
             @keydown.enter.exact.prevent="sendMessage"
@@ -111,11 +129,29 @@
             class="send-btn"
             :disabled="!userInput.trim() || isLoading"
             @click="sendMessage"
-            aria-label="Enviar mensagem"
+            aria-label="Send message"
           >
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="18" height="18">
-              <path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+            >
+              <path
+                d="M22 2L11 13"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M22 2L15 22L11 13L2 9L22 2Z"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
             </svg>
           </button>
         </div>
@@ -135,7 +171,7 @@ export default {
   data() {
     return {
       isOpen: false,
-      messages: [],       // { id, role: 'user'|'assistant', content, timestamp }
+      messages: [], // { id, role: 'user'|'assistant', content, timestamp }
       userInput: '',
       isLoading: false,
       error: null,
@@ -147,10 +183,10 @@ export default {
       threadId: crypto.randomUUID(),
 
       quickPrompts: [
-        'Como ganho pontos? 🎯',
-        'Que tipos de tarefas existem?',
-        'Como funciona a loja?',
-        'Como subo de nível?',
+        'How can I get points? 🎯',
+        'What kind of tasks exist? 📝',
+        'How does the leveling system work? 🚀',
+        'How can I level up?',
       ],
     }
   },
@@ -168,9 +204,9 @@ export default {
       const u = this.userStore
       return {
         username: u?.username ?? 'Desconhecido',
-        pontos:   u?.pontos  ?? 0,
-        nivel:    Math.floor((u?.pontos ?? 0) / 100),
-        role:     u?.role    ?? 'user',
+        pontos: u?.pontos ?? 0,
+        nivel: Math.floor((u?.pontos ?? 0) / 100),
+        role: u?.role ?? 'user',
       }
     },
 
@@ -182,10 +218,10 @@ export default {
     userContext() {
       return {
         instrucoes: [
-          'Responde SEMPRE em Português de Portugal.',
-          'Sê direto, simpático e contextualizado com os dados do utilizador.',
-          'Usa emojis com moderação.',
-          'Não inventes funcionalidades que não existam na base de conhecimento.',
+          'Answer ALWAYS in English. If the users asks something in Portuguese, answer in Portuguese. If the user asks something in another language, answer in English.',
+          'Be direct and concise. Keep answers short and to the point.',
+          'Use emojis in your answers to make them more engaging and friendly and with moderation in mind.',
+          'Do not create something that is not in the project info. If you do not know the answer, say you do not know.',
         ],
         projeto: projectInfo,
       }
@@ -223,7 +259,7 @@ export default {
           this.threadId,
           this.userInfo,
           this.userContext,
-          isFirstMessage
+          isFirstMessage,
         )
         this.appendMessage('assistant', reply)
         if (!this.isOpen) this.unreadCount++
@@ -274,9 +310,7 @@ export default {
 
     /** Converts **bold** markdown and newlines to HTML */
     formatMessage(text) {
-      return text
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\n/g, '<br>')
+      return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>')
     },
   },
 }
@@ -284,19 +318,21 @@ export default {
 
 <style lang="scss" scoped>
 /* ─── Design Tokens ──────────────────────────────────────────── */
-$bg-panel:       #0f1117;
-$bg-header:      #161922;
-$bg-input:       #1c2030;
-$bg-bubble-bot:  #1e2438;
+$bg-panel: #0f1117;
+$bg-header: #161922;
+$bg-input: #1c2030;
+$bg-bubble-bot: #1e2438;
 $bg-bubble-user: #3b5bdb;
-$accent:         #4c6ef5;
-$accent-glow:    rgba(76, 110, 245, 0.35);
-$text-primary:   #e8eaf0;
-$text-muted:     #6b7280;
-$border:         rgba(255, 255, 255, 0.07);
-$radius-panel:   18px;
-$radius-bubble:  14px;
-$shadow-panel:   0 24px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px $border;
+$accent: #4c6ef5;
+$accent-glow: rgba(76, 110, 245, 0.35);
+$text-primary: #e8eaf0;
+$text-muted: #6b7280;
+$border: rgba(255, 255, 255, 0.07);
+$radius-panel: 18px;
+$radius-bubble: 14px;
+$shadow-panel:
+  0 24px 80px rgba(0, 0, 0, 0.6),
+  0 0 0 1px $border;
 
 /* ─── Wrapper ────────────────────────────────────────────────── */
 .chatbot-wrapper {
@@ -320,37 +356,58 @@ $shadow-panel:   0 24px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px $border;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  transition: transform 0.2s ease, background-color 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease;
 
   &:hover {
     transform: scale(1.1);
     background-color: #2f5444;
   }
 
-  &:active { transform: scale(0.96); }
+  &:active {
+    transform: scale(0.96);
+  }
 
   .fab-icon {
     position: absolute;
-    transition: opacity 0.2s, transform 0.2s;
-    svg { width: 22px; height: 22px; }
+    transition:
+      opacity 0.2s,
+      transform 0.2s;
+    svg {
+      width: 22px;
+      height: 22px;
+    }
   }
 
-  .fab-icon--close { opacity: 0; transform: rotate(-90deg); }
-  .fab-icon--chat  { opacity: 1; transform: rotate(0deg); }
+  .fab-icon--close {
+    opacity: 0;
+    transform: rotate(-90deg);
+  }
+  .fab-icon--chat {
+    opacity: 1;
+    transform: rotate(0deg);
+  }
 
   &.is-open {
-    .fab-icon--chat  { opacity: 0; transform: rotate(90deg); }
-    .fab-icon--close { opacity: 1; transform: rotate(0deg); }
+    .fab-icon--chat {
+      opacity: 0;
+      transform: rotate(90deg);
+    }
+    .fab-icon--close {
+      opacity: 1;
+      transform: rotate(0deg);
+    }
   }
 }
 
-:global([data-bs-theme="dark"]) .chatbot-fab {
+:global([data-bs-theme='dark']) .chatbot-fab {
   background-color: #fff;
   color: #355d4c;
 }
 
-:global([data-bs-theme="dark"]) .chatbot-fab:hover {
+:global([data-bs-theme='dark']) .chatbot-fab:hover {
   background-color: #f0f0f0;
 }
 
@@ -450,7 +507,9 @@ $shadow-panel:   0 24px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px $border;
   padding: 6px;
   border-radius: 8px;
   display: flex;
-  transition: color 0.15s, background 0.15s;
+  transition:
+    color 0.15s,
+    background 0.15s;
 
   &:hover {
     color: $text-primary;
@@ -468,9 +527,16 @@ $shadow-panel:   0 24px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px $border;
   gap: 4px;
   scroll-behavior: smooth;
 
-  &::-webkit-scrollbar { width: 4px; }
-  &::-webkit-scrollbar-track { background: transparent; }
-  &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+  }
 }
 
 /* ─── Welcome ────────────────────────────────────────────────── */
@@ -522,7 +588,9 @@ $shadow-panel:   0 24px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px $border;
   padding: 6px 12px;
   border-radius: 20px;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
 
   &:hover {
     background: rgba($accent, 0.22);
@@ -608,14 +676,26 @@ $shadow-panel:   0 24px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px $border;
     background: $text-muted;
     animation: typing-bounce 1.2s infinite ease-in-out;
 
-    &:nth-child(2) { animation-delay: 0.2s; }
-    &:nth-child(3) { animation-delay: 0.4s; }
+    &:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    &:nth-child(3) {
+      animation-delay: 0.4s;
+    }
   }
 }
 
 @keyframes typing-bounce {
-  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
-  30%            { transform: translateY(-5px); opacity: 1; }
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translateY(-5px);
+    opacity: 1;
+  }
 }
 
 /* ─── Error Banner ───────────────────────────────────────────── */
@@ -655,7 +735,7 @@ $shadow-panel:   0 24px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px $border;
 
 .chat-textarea {
   flex: 1;
-  background: rgba(255,255,255,0.05);
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid $border;
   border-radius: 12px;
   color: $text-primary;
@@ -668,11 +748,18 @@ $shadow-panel:   0 24px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px $border;
   transition: border-color 0.2s;
   font-family: inherit;
 
-  &::placeholder { color: $text-muted; }
+  &::placeholder {
+    color: $text-muted;
+  }
 
-  &:focus { border-color: rgba($accent, 0.5); }
+  &:focus {
+    border-color: rgba($accent, 0.5);
+  }
 
-  &:disabled { opacity: 0.5; cursor: not-allowed; }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 }
 
 .send-btn {
@@ -687,7 +774,10 @@ $shadow-panel:   0 24px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px $border;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: background 0.15s, transform 0.1s, opacity 0.15s;
+  transition:
+    background 0.15s,
+    transform 0.1s,
+    opacity 0.15s;
 
   &:hover:not(:disabled) {
     background: lighten($accent, 8%);
@@ -709,8 +799,14 @@ $shadow-panel:   0 24px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px $border;
 }
 
 @keyframes panel-in {
-  from { opacity: 0; transform: scale(0.92) translateY(12px); }
-  to   { opacity: 1; transform: scale(1) translateY(0); }
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 .message-enter-active {
@@ -718,10 +814,22 @@ $shadow-panel:   0 24px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px $border;
 }
 
 @keyframes msg-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.fade-enter-active, .fade-leave-active { transition: opacity 0.2s; }
-.fade-enter-from, .fade-leave-to       { opacity: 0; }
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 </style>
