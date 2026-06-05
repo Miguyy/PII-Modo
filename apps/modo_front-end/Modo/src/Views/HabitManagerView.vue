@@ -307,7 +307,7 @@
                   <button
                     v-else
                     class="btn btn-sm btn-outline-success flex-fill"
-                    @click="complete(habit.id)"
+                    @click="completeAndRemoveHabit(habit.id)"
                   >
                     <FontAwesomeIcon icon="check" /> Mark Complete
                   </button>
@@ -364,7 +364,7 @@
                   <button
                     v-else
                     class="btn btn-sm btn-outline-success flex-fill"
-                    @click="complete(habit.id)"
+                    @click="completeAndRemoveHabit(habit.id)"
                   >
                     <FontAwesomeIcon icon="check" /> Mark Complete
                   </button>
@@ -1089,8 +1089,9 @@ async function saveTimerProgress() {
   if (!task || !userId) return
   
   // Progress is stored in seconds
-  const targetSeconds = (task.target_minutes || 0) * 60
-  const elapsedSeconds = targetSeconds - remainingSeconds.value
+  const targetMinutes = task.task?.duracao_temporizador || 15
+  const targetSeconds = targetMinutes * 60
+  const elapsedSeconds = Math.max(0, targetSeconds - remainingSeconds.value)
   
   try {
     await updateUserTask(userId, task.id_tarefa, { progresso: elapsedSeconds }, userStore.token)

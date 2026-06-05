@@ -8,25 +8,10 @@
       aria-label="Assistente Virtual Modo"
     >
       <span class="fab-icon fab-icon--chat">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path
-            d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
+        <FontAwesomeIcon icon="robot" style="font-size: 22px" />
       </span>
       <span class="fab-icon fab-icon--close">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path
-            d="M18 6L6 18M6 6L18 18"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-          />
-        </svg>
+        <FontAwesomeIcon icon="xmark" style="font-size: 24px" />
       </span>
       <span v-if="unreadCount > 0 && !isOpen" class="fab-badge">{{ unreadCount }}</span>
     </button>
@@ -47,21 +32,9 @@
             </div>
           </div>
           <button class="btn-clear" @click="clearChat" title="Limpar conversa">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-            >
-              <path d="M3 6H5H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-              <path
-                d="M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6L18.1327 19.1425C18.0579 20.1891 17.187 21 16.1378 21H7.86224C6.81296 21 5.94208 20.1891 5.86732 19.1425L5 6H19Z"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+              <path d="M3 6H5H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6L18.1327 19.1425C18.0579 20.1891 17.187 21 16.1378 21H7.86224C6.81296 21 5.94208 20.1891 5.86732 19.1425L5 6H19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </button>
         </div>
@@ -72,9 +45,7 @@
           <div v-if="messages.length === 0" class="welcome-block">
             <div class="welcome-orb"></div>
             <p class="welcome-title">Olá! Sou o teu assistente Modo 👋</p>
-            <p class="welcome-subtitle">
-              Posso ajudar-te com tarefas, hábitos, pontos, níveis e muito mais.
-            </p>
+            <p class="welcome-subtitle">Posso ajudar-te com tarefas, hábitos, pontos, níveis e muito mais.</p>
             <div class="quick-prompts">
               <button
                 v-for="prompt in quickPrompts"
@@ -96,10 +67,7 @@
               :class="msg.role === 'user' ? 'message-row--user' : 'message-row--assistant'"
             >
               <div v-if="msg.role === 'assistant'" class="msg-avatar">M</div>
-              <div
-                class="message-bubble"
-                :class="msg.role === 'user' ? 'bubble--user' : 'bubble--assistant'"
-              >
+              <div class="message-bubble" :class="msg.role === 'user' ? 'bubble--user' : 'bubble--assistant'">
                 <p class="bubble-text" v-html="formatMessage(msg.content)"></p>
                 <span class="bubble-time">{{ formatTime(msg.timestamp) }}</span>
               </div>
@@ -145,27 +113,9 @@
             @click="sendMessage"
             aria-label="Enviar mensagem"
           >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="18"
-            >
-              <path
-                d="M22 2L11 13"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-              <path
-                d="M22 2L15 22L11 13L2 9L22 2Z"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="18" height="18">
+              <path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </button>
         </div>
@@ -175,9 +125,9 @@
 </template>
 
 <script>
-import { sendChatMessage } from '../api/chatbotApi.js'
-import { projectInfo } from '../data/projectInfo.js'
-import { useUserStore } from '../stores/userStore.js'
+import { sendChatMessage } from '@/api/chatbotApi.js'
+import { projectInfo } from '@/data/projectInfo.js'
+import { useUserStore } from '@/stores/userStore.js'
 
 export default {
   name: 'ChatbotComponent',
@@ -185,11 +135,17 @@ export default {
   data() {
     return {
       isOpen: false,
-      messages: [], // { id, role: 'user'|'assistant', content, timestamp }
+      messages: [],       // { id, role: 'user'|'assistant', content, timestamp }
       userInput: '',
       isLoading: false,
       error: null,
       unreadCount: 0,
+
+      // A stable thread ID for this chat session.
+      // The IAedu agent uses this to maintain conversation memory across turns.
+      // Resetting it (clearChat) starts a brand new conversation thread.
+      threadId: crypto.randomUUID(),
+
       quickPrompts: [
         'Como ganho pontos? 🎯',
         'Que tipos de tarefas existem?',
@@ -205,43 +161,34 @@ export default {
     },
 
     /**
-     * Builds the system context string sent to IAedu with every request.
-     * Combines projectInfo + live user data so the assistant can give
-     * personalised answers (e.g. "Tens X pontos, precisas de Y para o nível N").
+     * user_info → who the current user is.
+     * Sent on every request so the agent can personalise answers.
      */
-    systemContext() {
-      const user = this.userStore
-      const userSection = user
-        ? `
-## Utilizador atual
-- Username: ${user.username ?? 'Desconhecido'}
-- Pontos: ${user.pontos ?? 0}
-- Nível: ${Math.floor((user.pontos ?? 0) / 100)}
-- Role: ${user.role ?? 'user'}
-`
-        : ''
-
-      return `
-És o assistente virtual da aplicação "${projectInfo.project.name}" — ${projectInfo.project.tagline}.
-${projectInfo.project.description}
-
-Responde SEMPRE em Português de Portugal.
-Sê direto, simpático e contextualizado com os dados do utilizador.
-Usa emojis com moderação para tornar as respostas mais amigáveis.
-Não inventes funcionalidades que não existam na base de conhecimento abaixo.
-
-## Base de Conhecimento
-${JSON.stringify(projectInfo, null, 2)}
-${userSection}
-      `.trim()
+    userInfo() {
+      const u = this.userStore
+      return {
+        username: u?.username ?? 'Desconhecido',
+        pontos:   u?.pontos  ?? 0,
+        nivel:    Math.floor((u?.pontos ?? 0) / 100),
+        role:     u?.role    ?? 'user',
+      }
     },
 
-    /** Converts local messages to the format expected by IAedu API */
-    apiMessages() {
-      return this.messages.map((m) => ({
-        role: m.role,
-        content: m.content,
-      }))
+    /**
+     * user_context → the full Modo project knowledge base.
+     * The agent uses this to answer domain-specific questions correctly
+     * instead of hallucinating generic answers.
+     */
+    userContext() {
+      return {
+        instrucoes: [
+          'Responde SEMPRE em Português de Portugal.',
+          'Sê direto, simpático e contextualizado com os dados do utilizador.',
+          'Usa emojis com moderação.',
+          'Não inventes funcionalidades que não existam na base de conhecimento.',
+        ],
+        projeto: projectInfo,
+      }
     },
   },
 
@@ -269,16 +216,15 @@ ${userSection}
       this.error = null
 
       try {
-        /**
-         * sendChatMessage is imported from chatbotApi.js.
-         * Adjust the call signature to match your API function.
-         *
-         * Expected shape (adapt as needed):
-         *   sendChatMessage(messages, systemContext)
-         *
-         * The function should return a string with the assistant reply.
-         */
-        const reply = await sendChatMessage(this.apiMessages, this.systemContext)
+        const isFirstMessage = this.messages.length === 1
+
+        const reply = await sendChatMessage(
+          text,
+          this.threadId,
+          this.userInfo,
+          this.userContext,
+          isFirstMessage
+        )
         this.appendMessage('assistant', reply)
         if (!this.isOpen) this.unreadCount++
       } catch (err) {
@@ -307,6 +253,8 @@ ${userSection}
     clearChat() {
       this.messages = []
       this.error = null
+      // Reset thread so the agent forgets the previous conversation
+      this.threadId = crypto.randomUUID()
     },
 
     scrollToBottom() {
@@ -326,7 +274,9 @@ ${userSection}
 
     /** Converts **bold** markdown and newlines to HTML */
     formatMessage(text) {
-      return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>')
+      return text
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\n/g, '<br>')
     },
   },
 }
@@ -334,27 +284,25 @@ ${userSection}
 
 <style lang="scss" scoped>
 /* ─── Design Tokens ──────────────────────────────────────────── */
-$bg-panel: #0f1117;
-$bg-header: #161922;
-$bg-input: #1c2030;
-$bg-bubble-bot: #1e2438;
+$bg-panel:       #0f1117;
+$bg-header:      #161922;
+$bg-input:       #1c2030;
+$bg-bubble-bot:  #1e2438;
 $bg-bubble-user: #3b5bdb;
-$accent: #4c6ef5;
-$accent-glow: rgba(76, 110, 245, 0.35);
-$text-primary: #e8eaf0;
-$text-muted: #6b7280;
-$border: rgba(255, 255, 255, 0.07);
-$radius-panel: 18px;
-$radius-bubble: 14px;
-$shadow-panel:
-  0 24px 80px rgba(0, 0, 0, 0.6),
-  0 0 0 1px $border;
+$accent:         #4c6ef5;
+$accent-glow:    rgba(76, 110, 245, 0.35);
+$text-primary:   #e8eaf0;
+$text-muted:     #6b7280;
+$border:         rgba(255, 255, 255, 0.07);
+$radius-panel:   18px;
+$radius-bubble:  14px;
+$shadow-panel:   0 24px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px $border;
 
 /* ─── Wrapper ────────────────────────────────────────────────── */
 .chatbot-wrapper {
   position: fixed;
-  bottom: 28px;
-  right: 28px;
+  bottom: 130px;
+  right: 32px;
   z-index: 9999;
   font-family: 'Segoe UI', system-ui, sans-serif;
 }
@@ -362,64 +310,48 @@ $shadow-panel:
 /* ─── FAB ────────────────────────────────────────────────────── */
 .chatbot-fab {
   position: relative;
-  width: 56px;
-  height: 56px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   border: none;
-  background: $accent;
+  background-color: #355d4c;
   color: #fff;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow:
-    0 4px 20px $accent-glow,
-    0 2px 8px rgba(0, 0, 0, 0.4);
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transition: transform 0.2s ease, background-color 0.2s ease;
 
   &:hover {
-    transform: scale(1.08);
-    box-shadow:
-      0 6px 28px $accent-glow,
-      0 2px 12px rgba(0, 0, 0, 0.4);
+    transform: scale(1.1);
+    background-color: #2f5444;
   }
 
-  &:active {
-    transform: scale(0.96);
-  }
+  &:active { transform: scale(0.96); }
 
   .fab-icon {
     position: absolute;
-    transition:
-      opacity 0.2s,
-      transform 0.2s;
-    svg {
-      width: 22px;
-      height: 22px;
-    }
+    transition: opacity 0.2s, transform 0.2s;
+    svg { width: 22px; height: 22px; }
   }
 
-  .fab-icon--close {
-    opacity: 0;
-    transform: rotate(-90deg);
-  }
-  .fab-icon--chat {
-    opacity: 1;
-    transform: rotate(0deg);
-  }
+  .fab-icon--close { opacity: 0; transform: rotate(-90deg); }
+  .fab-icon--chat  { opacity: 1; transform: rotate(0deg); }
 
   &.is-open {
-    .fab-icon--chat {
-      opacity: 0;
-      transform: rotate(90deg);
-    }
-    .fab-icon--close {
-      opacity: 1;
-      transform: rotate(0deg);
-    }
+    .fab-icon--chat  { opacity: 0; transform: rotate(90deg); }
+    .fab-icon--close { opacity: 1; transform: rotate(0deg); }
   }
+}
+
+:global([data-bs-theme="dark"]) .chatbot-fab {
+  background-color: #fff;
+  color: #355d4c;
+}
+
+:global([data-bs-theme="dark"]) .chatbot-fab:hover {
+  background-color: #f0f0f0;
 }
 
 .fab-badge {
@@ -518,9 +450,7 @@ $shadow-panel:
   padding: 6px;
   border-radius: 8px;
   display: flex;
-  transition:
-    color 0.15s,
-    background 0.15s;
+  transition: color 0.15s, background 0.15s;
 
   &:hover {
     color: $text-primary;
@@ -538,16 +468,9 @@ $shadow-panel:
   gap: 4px;
   scroll-behavior: smooth;
 
-  &::-webkit-scrollbar {
-    width: 4px;
-  }
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-  }
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
 }
 
 /* ─── Welcome ────────────────────────────────────────────────── */
@@ -599,9 +522,7 @@ $shadow-panel:
   padding: 6px 12px;
   border-radius: 20px;
   cursor: pointer;
-  transition:
-    background 0.15s,
-    border-color 0.15s;
+  transition: background 0.15s, border-color 0.15s;
 
   &:hover {
     background: rgba($accent, 0.22);
@@ -687,26 +608,14 @@ $shadow-panel:
     background: $text-muted;
     animation: typing-bounce 1.2s infinite ease-in-out;
 
-    &:nth-child(2) {
-      animation-delay: 0.2s;
-    }
-    &:nth-child(3) {
-      animation-delay: 0.4s;
-    }
+    &:nth-child(2) { animation-delay: 0.2s; }
+    &:nth-child(3) { animation-delay: 0.4s; }
   }
 }
 
 @keyframes typing-bounce {
-  0%,
-  60%,
-  100% {
-    transform: translateY(0);
-    opacity: 0.4;
-  }
-  30% {
-    transform: translateY(-5px);
-    opacity: 1;
-  }
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30%            { transform: translateY(-5px); opacity: 1; }
 }
 
 /* ─── Error Banner ───────────────────────────────────────────── */
@@ -746,7 +655,7 @@ $shadow-panel:
 
 .chat-textarea {
   flex: 1;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255,255,255,0.05);
   border: 1px solid $border;
   border-radius: 12px;
   color: $text-primary;
@@ -759,18 +668,11 @@ $shadow-panel:
   transition: border-color 0.2s;
   font-family: inherit;
 
-  &::placeholder {
-    color: $text-muted;
-  }
+  &::placeholder { color: $text-muted; }
 
-  &:focus {
-    border-color: rgba($accent, 0.5);
-  }
+  &:focus { border-color: rgba($accent, 0.5); }
 
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 
 .send-btn {
@@ -785,10 +687,7 @@ $shadow-panel:
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition:
-    background 0.15s,
-    transform 0.1s,
-    opacity 0.15s;
+  transition: background 0.15s, transform 0.1s, opacity 0.15s;
 
   &:hover:not(:disabled) {
     background: lighten($accent, 8%);
@@ -810,14 +709,8 @@ $shadow-panel:
 }
 
 @keyframes panel-in {
-  from {
-    opacity: 0;
-    transform: scale(0.92) translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
+  from { opacity: 0; transform: scale(0.92) translateY(12px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 .message-enter-active {
@@ -825,22 +718,10 @@ $shadow-panel:
 }
 
 @keyframes msg-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
+.fade-enter-active, .fade-leave-active { transition: opacity 0.2s; }
+.fade-enter-from, .fade-leave-to       { opacity: 0; }
 </style>

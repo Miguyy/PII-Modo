@@ -1,62 +1,113 @@
-export async function sendChatMessage(messages, systemContext) {
-  const endpoint = 'https://api.iaedu.pt/agent-chat//api/v1/agent/cmor5objoex9gfp01vm7p95jh/stream'
+const ENDPOINT =
+  '/api/chatbot/agent-chat/api/v1/agent/cmor5objoex9gfp01vm7p95jh/stream'
+const API_KEY = 'sk-usr-k5mhlpztihb5wigy7web8tz893mn2yyk0y'
+const CHANNEL_ID = 'cmq0r4old15tinr01ki1zxzuk'
 
+/**
+ * Sends a message to the IAedu agent and returns the full reply as a string.
+ *
+ * @param {string} message              - The user's current message
+ * @param {string} threadId             - Stable conversation thread ID (one per chat session)
+ * @param {object} userInfo             - Live user data (points, level, username, role…)
+ * @param {object} userContext          - Project knowledge base context
+ * @param {boolean} isFirstMessage      - If true, forcefully inject context into the message prompt
+ * @returns {Promise<string>}           - The assistant's full reply
+ */
+export async function sendChatMessage(message, threadId, userInfo = {}, userContext = {}, isFirstMessage = false) {
   const formData = new FormData()
 
-  // Required Fields
-  formData.append('channel_id', 'cmq0r4old15tinr01ki1zxzuk')
-  formData.append('thread_id', 'dwXpG9MVwwArE25tB108b') // In production, generate a unique thread_id per user session
-  
-  // Pass the systemContext into the user_info or user_context
-  formData.append('user_info', JSON.stringify({ context: systemContext })) 
-  
-  // The API expects a 'message' string, so we grab the latest user message
-  const lastMessage = messages.length > 0 ? messages[messages.length - 1].content : 'Hello'
-  formData.append('message', lastMessage)
+  formData.append('channel_id', CHANNEL_ID)
+  formData.append('thread_id', threadId)
 
-  const response = await fetch(endpoint, {
+  // Combine userInfo and userContext. The API might only be injecting user_info into the system prompt!
+  const enrichedUserInfo = {
+    ...userInfo,
+    project_context: JSON.stringify(userContext)
+  }
+
+  // user_info: who the user is (the API requires this field)
+  formData.append('user_info', JSON.stringify(enrichedUserInfo))
+
+  // user_context: inject the project knowledge base here so the agent
+  // knows about Modo's features, rules, glossary, etc.
+  formData.append('user_context', JSON.stringify(userContext))
+
+  // HARD INJECTION: If the API agent ignores the user_context fields, 
+  // we force the context into the actual text prompt on the very first message!
+  let finalMessage = message
+  if (isFirstMessage) {
+    const contextPayload = JSON.stringify(userContext, null, 2)
+    finalMessage = `[INSTRUÇÕES DO SISTEMA E CONTEXTO DO PROJETO]\nEstás a atuar como o assistente virtual deste projeto. Usa a base de conhecimento abaixo para responder à pergunta do utilizador. Não inventes funcionalidades fora deste contexto.\n\n[BASE DE CONHECIMENTO]\n${contextPayload}\n\n[DADOS DO UTILIZADOR]\n${JSON.stringify(userInfo)}\n\n[PERGUNTA DO UTILIZADOR]\n${message}`
+  }
+
+  formData.append('message', finalMessage)
+
+  const response = await fetch(ENDPOINT, {
     method: 'POST',
     headers: {
-      'x-api-key': 'sk-usr-k5mhlpztihb5wigy7web8tz893mn2yyk0y',
+      // Do NOT set Content-Type manually with FormData — the browser sets it
+      // automatically with the correct multipart boundary.
+      'x-api-key': API_KEY,
     },
     body: formData,
   })
-  
+
   if (!response.ok) {
-    throw new Error(`API error: ${response.status}`)
+    throw new Error(`IAedu API error: ${response.status} ${response.statusText}`)
   }
 
-  // The endpoint is /stream, so it likely returns Server-Sent Events (SSE).
-  // For simplicity since Chatbot.vue expects a final string, we read the full text,
-  // parse the SSE 'data:' lines, and concatenate them.
-  const rawText = await response.text()
-  
-  try {
-    // Parse SSE lines. Assumes format: data: {"text":"..."} 
-    // or simply data: text
-    let fullReply = ''
-    const lines = rawText.split('\n')
+  // The endpoint streams NDJSON lines like:
+  // {"run_id":"...","type":"token","content":"A"}
+  // {"run_id":"...","type":"message","content":{...}}
+  // {"run_id":"...","type":"done","content":"..."}
+  // We read the stream and concatenate all "token" payloads.
+  return readStream(response)
+}
+
+/**
+ * Reads the NDJSON stream and returns the full assembled reply.
+ * Falls back to the final "message" block if token streaming fails.
+ *
+ * @param {Response} response
+ * @returns {Promise<string>}
+ */
+async function readStream(response) {
+  const reader = response.body.getReader()
+  const decoder = new TextDecoder()
+  let buffer = ''
+  let assembled = ''
+  let fallbackMessage = ''
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+
+    buffer += decoder.decode(value, { stream: true })
+    const lines = buffer.split('\n')
+    // Keep the last (possibly incomplete) line in the buffer
+    buffer = lines.pop()
+
     for (const line of lines) {
-      if (line.startsWith('data: ')) {
-        const dataStr = line.replace('data: ', '').trim()
-        if (dataStr === '[DONE]') continue
-        try {
-          const parsed = JSON.parse(dataStr)
-          // Some APIs return the delta in parsed.text, parsed.content, or similar
-          fullReply += parsed.text || parsed.content || dataStr
-        } catch (e) {
-          // If not JSON, just append the raw string
-          fullReply += dataStr
+      const trimmed = line.trim()
+      if (!trimmed) continue
+
+      try {
+        const event = JSON.parse(trimmed)
+
+        if (event.type === 'token') {
+          assembled += event.content ?? ''
         }
+
+        if (event.type === 'message' && event.content?.content) {
+          // Full message as fallback (already the complete reply)
+          fallbackMessage = event.content.content
+        }
+      } catch {
+        // Ignore malformed lines
       }
     }
-    
-    // Fallback if no SSE 'data:' prefix was found
-    if (!fullReply) {
-      return rawText
-    }
-    return fullReply
-  } catch (e) {
-    return rawText
   }
+
+  // Prefer the streamed tokens; fall back to the message block
+  return assembled.trim() || fallbackMessage.trim()
 }

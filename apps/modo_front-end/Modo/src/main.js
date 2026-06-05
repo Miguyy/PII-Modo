@@ -58,6 +58,8 @@ import {
   faExclamationTriangle,
   faSun,
   faMoon,
+  faRobot,
+  faXmark,
 } from '@fortawesome/free-solid-svg-icons'
 
 library.add(
@@ -107,6 +109,8 @@ library.add(
   faExclamationTriangle,
   faSun,
   faMoon,
+  faRobot,
+  faXmark,
 )
 
 const originalFetch = window.fetch
