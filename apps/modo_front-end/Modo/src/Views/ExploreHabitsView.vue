@@ -217,7 +217,15 @@
   <Transition name="toast-slide">
     <div v-if="toast.visible" class="toast-notification" :class="toast.type">
       <div class="toast-icon">
-        <FontAwesomeIcon :icon="toast.type === 'error' ? 'times-circle' : toast.type === 'warning' ? 'exclamation-triangle' : 'check-circle'" />
+        <FontAwesomeIcon
+          :icon="
+            toast.type === 'error'
+              ? 'times-circle'
+              : toast.type === 'warning'
+                ? 'exclamation-triangle'
+                : 'check-circle'
+          "
+        />
       </div>
       <div class="toast-content">
         <strong>{{ toast.title }}</strong>
@@ -225,6 +233,9 @@
       </div>
     </div>
   </Transition>
+  <footer class="modo-footer">
+    <img src="../images/footer.svg" alt="Modo Footer" class="footer-content" />
+  </footer>
 </template>
 
 <script>
@@ -338,7 +349,7 @@ export default {
 
       let list = Array.from(trackingMap.values())
 
-      // Note: we don't need to filter searchQuery locally anymore because the backend does it, 
+      // Note: we don't need to filter searchQuery locally anymore because the backend does it,
       // but leaving it as a safe fallback just in case backend ignores it.
       if (searchQuery.value) {
         const query = searchQuery.value.toLowerCase()
@@ -495,8 +506,12 @@ export default {
           return
         }
         await assignHabitTasksToUser(userId, { id_habito: habit.id_habito }, token)
-        showToast('Success', `Successfully added all tasks from ${habit.categoria} to your habits!`, 'success')
-      } catch(e) {
+        showToast(
+          'Success',
+          `Successfully added all tasks from ${habit.categoria} to your habits!`,
+          'success',
+        )
+      } catch (e) {
         console.error(e)
         showToast('Error', 'Failed to add habit.', 'error')
       }
@@ -512,8 +527,12 @@ export default {
           return
         }
         await assignTaskToUser(userId, { taskId: task.id_tarefa }, token)
-        showToast('Success', `Successfully added task "${task.nome_tarefa}" to your habits!`, 'success')
-      } catch(e) {
+        showToast(
+          'Success',
+          `Successfully added task "${task.nome_tarefa}" to your habits!`,
+          'success',
+        )
+      } catch (e) {
         console.error(e)
         showToast('Error', 'Failed to add task.', 'error')
       }
@@ -798,5 +817,21 @@ export default {
 
 .panel-inner-content li {
   margin-bottom: 6px;
+}
+
+.modo-footer {
+  width: 100%;
+  background: #3f6b56; /* green rectangle */
+  padding: 40px 0;
+  margin-top: 160px;
+  display: flex;
+  justify-content: center;
+}
+
+.footer-content {
+  width: 60%;
+  max-width: 1100px;
+  height: auto;
+  display: block;
 }
 </style>

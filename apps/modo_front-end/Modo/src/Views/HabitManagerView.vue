@@ -434,6 +434,9 @@
       </div>
     </div>
   </Transition>
+  <footer class="modo-footer">
+    <img src="../images/footer.svg" alt="Modo Footer" class="footer-content" />
+  </footer>
 </template>
 
 <script setup>
@@ -452,7 +455,13 @@ import NavBar from '../Components/NavBar.vue'
 import Weather from '@/Components/Weather.vue'
 import HabitStatsChart from '@/Components/HabitStatsChart.vue'
 import { getLocation, createLocation, updateLocation } from '@/api/services/locations.services'
-import { getUserTasks, deleteUserTask, completeUserTask, updateUserTask, assignTaskToUser } from '@/api/services/userTasks.services'
+import {
+  getUserTasks,
+  deleteUserTask,
+  completeUserTask,
+  updateUserTask,
+  assignTaskToUser,
+} from '@/api/services/userTasks.services'
 
 // Initialize stores
 const habitStore = useHabitStore()
@@ -500,7 +509,7 @@ onMounted(async () => {
   habitStore.loadFromLocalStorage()
   habitStore.reconcileRunningTimers()
   if (userStore.loadFromLocalStorage) await userStore.loadFromLocalStorage()
-  
+
   await fetchLocationAndWeather()
   await fetchUserTasks()
 })
@@ -513,7 +522,7 @@ async function fetchUserTasks() {
   try {
     const res = await getUserTasks(userId, userStore.token, { limit: 100 })
     apiUserTasks.value = Array.isArray(res.data) ? res.data : []
-  } catch(e) {
+  } catch (e) {
     console.error('Failed to fetch user tasks', e)
   }
 }
@@ -535,8 +544,13 @@ async function fetchLocationAndWeather() {
       // No DB location yet — request browser permission and POST if granted
       startLocationWatch(userId, token, 'POST')
     }
-  } catch(err) {
-    if (err.status === 404 || err.statusCode === 404 || (err.description && String(err.description).toLowerCase().includes('not found')) || (err.message && String(err.message).toLowerCase().includes('not found'))) {
+  } catch (err) {
+    if (
+      err.status === 404 ||
+      err.statusCode === 404 ||
+      (err.description && String(err.description).toLowerCase().includes('not found')) ||
+      (err.message && String(err.message).toLowerCase().includes('not found'))
+    ) {
       // No location in DB → try to create one if user grants permission
       startLocationWatch(userId, token, 'POST')
     } else {
@@ -573,29 +587,33 @@ function startLocationWatch(userId, token, initialMethod = 'POST') {
 
       // Check if coordinates changed enough to warrant a DB update (>0.001° ≈ 110m)
       const prev = lastSavedCoords.value
-      const moved = !prev ||
+      const moved =
+        !prev ||
         Math.abs(latitude - prev.latitude) > 0.001 ||
         Math.abs(longitude - prev.longitude) > 0.001
 
       // Always update weather in real time
       weatherStore.fetchCurrentWeatherByLocation(latitude, longitude)
 
-      if (!moved) return  // No significant movement — skip DB update
+      if (!moved) return // No significant movement — skip DB update
 
       lastSavedCoords.value = { latitude, longitude }
 
       try {
         let city = 'Unknown'
         let country = 'Unknown'
-        
+
         try {
           // Nominatim requires a custom User-Agent to avoid blocking
-          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`, {
-            headers: {
-              'User-Agent': 'ModoApp/1.0',
-              'Accept': 'application/json'
-            }
-          })
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
+            {
+              headers: {
+                'User-Agent': 'ModoApp/1.0',
+                Accept: 'application/json',
+              },
+            },
+          )
           if (res.ok) {
             const data = await res.json()
             city = data.address?.city || data.address?.town || data.address?.village || 'Unknown'
@@ -609,11 +627,11 @@ function startLocationWatch(userId, token, initialMethod = 'POST') {
 
         if (method === 'POST') {
           await createLocation(userId, payload, token)
-          method = 'PATCH'  // Subsequent updates are PATCHes
+          method = 'PATCH' // Subsequent updates are PATCHes
         } else {
           await updateLocation(userId, payload, token)
         }
-      } catch(e) {
+      } catch (e) {
         console.error('Saving location to database failed:', e)
       }
     },
@@ -626,8 +644,8 @@ function startLocationWatch(userId, token, initialMethod = 'POST') {
     {
       enableHighAccuracy: false,
       timeout: 15000,
-      maximumAge: 60000,  // Accept cached position up to 1 minute old
-    }
+      maximumAge: 60000, // Accept cached position up to 1 minute old
+    },
   )
 }
 
@@ -647,10 +665,13 @@ const userInitials = computed(() => {
   return initials ? initials.toUpperCase() : '?'
 })
 const userHabits = computed(() => {
-  return apiUserTasks.value.map(t => {
+  return apiUserTasks.value.map((t) => {
     const taskData = t.task || {}
-    const isCompleted = t.estado_tarefa === 'Completed' || t.progresso >= 100 || (taskData.tipo_tarefa === 'Check' && t.progresso > 0)
-    
+    const isCompleted =
+      t.estado_tarefa === 'Completed' ||
+      t.progresso >= 100 ||
+      (taskData.tipo_tarefa === 'Check' && t.progresso > 0)
+
     return {
       id: t.id_tarefa,
       estado_tarefa: t.estado_tarefa,
@@ -658,18 +679,24 @@ const userHabits = computed(() => {
       category: taskData.categoria || '',
       location: (taskData.localizacao_tarefa || 'inside').toLowerCase(),
       priority: (taskData.prioridade_tarefa || 'low').toLowerCase(),
-      type: (taskData.tipo_tarefa || 'check').toLowerCase() === 'timer' ? 'time' : (taskData.tipo_tarefa || 'check').toLowerCase(),
+      type:
+        (taskData.tipo_tarefa || 'check').toLowerCase() === 'timer'
+          ? 'time'
+          : (taskData.tipo_tarefa || 'check').toLowerCase(),
       current_progress: {
         checked: isCompleted,
         count: t.progresso || 0,
-        seconds: (t.progresso || 0) * 60 // Assuming progress is saved in minutes on backend
+        seconds: (t.progresso || 0) * 60, // Assuming progress is saved in minutes on backend
       },
       target_count: taskData.quantidade_necessaria || 1,
       target_minutes: taskData.duracao_temporizador || 15,
       created_at: t.created_at || new Date(),
-      remaining_seconds: Math.max(0, ((taskData.duracao_temporizador || 15) * 60) - ((t.progresso || 0) * 60)),
+      remaining_seconds: Math.max(
+        0,
+        (taskData.duracao_temporizador || 15) * 60 - (t.progresso || 0) * 60,
+      ),
       timer_last_started_at: null,
-      concluido: isCompleted ? 1 : 0
+      concluido: isCompleted ? 1 : 0,
     }
   })
 })
@@ -787,7 +814,7 @@ async function handleAdd() {
   if (!currentUser.value) return showToast('Error', 'Please log in first')
 
   const userId = currentUser.value.id_utilizador || currentUser.value.id
-  
+
   // Map frontend form values to backend expected enums
   const backendTypeMap = { check: 'Check', count: 'Count', time: 'Timer', timer: 'Timer' }
   const backendPriorityMap = { low: 'Low', medium: 'Medium', high: 'High' }
@@ -805,17 +832,17 @@ async function handleAdd() {
 
   try {
     await assignTaskToUser(userId, payload, userStore.token)
-    
+
     // Provide immediate feedback
     showToast(
       'Task created!',
       `${form.value.description} · ${payload.prioridade_tarefa} · ${payload.localizacao_tarefa}`,
-      'success'
+      'success',
     )
-    
+
     resetForm()
     await fetchUserTasks() // refresh from backend
-  } catch(e) {
+  } catch (e) {
     console.error('Failed to create task:', e)
     showToast('Error', 'Failed to create task. Check your inputs.', 'error')
   }
@@ -829,19 +856,21 @@ async function deleteHabit(id) {
       await deleteUserTask(userId, id, userStore.token)
       showToast('Task deleted', 'Removed from your list')
       await fetchUserTasks()
-    } catch(e) { console.error(e) }
+    } catch (e) {
+      console.error(e)
+    }
   }
 }
 
 async function increment(id) {
   const userId = currentUser.value?.id_utilizador || currentUser.value?.id
-  const userTask = apiUserTasks.value.find(t => t.id_tarefa === id)
+  const userTask = apiUserTasks.value.find((t) => t.id_tarefa === id)
   if (!userTask) return
   // Optimistic update
   userTask.progresso = (userTask.progresso || 0) + 1
   try {
     await updateUserTask(userId, id, { progresso: userTask.progresso }, userStore.token)
-  } catch(e) {
+  } catch (e) {
     userTask.progresso -= 1 // rollback
     console.error(e)
   }
@@ -849,13 +878,13 @@ async function increment(id) {
 
 async function decrement(id) {
   const userId = currentUser.value?.id_utilizador || currentUser.value?.id
-  const userTask = apiUserTasks.value.find(t => t.id_tarefa === id)
+  const userTask = apiUserTasks.value.find((t) => t.id_tarefa === id)
   if (!userTask || (userTask.progresso || 0) <= 0) return
   // Optimistic update
   userTask.progresso = (userTask.progresso || 0) - 1
   try {
     await updateUserTask(userId, id, { progresso: userTask.progresso }, userStore.token)
-  } catch(e) {
+  } catch (e) {
     userTask.progresso += 1 // rollback
     console.error(e)
   }
@@ -863,7 +892,7 @@ async function decrement(id) {
 
 async function toggleCheck(id) {
   const userId = currentUser.value?.id_utilizador || currentUser.value?.id
-  const userTask = apiUserTasks.value.find(t => t.id_tarefa === id)
+  const userTask = apiUserTasks.value.find((t) => t.id_tarefa === id)
   if (!userTask) return
   const prev = userTask.progresso || 0
   const newProgress = prev > 0 ? 0 : 100
@@ -871,7 +900,7 @@ async function toggleCheck(id) {
   userTask.progresso = newProgress
   try {
     await updateUserTask(userId, id, { progresso: newProgress }, userStore.token)
-  } catch(e) {
+  } catch (e) {
     userTask.progresso = prev // rollback
     console.error(e)
   }
@@ -881,7 +910,7 @@ async function completeAndRemoveHabit(id) {
   const userId = currentUser.value?.id_utilizador || currentUser.value?.id
 
   // Optimistic: instantly remove the task from local state so the UI updates immediately
-  const taskIndex = apiUserTasks.value.findIndex(t => t.id_tarefa === id)
+  const taskIndex = apiUserTasks.value.findIndex((t) => t.id_tarefa === id)
   const removedTask = taskIndex >= 0 ? apiUserTasks.value.splice(taskIndex, 1)[0] : null
 
   showToast('Success', 'Task completed! Points awarded.')
@@ -890,8 +919,8 @@ async function completeAndRemoveHabit(id) {
   try {
     await completeUserTask(userId, id, userStore.token)
     // Refresh user points in the background — don't block UI
-    userStore.fetchCurrentUser(userId).catch(err => console.warn('fetchCurrentUser failed:', err))
-  } catch(e) {
+    userStore.fetchCurrentUser(userId).catch((err) => console.warn('fetchCurrentUser failed:', err))
+  } catch (e) {
     console.error('Failed to complete task:', e)
     // Rollback: restore the task if API call failed
     if (removedTask && taskIndex >= 0) {
@@ -910,7 +939,7 @@ async function completeTimerHabit() {
     const userId = userStore.currentUser?.id_utilizador || userStore.currentUser?.id
 
     // Optimistic: remove from local state immediately
-    const taskIndex = apiUserTasks.value.findIndex(t => t.id_tarefa === id)
+    const taskIndex = apiUserTasks.value.findIndex((t) => t.id_tarefa === id)
     const removedTask = taskIndex >= 0 ? apiUserTasks.value.splice(taskIndex, 1)[0] : null
 
     showToast('Success', 'Task completed! Points awarded.')
@@ -918,8 +947,10 @@ async function completeTimerHabit() {
 
     try {
       await completeUserTask(userId, id, userStore.token)
-      userStore.fetchCurrentUser(userId).catch(err => console.warn('fetchCurrentUser failed:', err))
-    } catch(e) {
+      userStore
+        .fetchCurrentUser(userId)
+        .catch((err) => console.warn('fetchCurrentUser failed:', err))
+    } catch (e) {
       console.error('Failed to complete timer task:', e)
       if (removedTask && taskIndex >= 0) {
         apiUserTasks.value.splice(taskIndex, 0, removedTask)
@@ -998,7 +1029,7 @@ onUnmounted(() => {
 })
 
 function openTimer(id) {
-  const habit = userHabits.value.find(h => h.id === id)
+  const habit = userHabits.value.find((h) => h.id === id)
   activeTimerHabit.value = habit
 
   // Get remaining seconds from habit
@@ -1037,7 +1068,7 @@ function startCountdown() {
 
     // Real-time update local display variable (so progress bar moves)
     if (activeTimerHabit.value) {
-      const task = apiUserTasks.value.find(t => t.id_tarefa === activeTimerHabit.value.id)
+      const task = apiUserTasks.value.find((t) => t.id_tarefa === activeTimerHabit.value.id)
       if (task) {
         // We only update the reactive array temporarily here
         // The API call happens on pause or close
@@ -1083,20 +1114,41 @@ async function onCloseTimerModal() {
 
 async function saveTimerProgress() {
   const userId = currentUser.value?.id_utilizador || currentUser.value?.id
-  const task = apiUserTasks.value.find(t => t.id_tarefa === activeTimerHabit.value.id)
+  const task = apiUserTasks.value.find((t) => t.id_tarefa === activeTimerHabit.value.id)
   if (!task || !userId) return
-  
+
   // Calculate progress in minutes
   const targetSeconds = (task.progresso_alvo || 0) * 60
   const elapsedSeconds = targetSeconds - remainingSeconds.value
   const elapsedMinutes = Math.floor(elapsedSeconds / 60)
-  
+
   try {
-    await updateUserTask(userId, task.id_tarefa, { progress_value: elapsedMinutes }, userStore.token)
+    await updateUserTask(
+      userId,
+      task.id_tarefa,
+      { progress_value: elapsedMinutes },
+      userStore.token,
+    )
     await fetchUserTasks()
   } catch (e) {
     console.error('Failed to save timer progress', e)
   }
 }
 </script>
-<style></style>
+<style scoped>
+.modo-footer {
+  width: 100%;
+  background: #3f6b56; /* green rectangle */
+  padding: 40px 0;
+  margin-top: 160px;
+  display: flex;
+  justify-content: center;
+}
+
+.footer-content {
+  width: 60%;
+  max-width: 1100px;
+  height: auto;
+  display: block;
+}
+</style>
