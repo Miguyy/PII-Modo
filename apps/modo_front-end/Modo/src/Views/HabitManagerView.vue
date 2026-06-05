@@ -663,12 +663,12 @@ const userHabits = computed(() => {
       current_progress: {
         checked: isCompleted,
         count: t.progresso || 0,
-        seconds: (t.progresso || 0) * 60 // Assuming progress is saved in minutes on backend
+        seconds: t.progresso || 0 // Progress is saved in seconds for timers
       },
       target_count: taskData.quantidade_necessaria || 1,
       target_minutes: taskData.duracao_temporizador || 15,
       created_at: t.created_at || new Date(),
-      remaining_seconds: Math.max(0, ((taskData.duracao_temporizador || 15) * 60) - ((t.progresso || 0) * 60)),
+      remaining_seconds: Math.max(0, ((taskData.duracao_temporizador || 15) * 60) - (t.progresso || 0)),
       timer_last_started_at: null,
       concluido: isCompleted ? 1 : 0
     }
