@@ -34,29 +34,45 @@ export function setupAuthSockets(io) {
         );
 
         // --- NODEMAILER INTEGRATION ---
-        // Create an ethereal test account on the fly
-        const testAccount = await nodemailer.createTestAccount();
-        const transporter = nodemailer.createTransport({
-          host: "smtp.ethereal.email",
-          port: 587,
-          secure: false, // true for 465, false for other ports
-          auth: {
-            user: testAccount.user, // generated ethereal user
-            pass: testAccount.pass, // generated ethereal password
-          },
-        });
+        let transporter;
+        if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+          transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: process.env.SMTP_PORT || 587,
+            secure: process.env.SMTP_SECURE === 'true',
+            auth: {
+              user: process.env.SMTP_USER,
+              pass: process.env.SMTP_PASS,
+            },
+          });
+        } else {
+          // Fallback to ethereal test account
+          const testAccount = await nodemailer.createTestAccount();
+          transporter = nodemailer.createTransport({
+            host: "smtp.ethereal.email",
+            port: 587,
+            secure: false,
+            auth: {
+              user: testAccount.user,
+              pass: testAccount.pass,
+            },
+          });
+        }
 
         // Send mail with defined transport object
+        const fromEmail = process.env.SMTP_FROM || '"Modo Team" <noreply@modo.app>';
         const info = await transporter.sendMail({
-          from: '"Modo Team" <noreply@modo.app>',
+          from: fromEmail,
           to: email,
           subject: "Password Reset Request",
           text: `You requested a password reset. Your reset token is: ${token}\n\nEnter this token in the app to reset your password.`,
           html: `<p>You requested a password reset.</p><p>Your reset token is: <strong>${token}</strong></p><p>Enter this token in the app to reset your password.</p>`,
         });
 
-        console.log("Message sent: %s", info.messageId);
-        console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+        console.log("Password Reset Email Sent: %s", info.messageId);
+        if (!process.env.SMTP_HOST) {
+          console.log("Preview URL (Ethereal test email): %s", nodemailer.getTestMessageUrl(info));
+        }
         // ------------------------------
 
         // Emit the token to the client (for development purposes)

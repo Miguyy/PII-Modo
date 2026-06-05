@@ -55,10 +55,11 @@ export const useHabitStore = defineStore('habitStore', {
         }
         
         // Ensure filters are appropriately passed
-        const habitParams = filters.q ? { q: filters.q } : {};
+        const habitParams = filters.q ? { q: filters.q, limit: 1000 } : { limit: 1000 };
+        const tasksParams = { ...filters, limit: 1000 };
         const [habitsData, tasksData] = await Promise.all([
           getAllHabits(token, habitParams).catch(() => []),
-          getAllTasks(token, filters).catch(() => [])
+          getAllTasks(token, tasksParams).catch(() => [])
         ]);
 
         this.catalogHabits = Array.isArray(habitsData) ? habitsData : (habitsData?.data || []);
