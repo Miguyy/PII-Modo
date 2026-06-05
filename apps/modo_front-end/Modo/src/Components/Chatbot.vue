@@ -317,22 +317,20 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-/* ─── Design Tokens ──────────────────────────────────────────── */
-$bg-panel: #0f1117;
-$bg-header: #161922;
-$bg-input: #1c2030;
-$bg-bubble-bot: #1e2438;
-$bg-bubble-user: #3b5bdb;
-$accent: #4c6ef5;
-$accent-glow: rgba(76, 110, 245, 0.35);
-$text-primary: #e8eaf0;
-$text-muted: #6b7280;
-$border: rgba(255, 255, 255, 0.07);
-$radius-panel: 18px;
-$radius-bubble: 14px;
-$shadow-panel:
-  0 24px 80px rgba(0, 0, 0, 0.6),
-  0 0 0 1px $border;
+/* ─── Design Tokens (Mapped to Modo Theme) ───────────────────────── */
+$bg-panel:       var(--card);
+$bg-header:      var(--primary-color);
+$bg-input:       var(--primary-color);
+$bg-bubble-bot:  var(--green-light);
+$bg-bubble-user: var(--bg-surface);
+$accent:         var(--orange);
+$accent-glow:    rgba(241, 150, 64, 0.2);
+$text-primary:   #ffffff;
+$text-muted:     rgba(255, 255, 255, 0.8);
+$border:         rgba(255, 255, 255, 0.15);
+$radius-panel:   18px;
+$radius-bubble:  14px;
+$shadow-panel:   0 16px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px $border;
 
 /* ─── Wrapper ────────────────────────────────────────────────── */
 .chatbot-wrapper {
@@ -350,8 +348,8 @@ $shadow-panel:
   height: 50px;
   border-radius: 50%;
   border: none;
-  background-color: #355d4c;
-  color: #fff;
+  background-color: var(--primary-color);
+  color: var(--bg-surface);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -363,7 +361,7 @@ $shadow-panel:
 
   &:hover {
     transform: scale(1.1);
-    background-color: #2f5444;
+    filter: brightness(1.1);
   }
 
   &:active {
@@ -402,20 +400,11 @@ $shadow-panel:
   }
 }
 
-:global([data-bs-theme='dark']) .chatbot-fab {
-  background-color: #fff;
-  color: #355d4c;
-}
-
-:global([data-bs-theme='dark']) .chatbot-fab:hover {
-  background-color: #f0f0f0;
-}
-
 .fab-badge {
   position: absolute;
   top: -4px;
   right: -4px;
-  background: #e03131;
+  background: var(--danger);
   color: #fff;
   font-size: 11px;
   font-weight: 700;
@@ -466,13 +455,13 @@ $shadow-panel:
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: linear-gradient(135deg, $accent, #7048e8);
+  background: $accent;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
   font-size: 15px;
-  color: #fff;
+  color: var(--bg-surface);
 
   .status-dot {
     position: absolute;
@@ -480,7 +469,7 @@ $shadow-panel:
     right: 1px;
     width: 9px;
     height: 9px;
-    background: #40c057;
+    background: var(--success);
     border-radius: 50%;
     border: 2px solid $bg-header;
   }
@@ -490,13 +479,13 @@ $shadow-panel:
   font-size: 14px;
   font-weight: 600;
   color: $text-primary;
-  margin: 0;
+  margin: 0 0 2px;
 }
 
 .assistant-status {
   font-size: 11px;
   color: $text-muted;
-  margin: 2px 0 0;
+  margin: 0;
 }
 
 .btn-clear {
@@ -505,16 +494,20 @@ $shadow-panel:
   color: $text-muted;
   cursor: pointer;
   padding: 6px;
-  border-radius: 8px;
+  border-radius: 6px;
   display: flex;
-  transition:
-    color 0.15s,
-    background 0.15s;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
 
   &:hover {
-    color: $text-primary;
-    background: rgba(255, 255, 255, 0.06);
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--danger);
   }
+}
+
+:global([data-bs-theme="dark"]) .btn-clear:hover {
+  background: rgba(255, 255, 255, 0.05);
 }
 
 /* ─── Messages Area ──────────────────────────────────────────── */
@@ -534,7 +527,7 @@ $shadow-panel:
     background: transparent;
   }
   &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(128, 128, 128, 0.2);
     border-radius: 4px;
   }
 }
@@ -553,16 +546,16 @@ $shadow-panel:
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, lighten($accent, 15%), $accent);
+  background: $accent;
   box-shadow: 0 0 30px $accent-glow;
   margin-bottom: 4px;
 }
 
 .welcome-title {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
   color: $text-primary;
-  margin: 0;
+  margin: 0 0 6px;
 }
 
 .welcome-subtitle {
@@ -581,20 +574,18 @@ $shadow-panel:
 }
 
 .quick-prompt-btn {
-  background: rgba($accent, 0.12);
-  border: 1px solid rgba($accent, 0.25);
-  color: lighten($accent, 20%);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
   font-size: 12px;
   padding: 6px 12px;
   border-radius: 20px;
   cursor: pointer;
-  transition:
-    background 0.15s,
-    border-color 0.15s;
+  transition: background 0.15s, border-color 0.15s;
 
   &:hover {
-    background: rgba($accent, 0.22);
-    border-color: rgba($accent, 0.5);
+    background: rgba(255, 255, 255, 0.2);
+    border-color: #fff;
   }
 }
 
@@ -619,13 +610,13 @@ $shadow-panel:
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: linear-gradient(135deg, $accent, #7048e8);
+  background: $accent;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 12px;
   font-weight: 700;
-  color: #fff;
+  color: var(--bg-surface);
   flex-shrink: 0;
 }
 
@@ -640,11 +631,22 @@ $shadow-panel:
   background: $bg-bubble-bot;
   border-bottom-left-radius: 4px;
   border: 1px solid $border;
+  
+  .bubble-text {
+    color: var(--text-main);
+  }
 }
 
 .bubble--user {
   background: $bg-bubble-user;
   border-bottom-right-radius: 4px;
+  
+  .bubble-text {
+    color: var(--primary-color);
+  }
+  .bubble-time {
+    color: rgba(0, 0, 0, 0.5);
+  }
 }
 
 .bubble-text {
@@ -657,9 +659,10 @@ $shadow-panel:
 
 .bubble-time {
   font-size: 10px;
-  color: rgba($text-primary, 0.4);
+  color: $text-muted;
   display: block;
   text-align: right;
+  opacity: 0.8;
 }
 
 /* ─── Typing Indicator ───────────────────────────────────────── */
@@ -702,11 +705,11 @@ $shadow-panel:
 .error-banner {
   margin: 0 12px 6px;
   padding: 8px 12px;
-  background: rgba(#e03131, 0.12);
-  border: 1px solid rgba(#e03131, 0.3);
+  background: rgba(var(--danger-rgb), 0.1);
+  border: 1px solid var(--danger);
   border-radius: 8px;
   font-size: 12px;
-  color: #ff8787;
+  color: var(--danger);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -715,7 +718,7 @@ $shadow-panel:
   button {
     background: none;
     border: none;
-    color: #ff8787;
+    color: var(--danger);
     font-size: 16px;
     cursor: pointer;
     line-height: 1;
@@ -735,10 +738,10 @@ $shadow-panel:
 
 .chat-textarea {
   flex: 1;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-surface);
   border: 1px solid $border;
   border-radius: 12px;
-  color: $text-primary;
+  color: #1e1e1e;
   font-size: 13.5px;
   padding: 9px 13px;
   resize: none;
@@ -748,18 +751,11 @@ $shadow-panel:
   transition: border-color 0.2s;
   font-family: inherit;
 
-  &::placeholder {
-    color: $text-muted;
-  }
+  &::placeholder { color: rgba(0, 0, 0, 0.5); }
 
-  &:focus {
-    border-color: rgba($accent, 0.5);
-  }
+  &:focus { border-color: $accent; }
 
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 
 .send-btn {
@@ -768,19 +764,16 @@ $shadow-panel:
   border-radius: 50%;
   border: none;
   background: $accent;
-  color: #fff;
+  color: var(--bg-surface);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition:
-    background 0.15s,
-    transform 0.1s,
-    opacity 0.15s;
+  transition: opacity 0.15s, filter 0.15s, transform 0.1s;
 
   &:hover:not(:disabled) {
-    background: lighten($accent, 8%);
+    filter: brightness(1.1);
     transform: scale(1.05);
   }
 
