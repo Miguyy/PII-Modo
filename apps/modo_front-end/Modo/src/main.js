@@ -58,6 +58,8 @@ import {
   faExclamationTriangle,
   faSun,
   faMoon,
+  faRobot,
+  faXmark,
 } from '@fortawesome/free-solid-svg-icons'
 
 library.add(
@@ -107,6 +109,8 @@ library.add(
   faExclamationTriangle,
   faSun,
   faMoon,
+  faRobot,
+  faXmark,
 )
 
 const originalFetch = window.fetch
@@ -119,7 +123,8 @@ window.fetch = async (...args) => {
     res.status === 401 && 
     url.startsWith(backendUrl) && 
     !url.includes('/users/login') && 
-    !url.includes('/users/register')
+    !url.includes('/users/register') &&
+    !url.includes('/users/logout')
   ) {
     import('@/stores/userStore.js').then(({ useUserStore }) => {
       const userStore = useUserStore()

@@ -355,5 +355,10 @@ export const useUserStore = defineStore('user', {
         this.loading = false
       }
     },
+
+    async deleteAccount() {
+      if (!this.currentUser) throw new Error('Not authenticated')
+      return this.deleteUser(this.currentUser.id_utilizador)
+    },
   },
 })

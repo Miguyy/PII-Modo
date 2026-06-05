@@ -2,6 +2,7 @@
 import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from './stores/userStore'
+import ChatbotComponent from './Components/Chatbot.vue'
 
 const isDark = ref(false)
 const route = useRoute()
@@ -43,6 +44,7 @@ onMounted(async () => {
   <main>
     <router-view></router-view>
   </main>
+  <ChatbotComponent v-if="!lightOnlyRoutes.includes(route.path)" />
   <button v-if="!lightOnlyRoutes.includes(route.path)" class="custom-theme-toggle" @click="toggleTheme" :title="isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
     <FontAwesomeIcon :icon="isDark ? 'sun' : 'moon'" />
   </button>

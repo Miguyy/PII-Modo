@@ -1,5 +1,7 @@
 // Import express
 import express from "express";
+import { createServer } from "http";
+import { Server } from "socket.io";
 import "dotenv/config";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -8,6 +10,15 @@ import cookieParser from "cookie-parser";
 const app = express();
 const host = process.env.HOST || "localhost";
 const port = process.env.PORT || 3000;
+
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+  cors: {
+    origin: "*", // Or match your express CORS configuration
+    methods: ["GET", "POST", "PATCH", "DELETE"],
+    credentials: true
+  }
+});
 
 app.use(express.json());
 // Enable CORS for the frontend during development. Set FRONTEND_URL
@@ -60,6 +71,10 @@ import {
   authorizeAdmin,
 } from "./middlewares/users.middlewares.js";
 import { getAllLocations } from "./controllers/locations.controllers.js";
+import { setupAuthSockets } from "./sockets/auth.sockets.js";
+
+// Initialize socket handlers
+setupAuthSockets(io);
 
 // Routes
 app.use("/users", usersRouter);
@@ -82,6 +97,6 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(port, host, () => {
+httpServer.listen(port, host, () => {
   console.log(`Server is running on http://${host}:${port}`);
 });
