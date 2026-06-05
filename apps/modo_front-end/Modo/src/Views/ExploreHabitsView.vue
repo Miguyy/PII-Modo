@@ -360,8 +360,8 @@ export default {
         )
       }
 
-      // Hide habits that have 0 tasks based on the current active server-side filters
-      list = list.filter((h) => getTaskCount(h.categoria) > 0)
+      // We no longer hide habits with 0 tasks, so newly created habits show up immediately.
+      // list = list.filter((h) => getTaskCount(h.categoria) > 0)
 
       return list
     })

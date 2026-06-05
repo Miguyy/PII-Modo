@@ -16,7 +16,7 @@
       <div class="col-12 col-md-4 col-lg-4">
         <div class="charts-box p-3 h-100">
           <!-- Habit Stats Chart Box -->
-          <HabitStatsChart :tasks="apiUserTasks" :rawTasks="apiUserTasks" />
+          <HabitStatsChart :tasks="userHabits" :rawTasks="apiUserTasks" />
         </div>
       </div>
       <div class="col-12 col-md-4 col-lg-4">
@@ -195,7 +195,7 @@
               <div class="card-header-custom">
                 <div class="habit-title-section">
                   <strong class="habit-title">{{ habit.description }}</strong>
-                  <div class="habit-category">{{ habit.category || '' }}</div>
+                  <div class="habit-category">Category: {{ habit.category || '' }}</div>
                 </div>
 
                 <!-- NEW ROW -->
@@ -307,7 +307,7 @@
                   <button
                     v-else
                     class="btn btn-sm btn-outline-success flex-fill"
-                    @click="completeAndRemoveHabit(habit.id)"
+                    @click="markProgressComplete(habit)"
                   >
                     <FontAwesomeIcon icon="check" /> Mark Complete
                   </button>
@@ -364,7 +364,7 @@
                   <button
                     v-else
                     class="btn btn-sm btn-outline-success flex-fill"
-                    @click="completeAndRemoveHabit(habit.id)"
+                    @click="markProgressComplete(habit)"
                   >
                     <FontAwesomeIcon icon="check" /> Mark Complete
                   </button>
@@ -383,35 +383,51 @@
     <div class="modal fade" id="timerModal" tabindex="-1" ref="timerModalEl">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content custom-timer-modal">
-          <div class="modal-header border-0 pb-0">
-            <h5 class="modal-title w-100 text-center fw-bold" style="color: #355d4c;">{{ activeTimerHabit?.description }}</h5>
-            <button class="btn-close" data-bs-dismiss="modal" @click="onCloseTimerModal" style="position: absolute; right: 20px;"></button>
+          <div class="modal-header border-0 p-4 d-flex align-items-center">
+            <div style="width: 32px;"></div> <!-- Spacer to perfectly center the title -->
+            <h5 class="modal-title text-center fw-bold m-0 flex-grow-1" style="color: var(--primary-color);">
+              {{ activeTimerHabit?.description }}
+            </h5>
+            <button class="btn-close m-0" data-bs-dismiss="modal" @click="onCloseTimerModal" style="width: 32px; padding: 0;"></button>
           </div>
-          <div class="modal-body text-center pt-2 pb-4">
-            <div class="timer-display-wrapper mb-4 d-flex justify-content-center">
-              <div class="timer-circle" :class="{ 'timer-running-glow': timerIsRunning }">
-                <span class="timer-value display-1 fw-bold" style="color: #355d4c; font-family: 'Outfit', sans-serif;">{{ formattedTime }}</span>
+          <div class="modal-body text-center pt-4 pb-4">
+            <div class="timer-display-wrapper mb-4 d-flex justify-content-center align-items-center">
+              <div 
+                class="timer-rectangle" 
+                :style="timerIsRunning ? 'border: 4px solid var(--primary-color); box-shadow: 0 0 15px rgba(53, 93, 76, 0.2);' : 'border: 4px solid var(--primary-color);'"
+                style="padding: 2rem 3rem; width: 100%; max-width: 320px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(79, 111, 95, 0.08), rgba(212, 237, 218, 0.1)); transition: all 0.3s ease;"
+              >
+                <span class="timer-value fw-bold m-0" style="color: var(--primary-color); font-family: 'Outfit', sans-serif; font-size: 4.5rem; line-height: 1;">
+                  {{ formattedTime }}
+                </span>
               </div>
             </div>
             
             <p class="text-muted mb-4">
-              <span v-if="timerIsRunning" class="badge rounded-pill bg-success px-3 py-2"><FontAwesomeIcon icon="circle-notch" spin /> Running</span>
-              <span v-else class="badge rounded-pill bg-secondary px-3 py-2">Paused</span>
+              <span v-if="timerIsRunning" class="badge rounded-pill px-3 py-2" style="background-color: var(--primary-color); color: white;">
+                <FontAwesomeIcon icon="circle-notch" spin class="me-1" /> Running
+              </span>
+              <span v-else class="badge rounded-pill px-3 py-2" style="background-color: var(--secondary-color); color: var(--primary-color);">
+                Paused
+              </span>
             </p>
 
             <div class="d-flex gap-3 justify-content-center px-3">
               <button 
                 class="btn flex-fill fw-bold py-2 custom-action-btn" 
-                :class="timerIsRunning ? 'btn-outline-secondary' : 'btn-success'" 
                 @click="timerIsRunning ? pauseTimerButton() : startTimerButton()"
-                :style="!timerIsRunning ? 'background-color: #355d4c; border-color: #355d4c; color: white;' : ''"
+                :style="!timerIsRunning ? 'background-color: var(--primary-color); color: white; border: none;' : 'border: 1px solid var(--primary-color); color: var(--primary-color); background-color: transparent;'"
               >
-                <FontAwesomeIcon :icon="timerIsRunning ? 'pause' : 'play'" /> 
+                <FontAwesomeIcon :icon="timerIsRunning ? 'pause' : 'play'" class="me-1" /> 
                 {{ timerIsRunning ? 'Pause' : 'Start' }}
               </button>
               
-              <button class="btn btn-warning flex-fill fw-bold py-2 custom-complete-btn" style="background-color: #f19640; border-color: #f19640; color: white;" @click="completeTimerHabit">
-                <FontAwesomeIcon icon="trophy" /> Complete
+              <button 
+                class="btn flex-fill fw-bold py-2 custom-complete-btn" 
+                style="background-color: var(--orange); color: white; border: none;" 
+                @click="completeTimerHabit"
+              >
+                <FontAwesomeIcon icon="trophy" class="me-1" /> Complete
               </button>
             </div>
           </div>
@@ -690,9 +706,10 @@ const userHabits = computed(() => {
         seconds: t.progresso || 0 // Progress is saved in seconds for timers
       },
       target_count: taskData.quantidade_necessaria || 1,
-      target_minutes: taskData.duracao_temporizador || 15,
+      target_seconds: taskData.duracao_temporizador || 900,
+      target_minutes: Math.ceil((taskData.duracao_temporizador || 900) / 60),
       created_at: t.created_at || new Date(),
-      remaining_seconds: Math.max(0, (taskData.duracao_temporizador || 15) * 60 - (t.progresso || 0)),
+      remaining_seconds: Math.max(0, (taskData.duracao_temporizador || 900) - (t.progresso || 0)),
       timer_last_started_at: null,
       concluido: isCompleted ? 1 : 0,
     }
@@ -824,7 +841,7 @@ async function handleAdd() {
     prioridade_tarefa: backendPriorityMap[form.value.priority] || 'Low',
     localizacao_tarefa: backendLocationMap[form.value.location] || 'Inside',
     quantidade_necessaria: form.value.type === 'count' ? form.value.target_count : null,
-    duracao_temporizador: form.value.type === 'time' ? form.value.target_minutes : null,
+    duracao_temporizador: form.value.type === 'time' ? form.value.target_minutes * 60 : null,
     pontos_tarefa: 15, // Base points for a new custom task
   }
 
@@ -864,8 +881,7 @@ async function increment(id) {
   const userId = currentUser.value?.id_utilizador || currentUser.value?.id
   const userTask = apiUserTasks.value.find((t) => t.id_tarefa === id)
   if (!userTask) return
-  // Optimistic update, but cap at target_count
-  const maxCount = userTask.target_count || userTask.quantidade_necessaria || 1
+  const maxCount = userTask.task?.quantidade_necessaria || 1
   if (userTask.progresso >= maxCount) return
   
   userTask.progresso = (userTask.progresso || 0) + 1
@@ -907,12 +923,29 @@ async function toggleCheck(id) {
   }
 }
 
+async function markProgressComplete(habit) {
+  const userId = currentUser.value?.id_utilizador || currentUser.value?.id
+  const userTask = apiUserTasks.value.find((t) => t.id_tarefa === habit.id)
+  if (!userTask) return
+  
+  const prev = userTask.progresso || 0
+  const target = habit.type === 'count' ? habit.target_count : habit.target_seconds
+  userTask.progresso = target
+  
+  try {
+    await updateUserTask(userId, habit.id, { progresso: target }, userStore.token)
+  } catch (e) {
+    userTask.progresso = prev
+    console.error(e)
+  }
+}
+
 async function completeAndRemoveHabit(id) {
   const userId = currentUser.value?.id_utilizador || currentUser.value?.id
 
-  // Optimistic: instantly remove the task from local state so the UI updates immediately
-  const taskIndex = apiUserTasks.value.findIndex((t) => t.id_tarefa === id)
-  const removedTask = taskIndex >= 0 ? apiUserTasks.value.splice(taskIndex, 1)[0] : null
+  // Optimistic: instantly set to Completed so the UI updates immediately
+  const task = apiUserTasks.value.find((t) => t.id_tarefa === id)
+  if (task) task.estado_tarefa = 'Completed'
 
   showToast('Success', 'Task completed! Points awarded.')
   window.dispatchEvent(new Event('habitCompleted'))
@@ -924,9 +957,7 @@ async function completeAndRemoveHabit(id) {
   } catch (e) {
     console.error('Failed to complete task:', e)
     // Rollback: restore the task if API call failed
-    if (removedTask && taskIndex >= 0) {
-      apiUserTasks.value.splice(taskIndex, 0, removedTask)
-    }
+    if (task) task.estado_tarefa = 'Pending'
     showToast('Error', 'Failed to complete task. Please try again.')
   }
 }
@@ -939,9 +970,9 @@ async function completeTimerHabit() {
 
     const userId = userStore.currentUser?.id_utilizador || userStore.currentUser?.id
 
-    // Optimistic: remove from local state immediately
-    const taskIndex = apiUserTasks.value.findIndex((t) => t.id_tarefa === id)
-    const removedTask = taskIndex >= 0 ? apiUserTasks.value.splice(taskIndex, 1)[0] : null
+    // Optimistic: set to Completed immediately
+    const task = apiUserTasks.value.find((t) => t.id_tarefa === id)
+    if (task) task.estado_tarefa = 'Completed'
 
     showToast('Success', 'Task completed! Points awarded.')
     window.dispatchEvent(new Event('habitCompleted'))
@@ -953,9 +984,8 @@ async function completeTimerHabit() {
         .catch((err) => console.warn('fetchCurrentUser failed:', err))
     } catch (e) {
       console.error('Failed to complete timer task:', e)
-      if (removedTask && taskIndex >= 0) {
-        apiUserTasks.value.splice(taskIndex, 0, removedTask)
-      }
+      // Rollback
+      if (task) task.estado_tarefa = 'Pending'
       showToast('Error', 'Failed to complete task. Please try again.')
     }
   }
@@ -963,8 +993,8 @@ async function completeTimerHabit() {
 
 // Compute percent complete for time-based habits (using seconds)
 function timePercent(h) {
-  if (!h.target_minutes) return 0
-  const targetSeconds = h.target_minutes * 60
+  if (!h.target_seconds) return 0
+  const targetSeconds = h.target_seconds
   const progressSeconds = h.current_progress.seconds || 0
   return Math.round((progressSeconds / targetSeconds) * 100)
 }
@@ -1090,7 +1120,7 @@ function startTimerButton() {
 
   if (remainingSeconds.value <= 0) {
     const h = activeTimerHabit.value
-    remainingSeconds.value = (h.target_minutes ?? 0) * 60
+    remainingSeconds.value = h.target_seconds ?? 900
   }
 
   timerIsRunning.value = true
@@ -1118,8 +1148,7 @@ async function saveTimerProgress() {
   const task = apiUserTasks.value.find((t) => t.id_tarefa === activeTimerHabit.value.id)
   if (!task || !userId) return
   // Progress is stored in seconds
-  const targetMinutes = task.task?.duracao_temporizador || 15
-  const targetSeconds = targetMinutes * 60
+  const targetSeconds = task.task?.duracao_temporizador || 900
   const elapsedSeconds = Math.max(0, targetSeconds - remainingSeconds.value)
 
   try {

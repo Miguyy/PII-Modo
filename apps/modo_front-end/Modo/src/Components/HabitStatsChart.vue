@@ -366,12 +366,12 @@ const chartType = ref('doughnut')
 
 const activeTasksCount = computed(() => {
   if (!props.tasks) return 0
-  return props.tasks.filter((t) => t.estado_tarefa !== 'Completed').length
+  return props.tasks.filter((t) => !t.concluido).length
 })
 
 const completedCount = computed(() => {
   if (!props.tasks) return 0
-  return props.tasks.filter((t) => t.estado_tarefa === 'Completed').length
+  return props.tasks.filter((t) => t.concluido).length
 })
 
 function counts() {
