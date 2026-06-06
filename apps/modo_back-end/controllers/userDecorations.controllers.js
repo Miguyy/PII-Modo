@@ -93,6 +93,13 @@ export const assignDecorationToUser = async (req, res, next) => {
       );
     }
 
+    const user = await User.findByPk(Number(userId));
+    const decorationToApply = await AvatarDecoration.findByPk(Number(id_decoracao));
+    if (!decorationToApply) return next(notFoundError("AvatarDecoration", id_decoracao));
+    if (user.nivel < decorationToApply.nivel_necessario) {
+      return next(forbiddenError("You have not unlocked this decoration yet."));
+    }
+
     // If there's already any record for this user, don't overwrite it here.
     const anyForUser = await UserDecorations.findOne({
       where: { id_utilizador: userId },
