@@ -66,6 +66,7 @@ export const useHabitStore = defineStore('habitStore', {
         // Ensure filters are appropriately passed
         const habitParams = filters.q ? { q: filters.q, limit: 1000 } : { limit: 1000 }
         const tasksParams = { ...filters, limit: 1000 }
+        delete tasksParams.q; // Prevent habit search from filtering out tasks by name
         const [habitsData, tasksData] = await Promise.all([
           getAllHabits(token, habitParams).catch(() => []),
           getAllTasks(token, tasksParams).catch(() => []),
