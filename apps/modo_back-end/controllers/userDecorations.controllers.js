@@ -3,7 +3,7 @@
   and their unlocked decorations.
 */
 
-import { UserDecorations } from "../config/db.config.js";
+import { UserDecorations, User, AvatarDecoration } from "../config/db.config.js";
 import {
   validationError,
   forbiddenError,
@@ -217,6 +217,13 @@ export const updateUserDecoration = async (req, res, next) => {
     if (!id_decoracao || Number(id_decoracao) <= 0)
       return next(validationError({ id_decoracao: ["Invalid id_decoracao."] }));
 
+    const user = await User.findByPk(Number(userId));
+    const decorationToApply = await AvatarDecoration.findByPk(Number(id_decoracao));
+    if (!decorationToApply) return next(notFoundError("AvatarDecoration", id_decoracao));
+    if (user.nivel < decorationToApply.nivel_necessario) {
+      return next(forbiddenError("You have not unlocked this decoration yet."));
+    }
+
     // ensure there's no conflict (another row with same user and id_decoracao)
     const conflict = await UserDecorations.findOne({
       where: { id_utilizador: userId, id_decoracao },
@@ -309,6 +316,13 @@ export const updateUserDecorationByBody = async (req, res, next) => {
 
     if (!id_decoracao || Number(id_decoracao) <= 0)
       return next(validationError({ id_decoracao: ["Invalid id_decoracao."] }));
+
+    const user = await User.findByPk(Number(userId));
+    const decorationToApply = await AvatarDecoration.findByPk(Number(id_decoracao));
+    if (!decorationToApply) return next(notFoundError("AvatarDecoration", id_decoracao));
+    if (user.nivel < decorationToApply.nivel_necessario) {
+      return next(forbiddenError("You have not unlocked this decoration yet."));
+    }
 
     // ensure there's no conflict (another row with same user and id_decoracao)
     const conflict = await UserDecorations.findOne({
