@@ -2,7 +2,7 @@
   <footer :class="['modo-global-footer', { 'no-top-margin': route.path === '/' }]">
     <div class="container pt-5 pb-4">
       <div class="footer-border-top mb-5"></div>
-      
+
       <div class="row">
         <!-- Left Side: Brand and Info -->
         <div class="col-lg-6 mb-4 mb-lg-0 pe-lg-5">
@@ -10,14 +10,25 @@
             <img src="@/images/modoLogoNavbar.png" alt="Modo Logo" class="footer-logo" />
           </div>
           <h4 class="mb-5 footer-slogan">The best tracker to change who you are.</h4>
-          <p class="footer-copyright mb-4">Copyright 2026 Modo Services, Inc. All Rights Reserved.</p>
+          <p class="footer-copyright mb-4">
+            Copyright 2026 Modo Services, Inc. All Rights Reserved.
+          </p>
           <div class="social-icons d-flex gap-3">
             <a href="#" class="social-link"><i class="bi bi-instagram"></i></a>
             <a href="#" class="social-link"><i class="bi bi-linkedin"></i></a>
             <a href="#" class="social-link">
               <!-- Custom SVG for X logo to match design -->
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-twitter-x" viewBox="0 0 16 16">
-                <path d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.601.75Zm-.86 13.028h1.36L4.323 2.145H2.865l8.875 11.633Z"/>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="currentColor"
+                class="bi bi-twitter-x"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.601.75Zm-.86 13.028h1.36L4.323 2.145H2.865l8.875 11.633Z"
+                />
               </svg>
             </a>
           </div>
@@ -81,10 +92,10 @@ const route = useRoute()
 }
 
 .footer-logo {
-  height: 48px;
+  height: 35px;
   width: auto;
   /* Force logo to pure white if it isn't already */
-  filter: brightness(0) invert(1); 
+  filter: brightness(0) invert(1);
 }
 
 .footer-slogan {
