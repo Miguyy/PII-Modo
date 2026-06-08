@@ -144,6 +144,7 @@
                 <input
                   type="text"
                   v-model="userName"
+                  class="input-settings"
                   :readonly="!isEditingName"
                   :style="{ opacity: isEditingName ? 1 : 0.5 }"
                 />
@@ -164,6 +165,7 @@
                 <input
                   id="change-email"
                   type="email"
+                  class="input-settings"
                   v-model="userEmail"
                   :readonly="!isEditingEmail"
                   :style="{ opacity: isEditingEmail ? 1 : 0.5 }"
@@ -186,6 +188,7 @@
                 <input
                   v-if="isEditingPassword"
                   type="text"
+                  class="input-settings"
                   v-model="userPassword"
                   placeholder="Enter new password"
                 />
@@ -193,6 +196,7 @@
                   v-else
                   type="password"
                   value="placeholder"
+                  class="input-settings"
                   placeholder="••••••••"
                   readonly
                   :style="{ opacity: 0.5 }"
