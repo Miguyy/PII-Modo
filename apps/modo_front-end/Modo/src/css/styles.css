@@ -4035,3 +4035,16 @@ footer p {
 [data-bs-theme='dark'] .search_habit::placeholder {
   color: #8c9b91 !important;
 }
+
+[data-bs-theme='dark'] .input-settings {
+  color: #182620 !important;
+}
+
+[data-bs-theme='dark'] .badge {
+  color: #182620 !important;
+}
+
+/* Do not change the footer to dark mode */
+[data-bs-theme='dark'] .modo-global-footer {
+  background: var(--bg-surface) !important;
+}
