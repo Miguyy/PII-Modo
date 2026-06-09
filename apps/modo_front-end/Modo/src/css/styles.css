@@ -4048,3 +4048,55 @@ footer p {
 [data-bs-theme='dark'] .modo-global-footer {
   background: var(--bg-surface) !important;
 }
+
+[data-bs-theme='dark'] .chat-textarea {
+  color: #ededed !important;
+}
+
+[data-bs-theme='dark'] .chat-textarea::placeholder {
+  color: #ededed !important;
+}
+
+[data-bs-theme='dark'] .assistant-name {
+  color: #182620 !important;
+}
+
+[data-bs-theme='dark'] .assistant-status {
+  color: #182620 !important;
+}
+
+[data-bs-theme='dark'] .btn-clear {
+  color: #182620 !important;
+}
+
+[data-bs-theme='dark'] .form-control::placeholder {
+  color: #182620 !important;
+}
+
+[data-bs-theme='dark'] .period-badge {
+  color: #ededed !important;
+}
+
+[data-bs-theme='dark'] .time-label {
+  color: #ededed !important;
+}
+
+[data-bs-theme='dark'] .priority-right {
+  color: #ededed !important;
+}
+
+[data-bs-theme='dark'] .pending-text {
+  color: #ededed !important;
+}
+
+[data-bs-theme='dark'] .pending-dots {
+  color: #ededed !important;
+}
+
+[data-bs-theme='dark'] .modal-title {
+  color: #182620 !important;
+}
+
+[data-bs-theme='dark'] .custom-action-btn {
+  color: #182620 !important;
+}
