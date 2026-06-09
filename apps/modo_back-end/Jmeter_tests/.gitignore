@@ -1,0 +1,10 @@
+# Ignorar as credenciais locais do administrador (Segurança!)
+admin_credentials.csv
+
+# Ignorar ficheiros de log e relatórios pesados do JMeter
+*.jtl
+*.log
+jmeter.log
+
+# Se usares Mac, ignora este ficheiro invisível do sistema
+.DS_Store
