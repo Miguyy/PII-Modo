@@ -27,9 +27,10 @@
     "vue-router": "^5.0.4"
   },
   "devDependencies": {
+    "@pinia/testing": "^1.0.3",
     "@vitejs/plugin-vue": "^6.0.5",
     "@vue/test-utils": "^2.4.6",
-    "jsdom": "^29.0.1",
+    "jsdom": "^22.1.0",
     "prettier": "3.8.1",
     "sass": "^1.100.0",
     "sass-embedded": "^1.100.0",

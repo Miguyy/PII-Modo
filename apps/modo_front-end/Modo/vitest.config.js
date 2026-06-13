@@ -9,6 +9,15 @@ export default mergeConfig(
       environment: 'jsdom',
       exclude: [...configDefaults.exclude, 'e2e/**'],
       root: fileURLToPath(new URL('./', import.meta.url)),
+      setupFiles: ['./src/__tests__/setup.js'],
+      pool: 'threads',
+      deps: {
+        optimizer: {
+          web: {
+            include: ['jsdom', '@asamuzakjp/css-color']
+          }
+        }
+      }
     },
   }),
 )
