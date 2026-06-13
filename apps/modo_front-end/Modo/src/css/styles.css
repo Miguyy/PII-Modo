@@ -3205,7 +3205,8 @@ footer p {
   height: 22px;
   width: 22px;
   left: 3px;
-  top: 3px;
+  top: 50%;
+  transform: translateY(-50%);
   background-color: #fff;
   -webkit-transition: 0.2s;
   transition: 0.2s;
@@ -3218,7 +3219,7 @@ footer p {
 }
 
 .switch input:checked + .slider:before {
-  transform: translateX(20px);
+  transform: translateY(-50%) translateX(20px);
 }
 
 .btn-clear-all {
@@ -3988,6 +3989,15 @@ footer p {
   background: var(--bg-surface-alt) !important;
   color: var(--text-main) !important;
   border-bottom: 1px solid var(--border-color);
+}
+
+[data-bs-theme='dark'] .footer-clean {
+  background: var(--bg-surface-alt) !important;
+  border-top: 1px solid var(--border-color);
+}
+
+[data-bs-theme='dark'] .page-label {
+  color: var(--text-main);
 }
 
 [data-bs-theme='dark'] .total-badge {

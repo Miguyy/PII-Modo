@@ -441,13 +441,33 @@
     <div v-if="toast.visible" class="toast-notification">
       <div
         class="toast-icon"
-        :style="{ color: toast.title === 'Habit deleted' ? '#b4554d' : '#00cc66' }"
+        :style="{ color: toast.title === 'Habit deleted' || toast.title === 'Task deleted' || toast.title === 'Error' ? '#b4554d' : '#00cc66' }"
       >
-        <FontAwesomeIcon :icon="toast.title === 'Habit deleted' ? 'trash' : 'check-circle'" />
+        <FontAwesomeIcon :icon="toast.title === 'Habit deleted' || toast.title === 'Task deleted' || toast.title === 'Error' ? 'trash' : 'check-circle'" />
       </div>
       <div class="toast-content">
         <strong>{{ toast.title }}</strong>
         <small>{{ toast.message }}</small>
+      </div>
+    </div>
+  </Transition>
+
+  <!-- Confirmation Modal -->
+  <Transition name="toast-slide">
+    <div v-if="confirmModal.visible" class="custom-confirm-backdrop" @click.self="cancelConfirm">
+      <div class="custom-confirm-panel">
+        <h5 class="mb-2 fw-bold" style="color: #355d4c">{{ confirmModal.title }}</h5>
+        <p class="text-muted mb-4" style="font-size: 0.95rem">{{ confirmModal.message }}</p>
+        <div class="d-flex justify-content-end gap-2">
+          <button class="btn btn-outline-secondary btn-sm" @click="cancelConfirm">Cancel</button>
+          <button
+            class="btn btn-sm"
+            :class="confirmModal.isDanger ? 'btn-danger' : 'btn-success'"
+            @click="acceptConfirm"
+          >
+            {{ confirmModal.confirmText || 'Confirm' }}
+          </button>
+        </div>
       </div>
     </div>
   </Transition>
@@ -512,6 +532,36 @@ function showToast(title, message, duration = 3000) {
   toast.value.timeout = setTimeout(() => {
     toast.value.visible = false
   }, duration)
+}
+
+// Confirmation modal state
+const confirmModal = ref({
+  visible: false,
+  title: '',
+  message: '',
+  confirmText: 'Confirm',
+  isDanger: false,
+  onConfirm: null,
+})
+
+function showConfirm(title, message, onConfirm, options = {}) {
+  confirmModal.value = {
+    visible: true,
+    title,
+    message,
+    confirmText: options.confirmText || 'Confirm',
+    isDanger: options.isDanger || false,
+    onConfirm,
+  }
+}
+
+function acceptConfirm() {
+  if (confirmModal.value.onConfirm) confirmModal.value.onConfirm()
+  confirmModal.value.visible = false
+}
+
+function cancelConfirm() {
+  confirmModal.value.visible = false
 }
 
 // Track the geolocation watch ID for cleanup
@@ -862,16 +912,22 @@ async function handleAdd() {
 
 // Delete a habit after confirmation and show a toast
 async function deleteHabit(id) {
-  if (confirm('Delete task?')) {
-    const userId = currentUser.value?.id_utilizador || currentUser.value?.id
-    try {
-      await deleteUserTask(userId, id, userStore.token)
-      showToast('Task deleted', 'Removed from your list')
-      await fetchUserTasks()
-    } catch (e) {
-      console.error(e)
-    }
-  }
+  showConfirm(
+    'Delete Task',
+    'Are you sure you want to delete this task? This action cannot be undone.',
+    async () => {
+      const userId = currentUser.value?.id_utilizador || currentUser.value?.id
+      try {
+        await deleteUserTask(userId, id, userStore.token)
+        showToast('Task deleted', 'Removed from your list')
+        await fetchUserTasks()
+      } catch (e) {
+        console.error(e)
+        showToast('Error', 'Failed to delete task')
+      }
+    },
+    { confirmText: 'Delete', isDanger: true },
+  )
 }
 
 async function increment(id) {
@@ -1157,6 +1213,32 @@ async function saveTimerProgress() {
 }
 </script>
 <style scoped>
+.custom-confirm-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+}
+.custom-confirm-panel {
+  background: var(--bg-surface, #fff);
+  border-radius: 12px;
+  padding: 1.75rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  max-width: 400px;
+  width: 90%;
+  animation: confirmFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes confirmFadeIn {
+  from { transform: scale(0.96); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
 .custom-timer-modal {
   border-radius: 20px;
   border: none;
