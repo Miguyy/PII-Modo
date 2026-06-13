@@ -6,6 +6,7 @@ Modo is a lightweight habit-tracking project with three main parts: a Vue + Vite
 
 - `apps/modo_front-end/Modo` — Vue 3 front-end (Vite, Pinia, Vitest).
 - `apps/modo_back-end/` — back-end using Node/Express and Postman for testing API endpoints. Sequelize is used for MySQL interactions.
+- `apps/modo_back-end/selenium_tests/` — End-to-end testing suite using Mocha and Selenium WebDriver.
 - `apps/modo_data-generator/` — Python data generator scripts (Faker).
 - `database/` — DB schema and image assets used by the project.
 
@@ -18,9 +19,9 @@ Modo is a lightweight habit-tracking project with three main parts: a Vue + Vite
 ## Tech used
 
 - Front-end: Vue 3, Vite, Pinia, Bootstrap, Font Awesome, Chart.js, Vitest, ESLint, Prettier, jsPDF and dark-mode.js
-- Back-end: Node.js, Express, Sequelize (MySQL)
+- Back-end: Node.js, Express, Sequelize (MySQL), Socket.io, Cloudinary
 - Data generator: Python, Faker
-- Testing: Vitest for front-end unit tests
+- Testing: Vitest (front-end unit tests), Mocha & Selenium WebDriver (back-end E2E tests)
 - Chatbot: Used IAEdu to create a custom chatbot for this project.
 
 ## Getting started
@@ -50,10 +51,7 @@ Back-end, you can use Postman to test the API endpoints or connect the front-end
 ```bash
 cd apps/modo_back-end
 npm install
-node 'file'.js # replace 'file' with the main server file, e.g., index.js or app.js
-# or use nodemon for auto-restart on changes:
-npm install nodemon
-nodemon 'file'.js
+npm run dev # This starts the server with nodemon using app.js
 ```
 
 2. Ensure the back-end `config` points to your MySQL instance if using a real DB.
@@ -88,10 +86,19 @@ Notes
 npm run test:unit
 ```
 
+- Back-end end-to-end tests (Selenium): from `apps/modo_back-end/selenium_tests` run:
+
+```bash
+cd apps/modo_back-end/selenium_tests
+npm install
+npm test
+```
+
 ## Project structure
 
 - `apps/modo_front-end/Modo/src` — Vue app source
 - `apps/modo_back-end` — Node.js + Sequelize server
+- `apps/modo_back-end/selenium_tests` — End-to-end automated testing
 - `apps/modo_data-generator` — Python Faker generators
 - `database/schema.sql` — SQL schema used by the project
 

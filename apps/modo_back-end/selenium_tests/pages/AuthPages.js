@@ -54,7 +54,7 @@ class LoginPage {
         const currentUrl = await this.driver.getCurrentUrl();
         // Se a URL ainda tiver "/login", significa que o botão não obedeceu
         if (currentUrl.includes("/login")) {
-            console.log("Botão de Login ignorou o clique. Forçando submissão via JavaScript puro...");
+            console.log("Login button ignored click. Forcing submission via pure JavaScript...");
             await this.driver.executeScript("arguments[0].click();", loginBtn);
         }
     }

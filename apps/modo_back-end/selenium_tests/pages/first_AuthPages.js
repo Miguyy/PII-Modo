@@ -54,7 +54,7 @@ class LoginPage {
         await this.driver.sleep(500); 
         const currentUrl = await this.driver.getCurrentUrl();
         if (currentUrl.includes("/login")) {
-            console.log("Clique nativo falhou, forçando via JavaScript...");
+            console.log("Native click failed, forcing via JavaScript...");
             await this.driver.executeScript("arguments[0].click();", loginBtn);
         }
     }

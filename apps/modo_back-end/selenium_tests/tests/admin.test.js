@@ -137,7 +137,7 @@ describe('Admin Journey Tests - Privileged Operations', function () {
         const rawToastText = await toast.getText();
         const cleanToast = rawToastText.replace(/\s+/g, " ").trim();
         
-        console.log("--- DEBUG DO TEXTO DO TOAST ---");
+        console.log("--- DEBUG OF TOAST TEXT ---");
         console.log("Raw Text:", rawToastText);
         console.log("Clean Text:", cleanToast);
         console.log("--------------------------------");
