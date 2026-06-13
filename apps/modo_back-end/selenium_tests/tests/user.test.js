@@ -130,6 +130,9 @@ describe("User Journey Tests - Standard Profile", function () {
     await homePage.clickLoginNavbar();
     await loginPage.clickSignUpLink(); // Na AuthPages, este deve usar By.id("signUp_btn")
 
+    console.log("Waiting for /signin page to load...");
+    await driver.wait(until.urlContains("/signin"), 10000);
+
     console.log("Filling the registration inputs...");
     await registerPage.fillRegistrationForm(
       "Selenium User Test",
@@ -141,7 +144,20 @@ describe("User Journey Tests - Standard Profile", function () {
     await registerPage.clickSignUpSubmit();
 
     console.log("Waiting for automatic redirection to login page...");
-    await loginPage.waitForLoginPageToLoad();
+    try {
+        await loginPage.waitForLoginPageToLoad();
+    } catch (err) {
+        // Find any toast notifications that might explain the failure
+        const toasts = await driver.findElements(By.css(".toast-notification"));
+        if (toasts.length > 0) {
+            const title = await toasts[0].findElement(By.css("strong")).getText();
+            const message = await toasts[0].findElement(By.css("small")).getText();
+            console.error(`REGISTRATION FAILED WITH TOAST: ${title} - ${message}`);
+        } else {
+            console.error("REGISTRATION FAILED: No toast found, URL did not change.");
+        }
+        throw err;
+    }
 
     const currentUrl = await driver.getCurrentUrl();
     console.log("Current URL after registration:", currentUrl);
@@ -224,9 +240,21 @@ describe("User Journey Tests - Standard Profile", function () {
 
     await driver.sleep(1500); // Pausa para a API carregar os dados
 
+    // Re-localizar a grid pois o Vue pode ter feito re-render e tornado a referência antiga "stale"
+    let updatedHabitsGrid = await driver.wait(
+      until.elementLocated(By.css(".habits-grid")),
+      10000,
+    );
+
     // 3. Escolher e clicar num cartão
     console.log("Localizando os cartões de hábitos dentro da grid...");
-    const habits = await habitsGrid.findElements(
+    // Wait for at least one card to appear
+    await driver.wait(async () => {
+      const cards = await updatedHabitsGrid.findElements(By.css(".card, .habit-card-item, [class*='card']"));
+      return cards.length > 0;
+    }, 10000, "Os cartões não apareceram na grid");
+
+    const habits = await updatedHabitsGrid.findElements(
       By.css(".card, .habit-card-item, [class*='card']"),
     );
 
@@ -335,9 +363,21 @@ describe("User Journey Tests - Standard Profile", function () {
 
     await driver.sleep(1500); // Pausa para a API carregar os dados
 
+    // Re-localizar a grid pois o Vue pode ter feito re-render e tornado a referência antiga "stale"
+    let updatedHabitsGrid = await driver.wait(
+      until.elementLocated(By.css(".habits-grid")),
+      10000,
+    );
+
     // 3. Escolher e clicar num cartão
     console.log("Localizando os cartões de hábitos dentro da grid...");
-    const habits = await habitsGrid.findElements(
+    // Wait for at least one card to appear
+    await driver.wait(async () => {
+      const cards = await updatedHabitsGrid.findElements(By.css(".card, .habit-card-item, [class*='card']"));
+      return cards.length > 0;
+    }, 10000, "Os cartões não apareceram na grid");
+
+    const habits = await updatedHabitsGrid.findElements(
       By.css(".card, .habit-card-item, [class*='card']"),
     );
 
@@ -462,15 +502,17 @@ describe("User Journey Tests - Standard Profile", function () {
       );
     };
 
-    // 2. Localiza o primeiro cartão e clica em "Mark Done"
-    const firstCard = await driver.wait(
-      until.elementLocated(By.className("habit-item")),
+    // 2. Localiza um cartão que seja do tipo "Check" (que tenha btn-outline-success)
+    const btnToFind = await driver.wait(
+      until.elementLocated(By.css(".habit-item .btn-outline-success")),
       10000,
     );
-    let btn = await firstCard.findElement(By.css(".btn-outline-success"));
 
-    console.log("Forçando clique no primeiro botão (Mark Done)...");
-    await clickWithThorHammer(btn);
+    // Encontra o cartão pai desse botão
+    const firstCard = await btnToFind.findElement(By.xpath("./ancestor::div[contains(@class, 'habit-item')]"));
+
+    console.log("Forçando clique no botão (Mark Done)...");
+    await clickWithThorHammer(btnToFind);
 
     // 3. Aguarda a transição e recaptura o botão
     console.log("Aguardando transição do botão...");
@@ -478,8 +520,8 @@ describe("User Journey Tests - Standard Profile", function () {
 
     // 4. Força o clique na Recompensa (o botão mudou de classe)
     console.log("Forçando clique no segundo botão (Complete & Earn Points)...");
-    btn = await firstCard.findElement(By.css(".btn-success"));
-    await clickWithThorHammer(btn);
+    const rewardBtn = await firstCard.findElement(By.css(".btn-success"));
+    await clickWithThorHammer(rewardBtn);
 
     // 5. Verifica se o item foi removido
     console.log("Aguardando remoção do cartão...");
@@ -941,11 +983,11 @@ describe("User Journey Tests - Standard Profile", function () {
 
     // 0. Mock geolocation via CDP BEFORE any navigation
     console.log("Mocking geolocation via CDP...");
-    await driver.executeCdpCommand("Browser.grantPermissions", {
+    await driver.sendAndGetDevToolsCommand("Browser.grantPermissions", {
       permissions: ["geolocation"],
       origin: "http://localhost:5173",
     });
-    await driver.executeCdpCommand("Emulation.setGeolocationOverride", {
+    await driver.sendAndGetDevToolsCommand("Emulation.setGeolocationOverride", {
       latitude: 41.1579,
       longitude: -8.6291,
       accuracy: 100,
@@ -985,10 +1027,8 @@ describe("User Journey Tests - Standard Profile", function () {
     await driver.wait(
       async () => {
         try {
-          const weatherDiv = await driver.findElement(
-            By.css(".weather div[style='text-align: center']"),
-          );
-          const text = await weatherDiv.getText();
+          const weatherH3 = await driver.findElement(By.css(".weather h3"));
+          const text = await weatherH3.getText();
           return text && text.trim().length > 0;
         } catch {
           return false;
@@ -1127,14 +1167,10 @@ describe("User Journey Tests - Standard Profile", function () {
         await driver.sleep(1000);
 
         // Verify no notification cards remain
-        const afterClearCards = await notificationSection.findElements(
-          By.css(".notification-card"),
-        );
-        assert.strictEqual(
-          afterClearCards.length,
-          0,
-          "All notifications should be cleared.",
-        );
+        await driver.wait(async () => {
+            const cards = await notificationSection.findElements(By.css(".notification-card"));
+            return cards.length === 0;
+        }, 15000, "All notifications should be cleared.");
         console.log("All notifications cleared.");
 
         // Verify "No notifications yet!" message appears
@@ -1197,6 +1233,7 @@ describe("User Journey Tests - Standard Profile", function () {
       until.elementLocated(By.css(".modal-panel")),
       10000,
     );
+    await driver.sleep(500); // Wait for modalFadeIn animation to finish
     assert.ok(
       await modalPanel.isDisplayed(),
       "Forgot password modal should be visible.",
@@ -1383,10 +1420,17 @@ describe("User Journey Tests - Standard Profile", function () {
 
     // 2. Change the Name
     console.log("Changing the name...");
-    const toggleNameBtn = await driver.wait(
-      until.elementLocated(By.id("toggle-name")),
-      10000,
-    );
+    let toggleNameBtn;
+    try {
+        toggleNameBtn = await driver.wait(
+            until.elementLocated(By.id("toggle-name")),
+            10000,
+        );
+    } catch (err) {
+        console.error("FAILED TO FIND toggle-name. DUMPING DOM:");
+        console.error(await driver.executeScript("return document.body.innerHTML;"));
+        throw err;
+    }
     await driver.executeScript("arguments[0].click();", toggleNameBtn);
     await driver.sleep(500);
 

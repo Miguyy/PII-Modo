@@ -78,16 +78,8 @@ class RegisterPage {
         await this.driver.executeScript("document.activeElement.blur();");
         await this.driver.sleep(500); // Dá tempo ao framework para ativar o botão
         
-        // TRUQUE 2: Tenta o nosso clique nativo
-        await performNativeClick(this.driver, btn);
-        
-        // TRUQUE 3: Plano B imediato se a página não mudar
-        await this.driver.sleep(500);
-        const currentUrl = await this.driver.getCurrentUrl();
-        if (!currentUrl.includes("/login")) {
-            console.log("O botão ignorou o evento. Forçando submissão via JavaScript puro...");
-            await this.driver.executeScript("arguments[0].click();", btn);
-        }
+        // Clica usando JavaScript puro
+        await this.driver.executeScript("arguments[0].click();", btn);
     }
 }
 
