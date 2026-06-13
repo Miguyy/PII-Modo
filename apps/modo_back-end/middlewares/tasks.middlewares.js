@@ -33,8 +33,9 @@ export const validateCreateTask = (req, res, next) => {
   }
 
   if (
-    id_habito !== undefined &&
-    (!Number.isInteger(Number(id_habito)) || Number(id_habito) <= 0)
+    !id_habito ||
+    !Number.isInteger(Number(id_habito)) ||
+    Number(id_habito) <= 0
   ) {
     errors.id_habito = ["Invalid habit ID."];
   }

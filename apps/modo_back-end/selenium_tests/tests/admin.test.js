@@ -7,14 +7,14 @@ const fs = require('fs');
 // Import the Page Objects
 const { LoginPage } = require('../pages/AuthPages');
 
-// 1. CARREGAR CREDENCIAIS
+// 1. LOAD CREDENTIALS
 let ADMIN_USER;
 const credsPath = path.resolve(__dirname, '../admin.credentials.json');
 try {
     const rawData = fs.readFileSync(credsPath);
     ADMIN_USER = JSON.parse(rawData);
 } catch (error) {
-    throw new Error("Ficheiro admin.credentials.json não encontrado!");
+    throw new Error("admin.credentials.json file not found!");
 }
 
 async function performNativeClick(driver, element) {
@@ -27,7 +27,7 @@ async function performNativeClick(driver, element) {
     `, element);
 }
 
-// O DESCRIBE DEVE ESTAR AQUI NO NÍVEL SUPERIOR
+// DESCRIBE MUST BE HERE AT TOP LEVEL
 describe('Admin Journey Tests - Privileged Operations', function () {
     let driver;
     let loginPage;
@@ -97,7 +97,7 @@ describe('Admin Journey Tests - Privileged Operations', function () {
         console.log("Searching for 'Selenium User Test'...");
         await searchInput.clear();
         await searchInput.sendKeys("Selenium User Test");
-        await driver.sleep(1500); // Aguardar o filtro da tabela processar
+        await driver.sleep(1500); // Wait for table filter to process
 
         console.log("Locating the delete button for the user...");
         const adminTable = await usersTable.findElement(By.className("admin-table"));
@@ -106,10 +106,14 @@ describe('Admin Journey Tests - Privileged Operations', function () {
         const deleteBtn = await tbody.findElement(By.css(".action-icon.action-delete"));
         await performNativeClick(driver, deleteBtn);
 
-        console.log("Handling confirmation alert...");
-        await driver.sleep(500); // Aguardar alert nascer
-        const alert = await driver.switchTo().alert();
-        await alert.accept();
+        console.log("Handling confirmation modal...");
+        await driver.sleep(500); // Wait for modal to appear
+        const confirmModal = await driver.wait(
+            until.elementLocated(By.css(".custom-modal-backdrop .modal-panel")),
+            10000
+        );
+        const confirmBtn = await confirmModal.findElement(By.css(".btn.btn-danger"));
+        await driver.executeScript("arguments[0].click();", confirmBtn);
 
         console.log("Waiting for success toast message...");
         const toast = await driver.wait(
@@ -117,27 +121,25 @@ describe('Admin Journey Tests - Privileged Operations', function () {
             15000
         );
 
-        await driver.sleep(2000);
-        
-        // DEBUG: Obter o texto bruto para ver o que realmente está lá
+        // Read text immediately before the element can be removed by the v-if transition
         const rawToastText = await toast.getText();
-        const cleanToast = rawToastText.replace(/\s+/g, " ").trim(); // Substitui qualquer espaço/quebra por 1 espaço
+        const cleanToast = rawToastText.replace(/\s+/g, " ").trim();
         
         console.log("--- DEBUG DO TEXTO DO TOAST ---");
-        console.log("Texto Bruto:", rawToastText);
-        console.log("Texto Limpo:", cleanToast);
+        console.log("Raw Text:", rawToastText);
+        console.log("Clean Text:", cleanToast);
         console.log("--------------------------------");
 
-        // Validação relaxada: vamos imprimir o erro se falhar, mas com os valores reais
+        await driver.sleep(1000);
+
         assert.ok(
             cleanToast.length > 0, 
-            "Toast encontrado, mas texto vazio."
+            "Toast found, but text is empty."
         );
         
-        // Se este assert falhar, o log acima dir-nos-á exatamente o que escrever no assert abaixo
         assert.ok(
             cleanToast.includes("User deleted"),
-            `Esperava que contivesse 'User deleted', mas recebi: '${cleanToast}'`
+            `Expected to contain 'User deleted', but received: '${cleanToast}'`
         );
     });
 
@@ -147,59 +149,56 @@ describe('Admin Journey Tests - Privileged Operations', function () {
     it('testAdminNotifications', async function () {
         console.log("Starting Admin Notifications Test...");
 
-        // 1. Scroll e Espera ANTES de interagir
+        // 1. Scroll and Wait BEFORE interacting
         console.log("Scrolling to admin notifications section...");
         const notifSection = await driver.wait(until.elementLocated(By.id("admin-notifications")), 10000);
         await driver.executeScript("arguments[0].scrollIntoView({block: 'center'});", notifSection);
         
-        console.log("Aguardando estabilização da secção após scroll...");
+        console.log("Waiting for section to stabilize after scroll...");
         await driver.sleep(1500); 
 
-        // 2. Localizar elementos
+        // 2. Locate elements
         const cardBody = await notifSection.findElement(By.className("card-body"));
         const inputField = await cardBody.findElement(By.css(".form-control.border-success-subtle"));
         
-        // 3. Escrever a mensagem
+        // 3. Write the message
         console.log("Typing notification message...");
         await inputField.sendKeys("Notification from selenium test");
 
-        // 4. Pausa de 2 segundos antes do envio
-        console.log("Aguardando 2 segundos antes de enviar...");
+        // 4. 2-second pause before sending
+        console.log("Waiting 2 seconds before sending...");
         await driver.sleep(2000);
 
-        const sendBtn = await cardBody.findElement(By.css(".btn.text-white.px-4.shadow-sm"));
+        // Select the broadcast button reliably
+        const sendBtn = await cardBody.findElement(By.css(".input-group button"));
         console.log("Clicking the send broadcast button...");
-        await performNativeClick(driver, sendBtn);
+        await driver.executeScript("arguments[0].click();", sendBtn);
 
-        // PAUSA SOLICITADA: 1 segundo para garantir que o toast processa o texto
-        await driver.sleep(1000);
+        // Wait for the toast — the title is 'Broadcast Sent'
+        await driver.sleep(500);
 
         console.log("Waiting for success toast message...");
-        // Aumentamos a robustez: esperaremos até que um elemento com o texto exista E não esteja vazio
-        const toast = await driver.wait(async () => {
-            const elements = await driver.findElements(By.xpath("//*[contains(text(), 'Sent')]"));
-            for (let el of elements) {
-                const txt = await el.getText();
-                if (txt.trim().length > 0) return el; // Só retorna se tiver texto real
-            }
-            return null;
-        }, 15000);
-        
+        const toast = await driver.wait(
+            until.elementLocated(By.xpath("//*[contains(text(), 'Broadcast Sent')]") ),
+            15000
+        );
+
+        // Read immediately before the v-if removes the element
         const rawToastText = await toast.getText();
         const cleanToast = rawToastText.replace(/\s+/g, " ").trim();
         
         console.log("--- DEBUG TOAST ---");
-        console.log("Texto real capturado:", cleanToast);
+        console.log("Actual text captured:", cleanToast);
         console.log("-------------------");
 
         assert.ok(
             cleanToast.length > 0, 
-            "O toast foi encontrado, mas o texto ainda estava vazio."
+            "Toast was found, but text was still empty."
         );
 
         assert.ok(
             cleanToast.toLowerCase().includes("sent"),
-            `Esperava uma confirmação de envio (contendo 'sent'), mas recebi: '${cleanToast}'`
+            `Esperava uma confirmação de envio (contendo 'sent'), but received: '${cleanToast}'`
         );
 
         console.log("Test passed: Broadcast notification sent successfully.");
@@ -247,8 +246,8 @@ describe('Admin Journey Tests - Privileged Operations', function () {
         const saveBtn = await modal.findElement(By.css(".btn.btn-success"));
         await performNativeClick(driver, saveBtn);
 
-        console.log("Waiting for Add Toast message (buscando por texto XPath)...");
-        // CORREÇÃO: Usar o texto para ignorar problemas de classes
+        console.log("Waiting for Add Toast message (searching by XPath text)...");
+        // FIX: Use text to ignore class issues
         const addToast = await driver.wait(
             until.elementLocated(By.xpath("//*[contains(text(), 'Decoration added')]")), 
             15000
@@ -264,22 +263,26 @@ describe('Admin Journey Tests - Privileged Operations', function () {
         const searchInput = await decTableSection.findElement(By.css(".search-input"));
         await searchInput.clear();
         await searchInput.sendKeys("Selenium");
-        await driver.sleep(1500); // Aguarda o filtro
+        await driver.sleep(1500); // Wait for filter
 
         console.log("Locating the target decoration in the table to delete...");
         const deleteXPath = "//tbody//tr[td[contains(@class, 'fw-medium') and contains(text(), 'Selenium')]]//button[contains(@class, 'action-delete')]";
         const decDeleteBtn = await driver.wait(until.elementLocated(By.xpath(deleteXPath)), 10000);
         await performNativeClick(driver, decDeleteBtn);
 
-        console.log("Handling confirmation alert...");
+        console.log("Handling confirmation modal...");
         await driver.sleep(500);
-        const deleteAlert = await driver.switchTo().alert();
-        await deleteAlert.accept();
+        const deleteModal = await driver.wait(
+            until.elementLocated(By.css(".custom-modal-backdrop .modal-panel")),
+            10000
+        );
+        const deleteConfirmBtn = await deleteModal.findElement(By.css(".btn.btn-danger"));
+        await driver.executeScript("arguments[0].click();", deleteConfirmBtn);
 
         await driver.sleep(1000);
 
-        console.log("Waiting for Delete Toast message (buscando por texto XPath)...");
-        // CORREÇÃO: Buscar explicitamente pelo texto do Toast de deleção
+        console.log("Waiting for Delete Toast message (searching by XPath text)...");
+        // CORREÇÃO: Search explicitly for deletion Toast text
         await driver.wait(async () => {
             const toasts = await driver.findElements(By.xpath("//*[contains(text(), 'Decoration deleted')]"));
             return toasts.length > 0;
@@ -289,7 +292,177 @@ describe('Admin Journey Tests - Privileged Operations', function () {
     });
 
     // ----------------------------------------------------
-    // Test 5: Admin Session Secure Logout
+    // Test 5: Admin Habits Management (Add & Delete)
+    // ----------------------------------------------------
+    it('testAdminHabitsManagement', async function () {
+        console.log("Starting Admin Habits Management Test...");
+
+        // 1. ADD HABIT
+        console.log("Scrolling to habits table...");
+        const habitTableSection = await driver.wait(until.elementLocated(By.id("habits-table")), 10000);
+        await driver.executeScript("arguments[0].scrollIntoView({block: 'center'});", habitTableSection);
+
+        console.log("Clicking 'Add' habit button...");
+        const addHabitBtn = await habitTableSection.findElement(By.css(".btn.btn-add-decoration"));
+        await performNativeClick(driver, addHabitBtn);
+
+        console.log("Waiting for habit modal to open...");
+        const habitModal = await driver.wait(until.elementLocated(By.css(".custom-modal-backdrop .modal-panel")), 10000);
+        await driver.sleep(500);
+
+        console.log("Filling habit title...");
+        const titleInput = await habitModal.findElement(By.css("input[placeholder*='Exercise']"));
+        await titleInput.sendKeys("Selenium Habit Test");
+
+        console.log("Filling habit category...");
+        const categoryInput = await habitModal.findElement(By.css("input[placeholder*='Health']"));
+        await categoryInput.sendKeys("Selenium");
+
+        console.log("Saving new habit...");
+        const saveHabitBtn = await habitModal.findElement(By.css("button.btn-success"));
+        await driver.executeScript("arguments[0].click();", saveHabitBtn);
+
+        console.log("Waiting for Add Toast message...");
+        const addToast = await driver.wait(
+            until.elementLocated(By.xpath("//*[contains(text(), 'Habit added')]")),
+            15000
+        );
+        const addToastText = await driver.executeScript("return arguments[0].innerText;", addToast);
+        assert.ok(addToastText.includes("Habit added"), "Failed to add habit. Text found: " + addToastText);
+
+        console.log("Habit created. Waiting 1.5 seconds...");
+        await driver.sleep(1500);
+
+        // 2. DELETE HABIT
+        console.log("Searching for the newly created 'Selenium Habit Test' habit...");
+        const searchInput = await habitTableSection.findElement(By.css(".search-input"));
+        await searchInput.clear();
+        await searchInput.sendKeys("Selenium Habit Test");
+        await driver.sleep(1500);
+
+        console.log("Locating the target habit in the table to delete...");
+        const deleteXPath = "//tbody//tr[td//span[contains(text(), 'Selenium Habit Test')]]//button[contains(@class, 'action-delete')]";
+        const habitDeleteBtn = await driver.wait(until.elementLocated(By.xpath(deleteXPath)), 10000);
+        await performNativeClick(driver, habitDeleteBtn);
+
+        console.log("Handling confirmation modal...");
+        await driver.sleep(500);
+        const deleteModal = await driver.wait(
+            until.elementLocated(By.css(".custom-modal-backdrop .modal-panel")),
+            10000
+        );
+        const deleteConfirmBtn = await deleteModal.findElement(By.css(".btn.btn-danger"));
+        await driver.executeScript("arguments[0].click();", deleteConfirmBtn);
+
+        await driver.sleep(1000);
+
+        console.log("Waiting for Delete Toast message...");
+        const deleteToast = await driver.wait(
+            until.elementLocated(By.xpath("//*[contains(text(), 'Habit deleted')]")),
+            15000
+        );
+        const deleteToastText = await driver.executeScript("return arguments[0].innerText;", deleteToast);
+        assert.ok(deleteToastText.includes("Habit deleted"), "Failed to delete habit. Text found: " + deleteToastText);
+
+        console.log("Test passed: Habit successfully added and then deleted.");
+    });
+
+    // ----------------------------------------------------
+    // Test 6: Admin Tasks Management (Add & Delete)
+    // ----------------------------------------------------
+    it('testAdminTasksManagement', async function () {
+        console.log("Starting Admin Tasks Management Test...");
+
+        // 1. ADD TASK
+        console.log("Scrolling to tasks table...");
+        const taskTableSection = await driver.wait(until.elementLocated(By.id("tasks-table")), 10000);
+        await driver.executeScript("arguments[0].scrollIntoView({block: 'center'});", taskTableSection);
+
+        console.log("Clicking 'Add' task button...");
+        const addTaskBtn = await taskTableSection.findElement(By.css(".btn.btn-add-decoration"));
+        await performNativeClick(driver, addTaskBtn);
+
+        console.log("Waiting for task modal to open...");
+        const taskModal = await driver.wait(until.elementLocated(By.css(".custom-modal-backdrop .modal-panel")), 10000);
+        await driver.sleep(500);
+
+        console.log("Filling task title...");
+        const titleInput = await taskModal.findElement(By.css("input[placeholder*='Morning Run']"));
+        await titleInput.sendKeys("Selenium Task Test");
+
+        console.log("Selecting priority (Low)...");
+        await driver.executeScript(`
+            var sel = arguments[0].querySelector("select");
+            sel.value = 'Low';
+            sel.dispatchEvent(new Event('change', { bubbles: true }));
+        `, taskModal.findElement ? taskModal : taskModal);
+
+        // Use explicit selects array and sendKeys for reliability so Vue picks up the change
+        const selects = await taskModal.findElements(By.css("select.form-select"));
+        // Priority (index 0)
+        await selects[0].sendKeys("Low");
+        await driver.sleep(300);
+        // Task Type (index 1)
+        await selects[1].sendKeys("Check");
+        await driver.sleep(300);
+        // Location (index 2)
+        await selects[2].sendKeys("Inside");
+        await driver.sleep(300);
+        // Habit (index 3)
+        await selects[3].sendKeys(Key.ARROW_DOWN); // Select first available habit
+        await driver.sleep(300);
+
+        console.log("Saving new task...");
+        const saveTaskBtn = await taskModal.findElement(By.css("button.btn-success"));
+        await driver.executeScript("arguments[0].click();", saveTaskBtn);
+
+        console.log("Waiting for Add Toast message...");
+        const addToast = await driver.wait(
+            until.elementLocated(By.xpath("//*[contains(text(), 'Task added')]")),
+            15000
+        );
+        const addToastText = await driver.executeScript("return arguments[0].innerText;", addToast);
+        assert.ok(addToastText.includes("Task added"), "Failed to add task. Text found: " + addToastText);
+
+        console.log("Task created. Waiting 1.5 seconds...");
+        await driver.sleep(1500);
+
+        // 2. DELETE TASK
+        console.log("Searching for the newly created 'Selenium Task Test' task...");
+        const searchInput = await taskTableSection.findElement(By.css(".search-input"));
+        await searchInput.clear();
+        await searchInput.sendKeys("Selenium Task Test");
+        await driver.sleep(1500);
+
+        console.log("Locating the target task in the table to delete...");
+        const deleteXPath = "//tbody//tr[td//span[contains(text(), 'Selenium Task Test')]]//button[contains(@class, 'action-delete')]";
+        const taskDeleteBtn = await driver.wait(until.elementLocated(By.xpath(deleteXPath)), 10000);
+        await performNativeClick(driver, taskDeleteBtn);
+
+        console.log("Handling confirmation modal...");
+        await driver.sleep(500);
+        const deleteModal = await driver.wait(
+            until.elementLocated(By.css(".custom-modal-backdrop .modal-panel")),
+            10000
+        );
+        const deleteConfirmBtn = await deleteModal.findElement(By.css(".btn.btn-danger"));
+        await driver.executeScript("arguments[0].click();", deleteConfirmBtn);
+
+        await driver.sleep(1000);
+
+        console.log("Waiting for Delete Toast message...");
+        const deleteToast = await driver.wait(
+            until.elementLocated(By.xpath("//*[contains(text(), 'Task deleted')]")),
+            15000
+        );
+        const deleteToastText = await driver.executeScript("return arguments[0].innerText;", deleteToast);
+        assert.ok(deleteToastText.includes("Task deleted"), "Failed to delete task. Text found: " + deleteToastText);
+
+        console.log("Test passed: Task successfully added and then deleted.");
+    });
+
+    // ----------------------------------------------------
+    // Test 7: Admin Session Secure Logout
     // ----------------------------------------------------
     it('testAdminSessionSecureLogout', async function () {
         console.log("Starting Admin Session Secure Logout Test...");
