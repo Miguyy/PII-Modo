@@ -9,11 +9,11 @@ const { DashboardPage, ExplorePage } = require('../pages/AppPages');
 
 // Centralized test credentials
 const TEST_USER = {
-    email: "user.test@email.com",
+    email: `selenium_${Date.now()}@email.com`,
     password: "Selenium2026!#"
 };
 
-// Função infalível para interagir com a sua UI
+// Robust function to interact with the UI
 async function performNativeClick(driver, element) {
     await driver.executeScript("arguments[0].scrollIntoView({block: 'center'});", element);
     await driver.executeScript(`
@@ -44,7 +44,7 @@ describe('User Journey Tests - Standard Profile', function () {
             
         await driver.manage().window().maximize();
 
-        // Inicializa as páginas para que fiquem disponíveis
+        // Initializes pages to be available
         loginPage = new LoginPage(driver);
         registerPage = new RegisterPage(driver);
 
@@ -52,25 +52,28 @@ describe('User Journey Tests - Standard Profile', function () {
         // Auto-Login Logic (Robust)
         // ----------------------------------------------------
         const currentTestName = this.currentTest.title;
-        const testsWithoutAutoLogin = ['testUserRegistrationFlow', 'testUserAuthenticationSuccess'];
+        const testsWithoutAutoLogin = ['testUserRegistration', 'testUserAuthentication'];
 
         if (!testsWithoutAutoLogin.includes(currentTestName)) {
             console.log(`[Setup] Auto-login triggered for: ${currentTestName}`);
             
             await driver.get('http://localhost:5173/login');
             
-            // Usando a lógica robusta da LoginPage (que deve ter os IDs novos: login_btn)
+            // Using robust LoginPage logic (should have new IDs: login_btn)
             await loginPage.performLogin(TEST_USER.email, TEST_USER.password);
             
-            console.log("[Setup] Verificando se o login foi bem-sucedido...");
+            // Wait for the login redirect to finish to avoid race conditions!
+            await driver.wait(until.urlContains("/habitsmanager"), 10000);
+            
+            console.log("[Setup] Verifying if login was successful...");
             await driver.wait(until.elementLocated(By.css("a[title='Explore Habits']")), 10000);
-            console.log("[Setup] Login validado com sucesso! A navegação está pronta.");
+            console.log("[Setup] Login successfully validated! Navigation is ready.");
         }
     });
 
     afterEach(async function () {
         try {
-            // CORREÇÃO: O cleanup também precisa do NativeClick
+            // FIX: Cleanup also needs NativeClick
             const settingsLink = await driver.wait(until.elementLocated(By.id("menu-link-settings")), 3000);
             await performNativeClick(driver, settingsLink);
             
@@ -142,16 +145,16 @@ describe('User Journey Tests - Standard Profile', function () {
         console.log("Filling credentials and clicking the login button...");
         await loginPage.performLogin(TEST_USER.email, TEST_USER.password);
 
-        console.log("Aguardando o redirecionamento do router...");
+        console.log("Waiting for router redirection...");
         
-        // 1. ESPERA CRÍTICA: Garante que o Vue/React já atualizou a URL
+        // 1. CRITICAL WAIT: Ensures Vue/React has updated the URL
         await driver.wait(until.urlContains('/habitsmanager'), 10000);
 
-        console.log("Verificando a barra de navegação...");
-        // 2. Garante que a interface também já terminou de renderizar
+        console.log("Checking the navigation bar...");
+        // 2. Ensures the interface has finished rendering
         await driver.wait(until.elementLocated(By.css("a[title='Explore Habits']")), 10000);
         
-        // 3. Agora é 100% seguro capturar a URL
+        // 3. Now it is 100% safe to capture the URL
         const currentUrl = await driver.getCurrentUrl();
         console.log("Current URL after authentication:", currentUrl);
 
@@ -169,7 +172,7 @@ describe('User Journey Tests - Standard Profile', function () {
     it('testUserExploreHabitsAndAddHabit', async function () {
         console.log("Starting Explore and Add Habit Test...");
 
-        // 1. Navegar para a página de Exploração
+        // 1. Navigate to Explore page
         console.log("Navigating to Explore Habits page...");
         const exploreNavBtn = await driver.wait(
             until.elementLocated(By.css("a[aria-label='Explore Habits']")), 
@@ -179,58 +182,61 @@ describe('User Journey Tests - Standard Profile', function () {
 
         await driver.wait(until.urlContains("/explorehabits"), 10000);
 
-        // 2. Localizar a Grid de Hábitos e fazer scroll
-        console.log("Aguardando a grid de hábitos (.habits-grid) carregar...");
+        // 2. Locate Habits Grid and scroll
+        console.log("Waiting for habits grid (.habits-grid) to load...");
         const habitsGrid = await driver.wait(
             until.elementLocated(By.css(".habits-grid")), 
             10000
         );
         
-        console.log("Fazendo scroll até a grid de hábitos...");
+        console.log("Scrolling to the habits grid...");
         await driver.executeScript("arguments[0].scrollIntoView({block: 'center'});", habitsGrid);
         
-        await driver.sleep(1500); // Pausa para a API carregar os dados
+        await driver.sleep(1500); // Pause for API to load data
 
-        // 3. Escolher e clicar num cartão
-        console.log("Localizando os cartões de hábitos dentro da grid...");
-        const habits = await habitsGrid.findElements(By.css(".card, .habit-card-item, [class*='card']"));
-        
-        console.log(`Encontrados ${habits.length} cartões na grid.`);
-        assert.ok(habits.length > 0, "A grid carregou, mas está vazia. Nenhum cartão encontrado!");
+        // 3. Choose and click a card
+        const habits = await driver.wait(
+            until.elementsLocated(By.css(".habits-grid .habit-card, .habits-grid .card, .habits-grid [class*='card']")),
+            10000
+        );
+        assert.ok(habits.length > 0, "Grid loaded, but it is empty. No cards found!");
         
         const targetIndex = habits.length >= 2 ? 1 : 0;
         const targetHabit = habits[targetIndex];
         
-        console.log(`Clicando no hábito número ${targetIndex + 1}...`);
+        console.log("Scrolling to the target habit...");
+        await driver.executeScript("arguments[0].scrollIntoView({block: 'center'});", targetHabit);
+        
+        console.log(`Clicking on habit number ${targetIndex + 1}...`);
         await performNativeClick(driver, targetHabit);
 
-        // 4. Clicar no botão de adicionar (Sem esperar pelo modal)
-        console.log("Aguardando o botão de adicionar hábito...");
+        // 4. Click add button (Without waiting for modal)
+        console.log("Waiting for add habit button...");
         
         const addHabitBtn = await driver.wait(
             until.elementLocated(By.css(".btn-add-habit")), 
-            15000 // Aumentei um pouco o tempo caso o modal demore a animar
+            15000 // Increased time slightly in case modal animation is slow
         );
         
-        await driver.sleep(1000); // Pequena pausa para garantir estabilidade
-        console.log("Botão encontrado! Executando clique nativo...");
+        await driver.sleep(1000); // Short pause to ensure stability
+        console.log("Button found! Executing native click...");
         await performNativeClick(driver, addHabitBtn);
 
-        await driver.sleep(2000); // Espera o backend confirmar a adição
+        await driver.sleep(2000); // Wait for backend to confirm addition
 
-        console.log("Procurando o botão de fechar com a classe .custom-modal-close...");
+        console.log("Looking for close button with class .custom-modal-close...");
         try {
-            // Tentativa 1: Clicar no botão pela classe que você descobriu
+            // Attempt 1: Click button by discovered class
             const closeModalBtn = await driver.findElement(By.css(".custom-modal-close"));
             await performNativeClick(driver, closeModalBtn);
         } catch (e) {
-            console.log("Botão .custom-modal-close não encontrado, tentando tecla ESC...");
+            console.log(".custom-modal-close button not found, trying ESC key...");
             await driver.actions().sendKeys(Key.ESCAPE).perform();
         }
         
         await driver.sleep(1000);
 
-        // 6. Voltar ao Dashboard e verificar
+        // 6. Return to Dashboard and verify
         console.log("Navigating back to the Habits Manager dashboard...");
         const managerNavBtn = await driver.wait(
             until.elementLocated(By.css("a[aria-label='Habits Manager']")), 
@@ -262,7 +268,7 @@ describe('User Journey Tests - Standard Profile', function () {
     it('testUserExploreHabitsAndAddTask', async function () {
         console.log("Starting Explore and Add Task Test...");
 
-        // 1. Navegar para a página de Exploração
+        // 1. Navigate to Explore page
         console.log("Navigating to Explore Habits page...");
         const exploreNavBtn = await driver.wait(
             until.elementLocated(By.css("a[aria-label='Explore Habits']")), 
@@ -272,58 +278,53 @@ describe('User Journey Tests - Standard Profile', function () {
 
         await driver.wait(until.urlContains("/explorehabits"), 10000);
 
-        // 2. Localizar a Grid de Hábitos e fazer scroll
-        console.log("Aguardando a grid de hábitos (.habits-grid) carregar...");
-        const habitsGrid = await driver.wait(
-            until.elementLocated(By.css(".habits-grid")), 
+        await driver.sleep(1500); // Pause for API to load data
+
+        // 3. Choose and click a card
+        const habits = await driver.wait(
+            until.elementsLocated(By.css(".habits-grid .habit-card, .habits-grid .card, .habits-grid [class*='card']")),
             10000
         );
+        console.log(`Found ${habits.length} cards in the grid.`);
+        assert.ok(habits.length > 0, "Grid loaded, but it is empty. No cards found!");
         
-        console.log("Fazendo scroll até a grid de hábitos...");
-        await driver.executeScript("arguments[0].scrollIntoView({block: 'center'});", habitsGrid);
-        
-        await driver.sleep(1500); // Pausa para a API carregar os dados
-
-        // 3. Escolher e clicar num cartão
-        console.log("Localizando os cartões de hábitos dentro da grid...");
-        const habits = await habitsGrid.findElements(By.css(".card, .habit-card-item, [class*='card']"));
-        
-        console.log(`Encontrados ${habits.length} cartões na grid.`);
-        assert.ok(habits.length > 0, "A grid carregou, mas está vazia. Nenhum cartão encontrado!");
-        
-        const targetIndex = habits.length >= 2 ? 1 : 0;
+        // Use index 0 for Test 4, whereas Test 3 uses index 1. This prevents exploring a habit that was already added!
+        const targetIndex = 0;
         const targetHabit = habits[targetIndex];
         
-        console.log(`Clicando no hábito número ${targetIndex + 1}...`);
+        console.log("Scrolling to the target habit...");
+        await driver.executeScript("arguments[0].scrollIntoView({block: 'center'});", targetHabit);
+        
+        console.log(`Clicking on habit number ${targetIndex + 1}...`);
         await performNativeClick(driver, targetHabit);
 
-        // 4. Clicar no botão de adicionar (Sem esperar pelo modal)
-        console.log("Aguardando o botão de adicionar hábito...");
+        // 4. Click add button (Without waiting for modal)
+        console.log("Waiting for add task button...");
         
-        const addHabitBtn = await driver.wait(
-            until.elementLocated(By.css(".btn-add-habit")), 
-            15000 // Aumentei um pouco o tempo caso o modal demore a animar
+        const addTaskBtn = await driver.wait(
+            until.elementLocated(By.css(".btn-add-task")), 
+            15000 // Increased time slightly in case modal animation is slow
         );
         
-        await driver.sleep(1000); // Pequena pausa para garantir estabilidade
-        console.log("Botão encontrado! Executando clique nativo...");
-        await performNativeClick(driver, addHabitBtn);
+        await driver.sleep(1000); // Short pause to ensure stability
+        console.log("Button found! Executing native click...");
+        await performNativeClick(driver, addTaskBtn);
 
-        await driver.sleep(2000); // Espera o backend confirmar a adição
+        await driver.sleep(2000); // Wait for backend to confirm addition
 
-        console.log("Procurando o botão de fechar com a classe .custom-modal-close...");
+        console.log("Looking for close button with class .custom-modal-close...");
         try {
-            // Tentativa 1: Clicar no botão pela classe que você descobriu
+            // Attempt 1: Click button by discovered class
             const closeModalBtn = await driver.findElement(By.css(".custom-modal-close"));
             await performNativeClick(driver, closeModalBtn);
         } catch (e) {
-            console.log("Botão .custom-modal-close não encontrado, tentando tecla ESC...");
+            console.log(".custom-modal-close button not found, trying ESC key...");
             await driver.actions().sendKeys(Key.ESCAPE).perform();
         }
         
         await driver.sleep(1000);
 
-        // 6. Voltar ao Dashboard e verificar
+        // 6. Return to Dashboard and verify
         console.log("Navigating back to the Habits Manager dashboard...");
         const managerNavBtn = await driver.wait(
             until.elementLocated(By.css("a[aria-label='Habits Manager']")), 
@@ -355,59 +356,45 @@ describe('User Journey Tests - Standard Profile', function () {
     it('testUserHabitTaskCompletionAndRewards', async function () {
         console.log("Starting Habit Task Completion Test...");
 
-        // 1. Espera e prepara a grid
+        // 1. Wait and prepare the grid
         const habitsGrid = await driver.wait(until.elementLocated(By.className("habits-grid")), 15000);
         await driver.executeScript("arguments[0].scrollIntoView({block: 'center'});", habitsGrid);
         
         await driver.wait(async () => {
             const cards = await driver.findElements(By.className("habit-item"));
             return cards.length > 0;
-        }, 15000, "Timeout: Nenhum cartão foi carregado.");
+        }, 15000, "Timeout: No card was loaded.");
         
         let cards = await driver.findElements(By.className("habit-item")); 
         const initialCardCount = cards.length;
         console.log(`Initial number of task cards: ${initialCardCount}`);
 
-        // Função reutilizável para o clique agressivo (Martelo de Thor)
-        const clickWithThorHammer = async (element) => {
-            await driver.executeScript(`
-                var el = arguments[0];
-                el.scrollIntoView({block: 'center'});
-                var ev1 = document.createEvent('MouseEvent');
-                ev1.initMouseEvent('mousedown', true, true, window, 1, 0, 0, 0, 0, false, false, false, false, 0, null);
-                el.dispatchEvent(ev1);
-                var ev2 = document.createEvent('MouseEvent');
-                ev2.initMouseEvent('mouseup', true, true, window, 1, 0, 0, 0, 0, false, false, false, false, 0, null);
-                el.dispatchEvent(ev2);
-                el.click();
-            `, element);
-        };
+        // We will use performNativeClick function defined at the top which proved reliable
 
-        // 2. Localiza o primeiro cartão e clica em "Mark Done"
+        // 2. Locate first card and click "Mark Done"
         const firstCard = await driver.wait(until.elementLocated(By.className("habit-item")), 10000);
         let btn = await firstCard.findElement(By.css(".btn-outline-success")); 
         
-        console.log("Forçando clique no primeiro botão (Mark Done)...");
-        await clickWithThorHammer(btn);
+        console.log("Forcing click on first button (Mark Done)...");
+        await driver.executeScript("arguments[0].click();", btn);
         
-        // 3. Aguarda a transição e recaptura o botão
-        console.log("Aguardando transição do botão...");
+        // 3. Wait for transition and recapture button
+        console.log("Waiting for button transition...");
         await driver.sleep(2500); 
 
-        // 4. Força o clique na Recompensa (o botão mudou de classe)
-        console.log("Forçando clique no segundo botão (Complete & Earn Points)...");
-        btn = await firstCard.findElement(By.css(".btn-success"));
-        await clickWithThorHammer(btn);
+        console.log("Forcing click on second button (Complete & Earn Points)...");
+        btn = await firstCard.findElement(By.css(".btn-success.flex-fill"));
+        await driver.executeScript("arguments[0].click();", btn);
 
-        // 5. Verifica se o item foi removido
-        console.log("Aguardando remoção do cartão...");
+        // 5. Verify if item was removed
+        console.log("Waiting for card removal...");
         await driver.wait(async () => {
             const currentCards = await driver.findElements(By.className("habit-item"));
             return currentCards.length < initialCardCount;
-        }, 15000, "O cartão não foi removido da grelha!");
+        }, 15000, "Card was not removed from grid!");
 
         const finalCards = await driver.findElements(By.className("habit-item"));
-        assert.strictEqual(finalCards.length, initialCardCount - 1, "A tarefa não foi deletada.");
+        assert.strictEqual(finalCards.length, initialCardCount - 1, "Task was not deleted.");
 
         console.log("Test passed: Task completed and removed!");
     });
@@ -418,7 +405,7 @@ describe('User Journey Tests - Standard Profile', function () {
     it('testUserStatisticsDashboardAndReportExport', async function () {
         console.log("Starting Statistics Dashboard and PDF Export Test...");
 
-        // 1. Aguarda o dashboard e faz scroll até ao bloco de gráficos
+        // 1. Wait for dashboard and scroll to charts block
         console.log("Waiting for the charts box to load...");
         const chartsBox = await driver.wait(
             until.elementLocated(By.className("charts-box")), 
@@ -429,29 +416,29 @@ describe('User Journey Tests - Standard Profile', function () {
         await driver.executeScript("arguments[0].scrollIntoView({block: 'center'});", chartsBox);
         await driver.sleep(1000);
 
-        // 2. Localiza e clica no botão com title="Generate Report" DENTRO da chartsBox
+        // 2. Locate and click button with title="Generate Report" INSIDE chartsBox
         console.log("Locating the 'Generate Report' button...");
         const openReportBtn = await chartsBox.findElement(By.css("[title='Generate Report']"));
         
         console.log("Clicking the 'Generate Report' button...");
         await driver.executeScript("arguments[0].click();", openReportBtn);
 
-        // 3. Aguarda o painel de relatório aparecer
+        // 3. Wait for report panel to appear
         console.log("Waiting for the '.report-panel' div to appear...");
         const reportPanel = await driver.wait(
             until.elementLocated(By.css(".report-panel")), 
             10000
         );
-        await driver.sleep(1000); // Pequena pausa para animação do painel
+        await driver.sleep(1000); // Short pause for panel animation
 
-        // 4. Localiza os selects específicos
+        // 4. Locate specific selects
         console.log("Locating the select dropdowns...");
         const selects = await reportPanel.findElements(By.css("select.form-select.form-select-sm"));
         assert.ok(selects.length >= 2, "The report panel should contain at least 2 select elements.");
 
-        // 5. Interage com o primeiro Select
+        // 5. Interact with first Select
         console.log("Interacting with the first Select dropdown...");
-        // Mudamos para a opção 1 (o segundo item da lista, assumindo que o 0 é "Selecione...")
+        // Change to option 1 (second item in list, assuming 0 is "Select...")
         await driver.executeScript(`
             var select = arguments[0];
             select.selectedIndex = 1; 
@@ -459,7 +446,7 @@ describe('User Journey Tests - Standard Profile', function () {
         `, selects[0]);
         await driver.sleep(500);
 
-        // 6. Interage com o segundo Select
+        // 6. Interact with second Select
         console.log("Interacting with the second Select dropdown...");
         await driver.executeScript(`
             var select = arguments[0];
@@ -468,12 +455,12 @@ describe('User Journey Tests - Standard Profile', function () {
         `, selects[1]);
         await driver.sleep(500);
 
-        // 7. Clica no botão final para gerar
+        // 7. Click final button to generate
         console.log("Clicking the 'btn-generate' button...");
         const generateBtn = await reportPanel.findElement(By.css(".btn.btn-generate.w-100"));
         await driver.executeScript("arguments[0].click();", generateBtn);
 
-        // 8. Valida o sucesso do Download
+        // 8. Validate Download success
         console.log("Waiting for the PDF generation and the success message...");
         const successMessageLocator = By.xpath("//*[contains(text(), 'Report saved and download started!')]");
         
@@ -486,7 +473,7 @@ describe('User Journey Tests - Standard Profile', function () {
         );
 
         console.log("Test passed: Statistics panel works and PDF export was triggered successfully.");
-        await driver.sleep(3000); // Dá um tempo extra para garantir que o download inicia antes do browser fechar
+        await driver.sleep(3000); // Give extra time to ensure download starts before browser closes
     });
 
     // ----------------------------------------------------
@@ -495,7 +482,7 @@ describe('User Journey Tests - Standard Profile', function () {
     it('testUserCustomAvatarDecoration', async function () {
         console.log("Starting Avatar Decoration Customization Test...");
 
-        // Navegação
+        // Navigation
         const settingsNavBtn = await driver.wait(
             until.elementLocated(By.css(".custom-navbar [aria-label='Settings']")), 
             10000
@@ -504,7 +491,7 @@ describe('User Journey Tests - Standard Profile', function () {
         await driver.wait(until.urlContains('/settings'), 10000);
         await driver.sleep(1000);
 
-        // Edição
+        // Editing
         const settingsCard = await driver.wait(until.elementLocated(By.className("settings-card")), 10000);
         const editAvatarBtn = await settingsCard.findElement(By.css(".btn-avatar-edit"));
         await driver.executeScript("arguments[0].click();", editAvatarBtn);
@@ -513,20 +500,20 @@ describe('User Journey Tests - Standard Profile', function () {
         const swiper = await driver.wait(until.elementLocated(By.className("swiper")), 10000);
         const checkAvatarBtn = await swiper.findElement(By.css(".swiper-slide .btn-avatar-check"));
         
-        // PAUSA SOLICITADA: 1 segundo para visualização
-        console.log("Visualizando o swiper antes de confirmar...");
+        // REQUESTED PAUSE: 1 second for viewing
+        console.log("Viewing swiper before confirming...");
         await driver.sleep(1000); 
         
-        console.log("Confirmando a decoração...");
+        console.log("Confirming decoration...");
         await driver.executeScript("arguments[0].click();", checkAvatarBtn);
 
-        // Aguardar o avatar voltar
+        // Wait for avatar to return
         await driver.wait(until.elementLocated(By.css(".settings-card .avatar")), 10000);
 
-        console.log("Procurando o Toast via escaneamento de conteúdo...");
+        console.log("Looking for Toast via content scanning...");
         
-        // Em vez de esperar por uma classe, vamos esperar por um elemento que contenha o texto esperado
-        // Isto ignora a classe CSS e foca-se apenas no conteúdo
+        // Instead of waiting for a class, wait for element containing expected text
+        // This ignores CSS class and focuses only on content
         try {
             const toast = await driver.wait(
                 until.elementLocated(By.xpath("//*[contains(text(), 'Decoration Applied')]")), 
@@ -535,14 +522,14 @@ describe('User Journey Tests - Standard Profile', function () {
             const toastText = await toast.getText();
             console.log(`Sucesso! Toast encontrado. Texto: "${toastText}"`);
         } catch (err) {
-            console.log("Falha: O XPath não encontrou nenhum elemento com o texto 'Decoration Applied'.");
+            console.log("Failure: XPath did not find any element with text 'Decoration Applied'.");
             
-            // DUMP DE SEGURANÇA: Mostra-nos o que existe no corpo da página para descobrirmos a classe
+            // SECURITY DUMP: Show what exists in page body to discover class
             const bodyContent = await driver.executeScript("return document.body.innerHTML.substring(0, 500);");
-            console.log("--- DUMP DO INÍCIO DO BODY ---");
+            console.log("--- DUMP OF BODY START ---");
             console.log(bodyContent);
             console.log("------------------------------");
-            throw new Error("Toast não encontrado. Verifique o DUMP acima para ver se o elemento existe no DOM.");
+            throw new Error("Toast not found. Check DUMP above to see if element exists in DOM.");
         }
 
         console.log("Test passed: Decoration successfully applied.");
@@ -562,7 +549,7 @@ describe('User Journey Tests - Standard Profile', function () {
             10000
         );
 
-        // Adicionando a pausa de 2 segundos solicitada
+        // Adding requested 2 second pause
         console.log("Waiting 2 seconds before clicking...");
         await driver.sleep(2000);
 
@@ -570,7 +557,7 @@ describe('User Journey Tests - Standard Profile', function () {
         assert.strictEqual(initialTitle, "Switch to Dark Mode", "App should be in Light Mode.");
 
         console.log("Clicking the theme toggle button to activate Dark Mode...");
-        // CORREÇÃO: Clique Nativo
+        // CORREÇÃO: Native Click
         await performNativeClick(driver, themeToggleBtn);
 
         console.log("Waiting for the button title to update...");
@@ -583,7 +570,7 @@ describe('User Journey Tests - Standard Profile', function () {
         // CORREÇÃO AQUI: Em vez do 'body', capturamos a tag 'html'
         const htmlElement = await driver.findElement(By.tagName("html"));
         
-        // Em vez da classe, lemos o atributo do Bootstrap
+        // Instead of class, read Bootstrap attribute
         const themeAttribute = await htmlElement.getAttribute("data-bs-theme");
 
         assert.strictEqual(
@@ -602,7 +589,7 @@ describe('User Journey Tests - Standard Profile', function () {
     it('testUserChangeImageProfile', async function () {
         console.log("Starting User Image Profile Update Test...");
 
-        // 1. Navegação para Settings
+        // 1. Navigation para Settings
         console.log("Navigating to Settings page...");
         const settingsNavBtn = await driver.wait(
             until.elementLocated(By.css(".custom-navbar [aria-label='Settings']")), 
@@ -612,8 +599,8 @@ describe('User Journey Tests - Standard Profile', function () {
         await driver.wait(until.urlContains('/settings'), 10000);
         await driver.sleep(1500);
 
-        // 2. Localizar o Avatar e verificar a condição inicial (Tem imagem ou é vazio?)
-        console.log("Verificando o estado inicial do avatar...");
+        // 2. Locate Avatar and verify initial condition (Has image or is empty?)
+        console.log("Checking initial avatar state...");
         const settingsCard = await driver.wait(until.elementLocated(By.className("settings-card")), 10000);
         const profileHeader = await settingsCard.findElement(By.className("profile-header"));
         const avatar = await profileHeader.findElement(By.className("avatar"));
@@ -624,16 +611,16 @@ describe('User Journey Tests - Standard Profile', function () {
 
         if (initialImages.length > 0) {
             initialSrc = await initialImages[0].getAttribute("src");
-            console.log(`[Condição A] Imagem atual detetada. URL: ${initialSrc}`);
+            console.log(`[Condition A] Current image detected. URL: ${initialSrc}`);
         } else {
-            console.log(`[Condição B] Nenhuma imagem de perfil detetada (Placeholder ativo).`);
+            console.log(`[Condition B] No profile picture detected (Placeholder active).`);
         }
 
-        // 3. Preparar e enviar o ficheiro local
+        // 3. Prepare and send local file
         console.log("Resolving local image path...");
         const filePath = path.resolve(__dirname, '../images/profile_picture.jpg');
         
-        console.log("Injetando a imagem no input oculto...");
+        console.log("Injecting image into hidden input...");
         const fileInput = await driver.wait(until.elementLocated(By.css('input[type="file"]')), 10000);
         
         // MOSTRAR: Forçamos a exibição apenas para o Selenium não dar erro de "elemento não interativo"
@@ -642,51 +629,51 @@ describe('User Journey Tests - Standard Profile', function () {
             fileInput
         );
         
-        // INJETAR: Selenium envia o ficheiro
+        // INJECT: Selenium sends the file
         await fileInput.sendKeys(filePath);
 
-        // ESCONDER: Imediatamente após o envio, forçamos o sumiço completo do elemento do ecrã
+        // HIDE: Immediately after sending, force complete disappearance of element from screen
         await driver.executeScript(
             "arguments[0].style.display = 'none'; arguments[0].style.visibility = 'hidden'; arguments[0].style.opacity = '0';", 
             fileInput
         );
 
-        // 4. Validação Condicional Pós-Upload
-        console.log("Aguardando a aplicação processar o upload e atualizar o ecrã...");
+        // 4. Post-Upload Conditional Validation
+        console.log("Waiting for app to process upload and update screen...");
         await driver.wait(async () => {
             const currentImages = await avatar.findElements(By.tagName("img"));
             
-            // Se ainda não há imagem no DOM, continua à espera
+            // If still no image in DOM, keep waiting
             if (currentImages.length === 0) return false; 
             
             const currentSrc = await currentImages[0].getAttribute("src");
             
             if (initialSrc) {
-                // Condição A (Tinha imagem): O teste passa quando o SRC for diferente do antigo
+                // Condition A (Tinha imagem): Test passes when SRC is different from old one
                 return currentSrc !== initialSrc && currentSrc.length > 0;
             } else {
-                // Condição B (Não tinha imagem): O teste passa mal a tag img surja com um link válido
+                // Condition B (Não tinha imagem): Test passes as soon as img tag appears with valid link
                 return currentSrc && currentSrc.length > 0;
             }
-        }, 20000, "Timeout: A nova imagem do avatar não foi renderizada no ecrã.");
+        }, 20000, "Timeout: New avatar image was not rendered on screen.");
 
-        // Confirmação Final
+        // Final Confirmation
         const finalImages = await avatar.findElements(By.tagName("img"));
         const updatedSrc = await finalImages[0].getAttribute("src");
-        console.log(`Sucesso! Nova imagem processada pelo site: ${updatedSrc}`);
+        console.log(`Success! New image processed by site: ${updatedSrc}`);
 
-        // 5. Validação do Toast
-        console.log("Aguardando notificação de sucesso...");
+        // 5. Toast Validation
+        console.log("Waiting for success notification...");
         try {
             const toast = await driver.wait(until.elementLocated(By.css(".toast, .notification")), 8000);
             const toastText = await toast.getText();
-            console.log(`Toast capturado: "${toastText.trim()}"`);
+            console.log(`Captured toast: "${toastText.trim()}"`);
             assert.ok(
                 toastText.includes("Picture updated"), 
-                "O toast não contém o texto de sucesso esperado."
+                "Toast does not contain expected success text."
             );
         } catch (e) {
-            console.log("Nota: Toast não localizado, mas a imagem do avatar foi validada visualmente!");
+            console.log("Note: Toast not located, but avatar image was visually validated!");
         }
 
         console.log("Test passed: Profile picture successfully uploaded and verified.");
@@ -699,19 +686,19 @@ describe('User Journey Tests - Standard Profile', function () {
     it('testUserSessionSecureLogout', async function () {
         console.log("Starting User Session Secure Logout Test...");
 
-        // 1. Navegar para a página Settings
+        // 1. Navigate to Settings page
         console.log("Navigating to Settings page...");
         const settingsNavBtn = await driver.wait(
             until.elementLocated(By.css(".custom-navbar [aria-label='Settings']")), 
             10000
         );
-        await driver.executeScript("arguments[0].click();", settingsNavBtn);
+        await performNativeClick(driver, settingsNavBtn);
         
-        // Aguarda a mudança de URL e dá um tempo para a página desenhar
+        // Wait for URL change and give time for page to render
         await driver.wait(until.urlContains('/settings'), 10000);
-        await driver.sleep(1000); 
+        await driver.sleep(1000);
 
-        // 2. Localizar o botão de Logout seguindo a hierarquia exata
+        // 2. Locate Logout button following exact hierarchy
         console.log("Locating the logout button inside the sidebar...");
         const settingsCard = await driver.wait(until.elementLocated(By.className("settings-card")), 10000);
         const settingsContent = await settingsCard.findElement(By.className("settings-content"));
@@ -721,11 +708,11 @@ describe('User Journey Tests - Standard Profile', function () {
         console.log("Clicking the logout button...");
         await driver.executeScript("arguments[0].click();", logoutBtn);
 
-        // 3. Localizar o modal de confirmação e os seus botões
+        // 3. Locate confirmation modal and its buttons
         console.log("Waiting for the confirmation modal to appear...");
         const confirmModal = await driver.wait(until.elementLocated(By.className("confirm-modal")), 10000);
         
-        // Pequena pausa para garantir que qualquer animação de fade-in do modal termina
+        // Short pause to ensure any fade-in animation of modal ends
         await driver.sleep(500); 
 
         const modalActions = await confirmModal.findElement(By.className("modal-actions"));
@@ -734,7 +721,7 @@ describe('User Journey Tests - Standard Profile', function () {
         console.log("Confirming logout via modal...");
         await driver.executeScript("arguments[0].click();", confirmBtn);
 
-        // 4. Validar o redirecionamento para o Login
+        // 4. Validate redirection to Login
         console.log("Waiting for redirection to login page...");
         await driver.wait(until.urlContains('/login'), 15000);
 
