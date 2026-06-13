@@ -13,6 +13,7 @@
     <!--  USERS TABLE                                                    -->
     <!-- ═══════════════════════════════════════════════════════════════ -->
     <div class="container mb-5" id="users-table">
+      <h5 class="admin-table-label"><i class="bi bi-people-fill me-2"></i>Users</h5>
       <div
         class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3"
       >
@@ -197,6 +198,7 @@
     <!--  DECORATIONS TABLE                                              -->
     <!-- ═══════════════════════════════════════════════════════════════ -->
     <div class="container mb-5" id="decorations-table">
+      <h5 class="admin-table-label"><i class="bi bi-image-fill me-2"></i>Decorations</h5>
       <div class="d-flex flex-row gap-3 align-items-center mb-3">
         <div class="input-group input-group-sm search-group flex-grow-1">
           <span class="input-group-text bg-white border-end-0 search-icon">
@@ -327,6 +329,7 @@
     <!--  HABITS TABLE                                                   -->
     <!-- ═══════════════════════════════════════════════════════════════ -->
     <div class="container mb-5" id="habits-table">
+      <h5 class="admin-table-label"><i class="bi bi-list-check me-2"></i>Habits</h5>
       <section id="habit-management">
         <div class="d-flex flex-row gap-3 align-items-center mb-3">
           <div class="input-group input-group-sm search-group flex-grow-1">
@@ -462,6 +465,7 @@
     <!--  TASKS TABLE                                                    -->
     <!-- ═══════════════════════════════════════════════════════════════ -->
     <div class="container mb-5" id="tasks-table">
+      <h5 class="admin-table-label"><i class="bi bi-check2-square me-2"></i>Tasks</h5>
       <section id="task-management">
         <div class="d-flex flex-row gap-3 align-items-center mb-3">
           <div class="input-group input-group-sm search-group flex-grow-1">
@@ -652,6 +656,29 @@
       </section>
     </div>
   </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!--  CONFIRMATION MODAL                                            -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <Transition name="toast-slide">
+    <div v-if="confirmModal.visible" class="custom-modal-backdrop" @click.self="cancelConfirm">
+      <div class="modal-panel" style="max-width: 400px">
+        <h5 class="mb-2 fw-bold" style="color: #355d4c">{{ confirmModal.title }}</h5>
+        <p class="text-muted mb-4" style="font-size: 0.95rem">{{ confirmModal.message }}</p>
+        <div class="d-flex justify-content-end gap-2">
+          <button class="btn btn-outline-secondary" @click="cancelConfirm">Cancel</button>
+          <button
+            class="btn"
+            :class="confirmModal.isDanger ? 'btn-danger' : 'btn-success'"
+            :style="!confirmModal.isDanger ? 'background-color:#355d4c;border-color:#355d4c' : ''"
+            @click="acceptConfirm"
+          >
+            {{ confirmModal.confirmText || 'Confirm' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </Transition>
 
   <!-- ═══════════════════════════════════════════════════════════════ -->
   <!--  USER EDIT MODAL                                               -->
@@ -1350,18 +1377,24 @@ async function confirmEdit() {
 }
 
 async function deleteUser(id) {
-  if (!confirm('Are you sure you want to delete this user?')) return
   const target = userStore.users.find((u) => Number(u.id_utilizador) === Number(id))
   const label = target ? `${target.nome || '-'} · ${target.email || '-'}` : String(id)
-  try {
-    await userStore.deleteUser(id)
-    if (userStore.users.length === 0 && currentPage.value > 1) userStore.usersMeta.page--
-    showToast('User deleted', label)
-    syncUsers()
-  } catch (e) {
-    console.error(e)
-    showToast('Error', e.message || 'Could not delete user')
-  }
+  showConfirm(
+    'Delete User',
+    `Are you sure you want to delete this user? This action cannot be undone.`,
+    async () => {
+      try {
+        await userStore.deleteUser(id)
+        if (userStore.users.length === 0 && currentPage.value > 1) userStore.usersMeta.page--
+        showToast('User deleted', label)
+        syncUsers()
+      } catch (e) {
+        console.error(e)
+        showToast('Error', e.message || 'Could not delete user')
+      }
+    },
+    { confirmText: 'Delete', isDanger: true },
+  )
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -1531,16 +1564,22 @@ async function saveDecoration() {
   }
 }
 async function deleteDecorationHandler(id, name) {
-  if (!confirm(`Are you sure you want to delete the "${name}" decoration?`)) return
-  try {
-    await deleteDecoration(id, userStore.token || null)
-    showToast('Decoration deleted', `"${name}" was successfully removed.`)
-    if (decorationsList.value.length === 1 && decorationCurrentPage.value > 1)
-      decorationCurrentPage.value--
-    syncDecorations()
-  } catch (err) {
-    showToast('Error', err.message || 'Could not delete decoration.')
-  }
+  showConfirm(
+    'Delete Decoration',
+    `Are you sure you want to delete the "${name}" decoration? This action cannot be undone.`,
+    async () => {
+      try {
+        await deleteDecoration(id, userStore.token || null)
+        showToast('Decoration deleted', `"${name}" was successfully removed.`)
+        if (decorationsList.value.length === 1 && decorationCurrentPage.value > 1)
+          decorationCurrentPage.value--
+        syncDecorations()
+      } catch (err) {
+        showToast('Error', err.message || 'Could not delete decoration.')
+      }
+    },
+    { confirmText: 'Delete', isDanger: true },
+  )
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -1660,17 +1699,23 @@ async function saveHabit() {
 }
 
 async function handleDeleteHabit(id, title) {
-  if (!confirm(`Are you sure you want to delete the habit "${title}"?`)) return
-  try {
-    await apiDeleteHabit(id, userStore.token)
-    showToast('Habit deleted', `"${title}" was removed`)
-    if (paginatedHabitsList.value.length === 1 && habitCurrentPage.value > 1) {
-      habitCurrentPage.value--
-    }
-    syncHabits()
-  } catch (error) {
-    showToast('Error', error?.message || 'Failed to delete habit')
-  }
+  showConfirm(
+    'Delete Habit',
+    `Are you sure you want to delete the habit "${title}"? This action cannot be undone.`,
+    async () => {
+      try {
+        await apiDeleteHabit(id, userStore.token)
+        showToast('Habit deleted', `"${title}" was removed`)
+        if (paginatedHabitsList.value.length === 1 && habitCurrentPage.value > 1) {
+          habitCurrentPage.value--
+        }
+        syncHabits()
+      } catch (error) {
+        showToast('Error', error?.message || 'Failed to delete habit')
+      }
+    },
+    { confirmText: 'Delete', isDanger: true },
+  )
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -1891,19 +1936,25 @@ async function saveTask() {
 }
 
 async function handleDeleteTask(id, title) {
-  if (!confirm(`Are you sure you want to delete the task "${title}"?`)) return
-  try {
-    await apiDeleteTask(id, userStore.token)
-    // Also remove impacts for this task from local cache
-    allImpacts.value = allImpacts.value.filter((imp) => imp.id_tarefa !== id)
-    showToast('Task deleted', `"${title}" was removed`)
-    if (paginatedTasksList.value.length === 1 && taskCurrentPage.value > 1) {
-      taskCurrentPage.value--
-    }
-    syncTasks()
-  } catch (error) {
-    showToast('Error', error?.message || 'Failed to delete task')
-  }
+  showConfirm(
+    'Delete Task',
+    `Are you sure you want to delete the task "${title}"? This action cannot be undone.`,
+    async () => {
+      try {
+        await apiDeleteTask(id, userStore.token)
+        // Also remove impacts for this task from local cache
+        allImpacts.value = allImpacts.value.filter((imp) => imp.id_tarefa !== id)
+        showToast('Task deleted', `"${title}" was removed`)
+        if (paginatedTasksList.value.length === 1 && taskCurrentPage.value > 1) {
+          taskCurrentPage.value--
+        }
+        syncTasks()
+      } catch (error) {
+        showToast('Error', error?.message || 'Failed to delete task')
+      }
+    },
+    { confirmText: 'Delete', isDanger: true },
+  )
 }
 
 // ── Impact management inside the task modal ─────────────────────────
@@ -1975,6 +2026,36 @@ function showToast(title, message, duration = 3000) {
   }, duration)
 }
 
+// Confirmation modal
+const confirmModal = ref({
+  visible: false,
+  title: '',
+  message: '',
+  confirmText: 'Confirm',
+  isDanger: false,
+  onConfirm: null,
+})
+
+function showConfirm(title, message, onConfirm, options = {}) {
+  confirmModal.value = {
+    visible: true,
+    title,
+    message,
+    confirmText: options.confirmText || 'Confirm',
+    isDanger: options.isDanger || false,
+    onConfirm,
+  }
+}
+
+function acceptConfirm() {
+  if (confirmModal.value.onConfirm) confirmModal.value.onConfirm()
+  confirmModal.value.visible = false
+}
+
+function cancelConfirm() {
+  confirmModal.value.visible = false
+}
+
 function formatDate(value) {
   if (!value) return '-'
   try {
@@ -1997,6 +2078,15 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.admin-table-label {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #355d4c;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  letter-spacing: 0.01em;
+}
 .custom-modal-backdrop {
   position: fixed;
   top: 0;
