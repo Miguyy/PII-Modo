@@ -106,10 +106,14 @@ describe('Admin Journey Tests - Privileged Operations', function () {
         const deleteBtn = await tbody.findElement(By.css(".action-icon.action-delete"));
         await performNativeClick(driver, deleteBtn);
 
-        console.log("Handling confirmation alert...");
-        await driver.sleep(500); // Aguardar alert nascer
-        const alert = await driver.switchTo().alert();
-        await alert.accept();
+        console.log("Handling confirmation modal...");
+        await driver.sleep(500); // Wait for modal to appear
+        const confirmModal = await driver.wait(
+            until.elementLocated(By.css(".custom-modal-backdrop .modal-panel")),
+            10000
+        );
+        const confirmBtn = await confirmModal.findElement(By.css(".btn.btn-danger"));
+        await driver.executeScript("arguments[0].click();", confirmBtn);
 
         console.log("Waiting for success toast message...");
         const toast = await driver.wait(
@@ -271,10 +275,14 @@ describe('Admin Journey Tests - Privileged Operations', function () {
         const decDeleteBtn = await driver.wait(until.elementLocated(By.xpath(deleteXPath)), 10000);
         await performNativeClick(driver, decDeleteBtn);
 
-        console.log("Handling confirmation alert...");
+        console.log("Handling confirmation modal...");
         await driver.sleep(500);
-        const deleteAlert = await driver.switchTo().alert();
-        await deleteAlert.accept();
+        const deleteModal = await driver.wait(
+            until.elementLocated(By.css(".custom-modal-backdrop .modal-panel")),
+            10000
+        );
+        const deleteConfirmBtn = await deleteModal.findElement(By.css(".btn.btn-danger"));
+        await driver.executeScript("arguments[0].click();", deleteConfirmBtn);
 
         await driver.sleep(1000);
 
