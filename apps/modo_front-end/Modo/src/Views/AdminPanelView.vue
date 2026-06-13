@@ -697,7 +697,12 @@
       <div class="row">
         <div class="col">
           <label class="form-label">Points</label>
-          <input type="number" v-model.number="editingUser.points" class="form-control" id="edit-user-points" />
+          <input
+            type="number"
+            v-model.number="editingUser.points"
+            class="form-control"
+            id="edit-user-points"
+          />
         </div>
         <div class="col">
           <label class="form-label">Priority</label>
@@ -765,7 +770,12 @@
       <h5 class="mb-3">{{ isNewDecoration ? 'Add Decoration' : 'Edit Decoration' }}</h5>
       <div class="mb-3">
         <label class="form-label">Name</label>
-        <input v-model="editingDecoration.name" class="form-control" placeholder="e.g., rainbow" id="edit-decoration-name" />
+        <input
+          v-model="editingDecoration.name"
+          class="form-control"
+          placeholder="e.g., rainbow"
+          id="edit-decoration-name"
+        />
       </div>
       <div class="mb-3">
         <label class="form-label">Required Level</label>
@@ -943,9 +953,7 @@
       </div>
 
       <div class="mb-3">
-        <label class="form-label"
-          >Assign to Habit <span class="text-muted small">(optional)</span></label
-        >
+        <label class="form-label">Assign to Habit <span class="text-muted small"></span></label>
         <select v-model="editingTask.id_habito" class="form-select">
           <option :value="null">-- None --</option>
           <option
