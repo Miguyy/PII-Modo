@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test:unit": "vitest",
+    "test:unit": "vitest --no-cache",
     "format": "prettier --write --experimental-cli src/"
   },
   "dependencies": {
