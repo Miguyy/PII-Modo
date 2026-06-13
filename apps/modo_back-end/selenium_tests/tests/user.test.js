@@ -92,7 +92,7 @@ describe('User Journey Tests - Standard Profile', function () {
     // ----------------------------------------------------
     // Test 1: User Registration Flow
     // ----------------------------------------------------
-    it('testUserRegistrationFlow', async function () {
+    it('testUserRegistration', async function () {
         const homePage = new HomePage(driver);
         const loginPage = new LoginPage(driver);
         const registerPage = new RegisterPage(driver);
@@ -132,7 +132,7 @@ describe('User Journey Tests - Standard Profile', function () {
     // ----------------------------------------------------
     // Test 2: User Authentication Success
     // ----------------------------------------------------
-    it('testUserAuthenticationSuccess', async function () {
+    it('testUserAuthentication', async function () {
         const loginPage = new LoginPage(driver);
 
         console.log("Starting Authentication Success Test...");
@@ -166,7 +166,7 @@ describe('User Journey Tests - Standard Profile', function () {
     // ----------------------------------------------------
     // Test 3: Explore Habits Catalog & Add Habit
     // ----------------------------------------------------
-    it('testExploreAndAddHabit', async function () {
+    it('testUserExploreHabitsAndAddHabit', async function () {
         console.log("Starting Explore and Add Habit Test...");
 
         // 1. Navegar para a página de Exploração
@@ -257,10 +257,9 @@ describe('User Journey Tests - Standard Profile', function () {
     });
 
     // ----------------------------------------------------
-    // Test 3.1: Explore Habits Catalog & Add task (Alternative Flow)
+    // Test 4: Explore Habits Catalog & Add task 
     // ----------------------------------------------------
-    // este é o mesmo do anterior, só que em vez de adicionar habit, ele adiciona um task específica
-    it('testExploreAndAddTask', async function () {
+    it('testUserExploreHabitsAndAddTask', async function () {
         console.log("Starting Explore and Add Task Test...");
 
         // 1. Navegar para a página de Exploração
@@ -351,9 +350,9 @@ describe('User Journey Tests - Standard Profile', function () {
     });
 
     // ----------------------------------------------------
-    // Test 4: Habit Task Completion and Rewards
+    // Test 5: Habit Task Completion and Rewards
     // ----------------------------------------------------
-    it('testHabitTaskCompletionAndRewards', async function () {
+    it('testUserHabitTaskCompletionAndRewards', async function () {
         console.log("Starting Habit Task Completion Test...");
 
         // 1. Espera e prepara a grid
@@ -414,9 +413,9 @@ describe('User Journey Tests - Standard Profile', function () {
     });
 
     // ----------------------------------------------------
-    // Test 5: Statistics Dashboard and PDF Export
+    // Test 6: Statistics Dashboard and PDF Export
     // ----------------------------------------------------
-    it('testStatisticsDashboardAndPdfExport', async function () {
+    it('testUserStatisticsDashboardAndReportExport', async function () {
         console.log("Starting Statistics Dashboard and PDF Export Test...");
 
         // 1. Aguarda o dashboard e faz scroll até ao bloco de gráficos
@@ -491,9 +490,9 @@ describe('User Journey Tests - Standard Profile', function () {
     });
 
     // ----------------------------------------------------
-    // Test 6: Avatar Decoration Customization
+    // Test 7: Avatar Decoration Customization
     // ----------------------------------------------------
-    it('testAvatarDecorationCustomization', async function () {
+    it('testUserCustomAvatarDecoration', async function () {
         console.log("Starting Avatar Decoration Customization Test...");
 
         // Navegação
@@ -550,9 +549,9 @@ describe('User Journey Tests - Standard Profile', function () {
     });
 
     // ----------------------------------------------------
-    // Test 7: User Theme Toggle (Dark/Light Mode)
+    // Test 8: User Theme Toggle (Dark/Light Mode)
     // ----------------------------------------------------
-    it('testUserThemeToggle', async function () {
+    it('testUserSettingsAndThemeToggle', async function () {
         console.log("Starting User Theme Toggle Test...");
 
         await driver.wait(until.elementLocated(By.css("a[title='Explore Habits']")), 10000);
@@ -598,9 +597,9 @@ describe('User Journey Tests - Standard Profile', function () {
     });
 
     // ----------------------------------------------------
-    // Test 8: User Image Profile Update
+    // Test 9: User Image Profile Update
     // ----------------------------------------------------
-    it('testUserImageProfile', async function () {
+    it('testUserChangeImageProfile', async function () {
         console.log("Starting User Image Profile Update Test...");
 
         // 1. Navegação para Settings
@@ -695,7 +694,7 @@ describe('User Journey Tests - Standard Profile', function () {
     });
 
     // ----------------------------------------------------
-    // Test 9: User Session Secure Logout
+    // Test 10: User Session Secure Logout
     // ----------------------------------------------------
     it('testUserSessionSecureLogout', async function () {
         console.log("Starting User Session Secure Logout Test...");
@@ -743,7 +742,7 @@ describe('User Journey Tests - Standard Profile', function () {
         assert.ok(currentUrl.includes('/login'), "Logout failed: System did not redirect to login.");
 
         console.log("Test passed: Session safely destroyed via modal confirmation.");
-        await driver.sleep(1000); // Pausa final para estabilidade da suite de testes
+        await driver.sleep(1000);
     });
 
 });
