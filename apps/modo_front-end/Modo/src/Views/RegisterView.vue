@@ -26,7 +26,7 @@
         id="reg-password-user"
       />
 
-      <button @click="handleRegister" style="font-weight: bold; font-size: 18px">Sign Up</button>
+      <button id="signUp_btn" @click="handleRegister" style="font-weight: bold; font-size: 18px">Sign Up</button>
 
       <p class="register-login">
         Already have an account?

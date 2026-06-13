@@ -12,7 +12,7 @@
     <!-- ═══════════════════════════════════════════════════════════════ -->
     <!--  USERS TABLE                                                    -->
     <!-- ═══════════════════════════════════════════════════════════════ -->
-    <div class="container mb-5">
+    <div class="container mb-5" id="users-table">
       <div
         class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3"
       >
@@ -152,7 +152,7 @@
     <!-- ═══════════════════════════════════════════════════════════════ -->
     <!--  GLOBAL NOTIFICATIONS                                           -->
     <!-- ═══════════════════════════════════════════════════════════════ -->
-    <div class="container mb-5">
+    <div class="container mb-5" id="admin-notifications">
       <div
         class="card shadow-sm border-0"
         style="background: linear-gradient(to right, var(--bg-surface-alt), var(--bg-surface))"
@@ -196,7 +196,7 @@
     <!-- ═══════════════════════════════════════════════════════════════ -->
     <!--  DECORATIONS TABLE                                              -->
     <!-- ═══════════════════════════════════════════════════════════════ -->
-    <div class="container mb-5">
+    <div class="container mb-5" id="decorations-table">
       <div class="d-flex flex-row gap-3 align-items-center mb-3">
         <div class="input-group input-group-sm search-group flex-grow-1">
           <span class="input-group-text bg-white border-end-0 search-icon">
@@ -326,7 +326,7 @@
     <!-- ═══════════════════════════════════════════════════════════════ -->
     <!--  HABITS TABLE                                                   -->
     <!-- ═══════════════════════════════════════════════════════════════ -->
-    <div class="container mb-5">
+    <div class="container mb-5" id="habits-table">
       <section id="habit-management">
         <div class="d-flex flex-row gap-3 align-items-center mb-3">
           <div class="input-group input-group-sm search-group flex-grow-1">
@@ -461,7 +461,7 @@
     <!-- ═══════════════════════════════════════════════════════════════ -->
     <!--  TASKS TABLE                                                    -->
     <!-- ═══════════════════════════════════════════════════════════════ -->
-    <div class="container mb-5">
+    <div class="container mb-5" id="tasks-table">
       <section id="task-management">
         <div class="d-flex flex-row gap-3 align-items-center mb-3">
           <div class="input-group input-group-sm search-group flex-grow-1">
@@ -661,16 +661,16 @@
       <h5 class="mb-3">Edit user</h5>
       <div class="mb-2">
         <label class="form-label">Name</label>
-        <input v-model="editingUser.name" class="form-control" />
+        <input v-model="editingUser.name" class="form-control" id="edit-user-name" />
       </div>
       <div class="mb-2">
         <label class="form-label">Email</label>
-        <input v-model="editingUser.email" class="form-control" />
+        <input v-model="editingUser.email" class="form-control" id="edit-user-email" />
       </div>
       <div class="row">
         <div class="col">
           <label class="form-label">Points</label>
-          <input type="number" v-model.number="editingUser.points" class="form-control" />
+          <input type="number" v-model.number="editingUser.points" class="form-control" id="edit-user-points" />
         </div>
         <div class="col">
           <label class="form-label">Priority</label>
@@ -738,7 +738,7 @@
       <h5 class="mb-3">{{ isNewDecoration ? 'Add Decoration' : 'Edit Decoration' }}</h5>
       <div class="mb-3">
         <label class="form-label">Name</label>
-        <input v-model="editingDecoration.name" class="form-control" placeholder="e.g., rainbow" />
+        <input v-model="editingDecoration.name" class="form-control" placeholder="e.g., rainbow" id="edit-decoration-name" />
       </div>
       <div class="mb-3">
         <label class="form-label">Required Level</label>
@@ -749,6 +749,7 @@
           min="0"
           step="5"
           placeholder="0"
+          id="edit-decoration-required-level"
         />
         <small class="text-muted">Users need this level to equip the decoration.</small>
       </div>
@@ -760,6 +761,7 @@
           accept="image/*"
           class="form-control"
           @change="handleDecorationFileUpload"
+          id="edit-decoration-image"
         />
         <small class="text-muted mt-1 d-block" v-if="!selectedFile && editingDecoration.src"
           >Current URL: {{ editingDecoration.src }}</small

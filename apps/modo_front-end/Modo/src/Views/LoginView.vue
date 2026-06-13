@@ -24,7 +24,7 @@
         id="login-password-user"
       />
 
-      <button @click.prevent="handleLogin" style="font-weight: bold; font-size: 18px">Login</button>
+      <button id="login_btn" @click.prevent="handleLogin" style="font-weight: bold; font-size: 18px">Login</button>
 
       <p class="login-forgot mt-2 mb-0" style="text-align: center; font-size: 14px;">
         <a href="#" @click.prevent="openForgotModal" style="color: #355d4c; text-decoration: none; font-weight: 600;">
